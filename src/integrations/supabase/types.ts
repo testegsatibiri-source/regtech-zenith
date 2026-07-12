@@ -14,16 +14,369 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      branches: {
+        Row: {
+          city: string | null
+          company_id: string
+          country_code: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          city?: string | null
+          company_id: string
+          country_code?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          city?: string | null
+          company_id?: string
+          country_code?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          country_code: string
+          created_at: string
+          currency: string
+          id: string
+          legal_name: string | null
+          name: string
+          owner_id: string
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          legal_name?: string | null
+          name: string
+          owner_id: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          legal_name?: string | null
+          name?: string
+          owner_id?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      compliance_findings: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          message: string | null
+          passed: boolean
+          rule_code: string
+          run_id: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          passed?: boolean
+          rule_code: string
+          run_id?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          passed?: boolean
+          rule_code?: string
+          run_id?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_findings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_findings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          base_salary: number
+          branch_id: string | null
+          company_id: string
+          country_metadata: Json
+          created_at: string
+          department: string | null
+          employment_type: string
+          full_name: string
+          id: string
+          join_date: string | null
+          marital_status: string
+          position: string | null
+          religion: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          base_salary?: number
+          branch_id?: string | null
+          company_id: string
+          country_metadata?: Json
+          created_at?: string
+          department?: string | null
+          employment_type?: string
+          full_name: string
+          id?: string
+          join_date?: string | null
+          marital_status?: string
+          position?: string | null
+          religion?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          base_salary?: number
+          branch_id?: string | null
+          company_id?: string
+          country_metadata?: Json
+          created_at?: string
+          department?: string | null
+          employment_type?: string
+          full_name?: string
+          id?: string
+          join_date?: string | null
+          marital_status?: string
+          position?: string | null
+          religion?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_items: {
+        Row: {
+          bpjs_employee: number
+          bpjs_employer: number
+          breakdown: Json
+          company_id: string
+          created_at: string
+          employee_id: string | null
+          employee_name: string
+          gross: number
+          id: string
+          net: number
+          run_id: string
+          tax: number
+        }
+        Insert: {
+          bpjs_employee?: number
+          bpjs_employer?: number
+          breakdown?: Json
+          company_id: string
+          created_at?: string
+          employee_id?: string | null
+          employee_name: string
+          gross?: number
+          id?: string
+          net?: number
+          run_id: string
+          tax?: number
+        }
+        Update: {
+          bpjs_employee?: number
+          bpjs_employer?: number
+          breakdown?: Json
+          company_id?: string
+          created_at?: string
+          employee_id?: string | null
+          employee_name?: string
+          gross?: number
+          id?: string
+          net?: number
+          run_id?: string
+          tax?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_runs: {
+        Row: {
+          company_id: string
+          compliance_score: number
+          country_code: string
+          created_at: string
+          id: string
+          period_month: number
+          period_year: number
+          status: string
+          totals: Json
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          compliance_score?: number
+          country_code?: string
+          created_at?: string
+          id?: string
+          period_month: number
+          period_year: number
+          status?: string
+          totals?: Json
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          compliance_score?: number
+          country_code?: string
+          created_at?: string
+          id?: string
+          period_month?: number
+          period_year?: number
+          status?: string
+          totals?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      owns_company: { Args: { _company_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +503,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "viewer"],
+    },
   },
 } as const
