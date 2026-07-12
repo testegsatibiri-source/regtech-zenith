@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "UBoard Asia — Compliance & Payroll for Southeast Asia" },
+      { name: "description", content: "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes." },
+      { name: "author", content: "UBoard Asia" },
+      { property: "og:title", content: "UBoard Asia — Compliance & Payroll for Southeast Asia" },
+      { property: "og:description", content: "Localized payroll and a live Compliance Score for Indonesia and beyond." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@UBoardAsia" },
     ],
     links: [
       {
