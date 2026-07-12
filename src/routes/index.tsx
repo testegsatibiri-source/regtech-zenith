@@ -1,24 +1,183 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  ShieldCheck, Layers, Cpu, Activity, Bot, Globe2, Check, ArrowRight, Zap, FileWarning,
+} from "lucide-react";
+import { SiteHeader } from "@/components/SiteHeader";
+import { ScoreGauge } from "@/components/ScoreGauge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/lib/i18n";
+import { COUNTRIES } from "@/lib/countryPacks";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Landing() {
+  const { t } = useI18n();
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen">
+      <SiteHeader />
+
+      {/* Hero */}
+      <section className="gradient-hero relative overflow-hidden text-white">
+        <div className="bg-grid absolute inset-0 opacity-40" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
+          <div>
+            <Badge className="mb-5 border-white/20 bg-white/10 text-white hover:bg-white/10">{t("hero.badge")}</Badge>
+            <h1 className="font-display text-4xl font-bold leading-tight md:text-5xl">{t("hero.title")}</h1>
+            <p className="mt-5 max-w-lg text-white/70">{t("hero.sub")}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg"><Link to="/auth">{t("hero.cta")} <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
+              <Button asChild size="lg" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">
+                <Link to="/calculator">{t("hero.cta2")}</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <Card className="w-full max-w-sm border-white/10 bg-white/5 backdrop-blur">
+              <CardContent className="flex flex-col items-center gap-4 p-8 text-white">
+                <span className="text-sm text-white/60">{t("score.title")}</span>
+                <ScoreGauge score={95} label={t("score.audit")} />
+                <div className="w-full space-y-2 text-sm">
+                  <Signal ok text="Base salary ≥ UMP" />
+                  <Signal ok text="BPJS enrolled" />
+                  <Signal text="NPWP missing on 3 employees" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Architecture layers */}
+      <section id="product" className="mx-auto max-w-6xl px-4 py-20">
+        <SectionTitle
+          eyebrow="Layered architecture"
+          title="Core ERP, Country Packs and Rule Engines — fully decoupled"
+          sub="Legislative change becomes a config update, not a code migration. Your clients simply wake up compliant."
+        />
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <Feature icon={Layers} title="Country Packs" desc="Geography-specific rules (NIK, NPWP, BPJS, THR) isolated from the business core. Add Malaysia or Vietnam without touching payroll logic." />
+          <Feature icon={Cpu} title="Rule Engines" desc="Tax (PPh 21 / TER), BPJS and THR run as independent engines — sellable as standalone /calculate-tax and /calculate-bpjs APIs." />
+          <Feature icon={Activity} title="Compliance Score" desc="Every payroll close runs through boolean validators, producing a 0–100% auditable score with drill-down per rule." />
+          <Feature icon={Zap} title="Regulatory Update Service" desc="Rates, BPJS caps and TER brackets live in config. One deploy updates thousands of companies — no client upgrade." />
+          <Feature icon={Bot} title="Predictive AI Audit" desc="Cross-checks overtime against Omnibus Law limits and flags statistical anomalies before they become fines." />
+          <Feature icon={Globe2} title="Multi-country native" desc="A jsonb country_metadata model stores per-country identifiers without inflating the global schema." />
+        </div>
+
+        <div className="mt-10 flex flex-wrap justify-center gap-2">
+          {COUNTRIES.map((c) => (
+            <span key={c.code} className={"inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm " + (c.active ? "border-accent/50 bg-accent/10 font-medium" : "border-border text-muted-foreground")}>
+              <span>{c.flag}</span>{c.name}{c.active ? "" : " · soon"}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="border-t border-border bg-muted/30 py-20">
+        <div className="mx-auto max-w-6xl px-4">
+          <SectionTitle
+            eyebrow="Pricing"
+            title="Hybrid: platform base + per-employee, per-month"
+            sub="Scales with your headcount, never with your payroll value. Advanced compliance & API sold as high-margin add-ons."
+          />
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <PriceCard
+              name="Starter"
+              base="$50/mo"
+              per="IDR 30,000 / employee / mo"
+              features={["Core ERP + companies & branches", "Indonesia Country Pack", "Payroll close (PPh 21, BPJS, THR)", "Basic Compliance Score"]}
+            />
+            <PriceCard
+              highlight
+              name="Growth"
+              base="$150/mo"
+              per="IDR 50,000 / employee / mo"
+              features={["Everything in Starter", "AI Compliance module (add-on)", "Predictive overtime & anomaly alerts", "Multi-branch dashboards", "Priority support"]}
+            />
+            <PriceCard
+              name="API / Enterprise"
+              base="from $300/mo"
+              per="10,000 calc API calls"
+              features={["/calculate-tax & /calculate-bpjs endpoints", "For SAP / Workday / SuccessFactors", "Volume-based API billing", "SLA & dedicated Country Packs"]}
+            />
+          </div>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-muted-foreground">
+            <FileWarning className="mr-1 inline h-4 w-4" />
+            AI Compliance add-on: +20–30% of monthly invoice, or $1/employee — cheaper than a single Kemenaker fine.
+          </p>
+        </div>
+      </section>
+
+      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4">
+          <div className="flex items-center gap-2 font-display font-semibold text-foreground">
+            <ShieldCheck className="h-4 w-4 text-accent" /> UBoard Asia
+          </div>
+          <p>Compliance & Payroll as a Service — Southeast Asia.</p>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+function Signal({ text, ok }: { text: string; ok?: boolean }) {
+  return (
+    <div className="flex items-center gap-2 rounded-md bg-white/5 px-3 py-1.5">
+      <span className={"h-2 w-2 rounded-full " + (ok ? "bg-[oklch(0.7_0.15_155)]" : "bg-[oklch(0.78_0.16_75)]")} />
+      <span className="text-white/80">{text}</span>
+    </div>
+  );
+}
+
+function SectionTitle({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <span className="text-sm font-semibold uppercase tracking-wider text-accent">{eyebrow}</span>
+      <h2 className="mt-2 text-3xl font-bold">{title}</h2>
+      <p className="mt-3 text-muted-foreground">{sub}</p>
+    </div>
+  );
+}
+
+function Feature({ icon: Icon, title, desc }: { icon: typeof Layers; title: string; desc: string }) {
+  return (
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="p-6">
+        <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Icon className="h-6 w-6" />
+        </span>
+        <h3 className="font-display text-lg font-semibold">{title}</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PriceCard({ name, base, per, features, highlight }: { name: string; base: string; per: string; features: string[]; highlight?: boolean }) {
+  return (
+    <Card className={highlight ? "relative border-accent shadow-lg ring-1 ring-accent/40" : ""}>
+      {highlight && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">Most popular</Badge>}
+      <CardContent className="p-6">
+        <h3 className="font-display text-lg font-semibold">{name}</h3>
+        <div className="mt-3">
+          <span className="font-display text-3xl font-bold">{base}</span>
+          <span className="text-sm text-muted-foreground"> + {per}</span>
+        </div>
+        <ul className="mt-5 space-y-2.5 text-sm">
+          {features.map((f) => (
+            <li key={f} className="flex items-start gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" /> <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+        <Button asChild className="mt-6 w-full" variant={highlight ? "default" : "outline"}>
+          <Link to="/auth">Get started</Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
