@@ -17,6 +17,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
+import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -57,6 +59,16 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicCalculateTaxRoute = ApiPublicCalculateTaxRouteImport.update({
+  id: '/api/public/calculate-tax',
+  path: '/api/public/calculate-tax',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCalculateBpjsRoute = ApiPublicCalculateBpjsRouteImport.update({
+  id: '/api/public/calculate-bpjs',
+  path: '/api/public/calculate-bpjs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,6 +78,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
+  '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,6 +89,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
+  '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +102,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
+  '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +115,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/api/public/calculate-bpjs'
+    | '/api/public/calculate-tax'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -106,6 +126,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/api/public/calculate-bpjs'
+    | '/api/public/calculate-tax'
   id:
     | '__root__'
     | '/'
@@ -116,6 +138,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/employees'
     | '/_authenticated/payroll'
+    | '/api/public/calculate-bpjs'
+    | '/api/public/calculate-tax'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -124,6 +148,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
+  ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -184,6 +210,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/calculate-tax': {
+      id: '/api/public/calculate-tax'
+      path: '/api/public/calculate-tax'
+      fullPath: '/api/public/calculate-tax'
+      preLoaderRoute: typeof ApiPublicCalculateTaxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/calculate-bpjs': {
+      id: '/api/public/calculate-bpjs'
+      path: '/api/public/calculate-bpjs'
+      fullPath: '/api/public/calculate-bpjs'
+      preLoaderRoute: typeof ApiPublicCalculateBpjsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -208,7 +248,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
+  ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
