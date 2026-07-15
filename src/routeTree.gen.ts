@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
 import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
@@ -66,6 +67,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
   id: '/api/public/openapi.json',
   path: '/api/public/openapi.json',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calculator'
     | '/sitemap.xml'
+    | '/audit'
     | '/dashboard'
     | '/employees'
     | '/payroll'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calculator'
     | '/sitemap.xml'
+    | '/audit'
     | '/dashboard'
     | '/employees'
     | '/payroll'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calculator'
     | '/sitemap.xml'
+    | '/_authenticated/audit'
     | '/_authenticated/dashboard'
     | '/_authenticated/employees'
     | '/_authenticated/payroll'
@@ -243,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/openapi.json': {
       id: '/api/public/openapi.json'
       path: '/api/public/openapi.json'
@@ -268,12 +287,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
   AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
   AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
