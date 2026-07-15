@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,7 @@ function ShellInner({ children }: { children: ReactNode }) {
     { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { to: "/employees", label: t("nav.employees"), icon: Users },
     { to: "/payroll", label: t("nav.payroll"), icon: Calculator },
+    { to: "/audit", label: "AI Audit", icon: Sparkles },
   ];
 
   async function signOut() {
