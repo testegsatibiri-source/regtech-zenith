@@ -103,11 +103,12 @@ export const updateObligationStatus = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = { status: data.status };
-    patch.completed_at = data.status === "completed" ? new Date().toISOString() : null;
     const { error } = await context.supabase
       .from("compliance_obligations")
-      .update(patch)
+      .update({
+        status: data.status,
+        completed_at: data.status === "completed" ? new Date().toISOString() : null,
+      })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
