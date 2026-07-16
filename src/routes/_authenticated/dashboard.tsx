@@ -63,10 +63,10 @@ function Dashboard() {
         <Card className="lg:col-span-1">
           <CardHeader><CardTitle>Compliance Score</CardTitle></CardHeader>
           <CardContent className="flex flex-col items-center gap-3">
-            <ScoreGauge score={employees.length ? report.score : 100} label="Audit readiness" />
+            <ScoreGauge score={combinedScore} label="Audit readiness" />
             <p className="text-center text-sm text-muted-foreground">
-              {employees.length === 0
-                ? "Add employees to compute your score."
+              {employees.length === 0 && obligations.length === 0
+                ? "Add employees and seed the regulatory calendar to compute your score."
                 : critical.length
                   ? `${critical.length} high-risk issue(s) — audit exposure.`
                   : "No critical exposure detected."}
@@ -75,9 +75,10 @@ function Dashboard() {
         </Card>
 
         <div className="space-y-5 lg:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-4">
             <Stat icon={Users} label="Employees" value={String(employees.length)} />
             <Stat icon={Wallet} label="Payroll runs" value={String(runs.length)} />
+            <Stat icon={CalendarClock} label="At-risk filings" value={String(atRiskCount)} tone={atRiskCount ? "warn" : "ok"} />
             <Stat icon={AlertTriangle} label="Open findings" value={String(failing.length)} tone={failing.length ? "warn" : "ok"} />
           </div>
 
