@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, Users, Wallet, ArrowRight } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Users, Wallet, ArrowRight, CalendarClock } from "lucide-react";
 import { listEmployees, listPayrollRuns } from "@/lib/data.functions";
+import { listObligations, obligationFindings, classifyRisk } from "@/lib/calendar.functions";
 import { useCompany } from "@/lib/companyContext";
-import { evaluateCompany, type Finding } from "@/lib/engines/compliance";
+import { evaluateCompany, scoreFindings, type Finding } from "@/lib/engines/compliance";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ function Dashboard() {
   const { company, companyId } = useCompany();
   const fetchEmployees = useServerFn(listEmployees);
   const fetchRuns = useServerFn(listPayrollRuns);
+  const fetchObligations = useServerFn(listObligations);
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees", companyId],
@@ -29,14 +31,26 @@ function Dashboard() {
     queryFn: () => fetchRuns({ data: { companyId: companyId! } }),
     enabled: !!companyId,
   });
+  const { data: obligations = [] } = useQuery({
+    queryKey: ["obligations", companyId],
+    queryFn: () => fetchObligations({ data: { companyId: companyId! } }),
+    enabled: !!companyId,
+  });
 
   if (!companyId) {
     return <EmptyCompany />;
   }
 
   const report = evaluateCompany(employees as never[]);
-  const failing = report.findings.filter((f) => !f.passed);
+  const calFindings = obligationFindings(obligations);
+  const combined = [...report.findings, ...calFindings];
+  const combinedScore = employees.length || obligations.length ? scoreFindings(combined) : 100;
+  const failing = combined.filter((f) => !f.passed);
   const critical = failing.filter((f) => f.severity === "critical" || f.severity === "high");
+  const atRiskCount = obligations.filter((o) => {
+    const c = classifyRisk(o.due_date, o.status);
+    return c === "overdue" || c === "critical";
+  }).length;
 
   return (
     <div className="space-y-6">
@@ -49,10 +63,10 @@ function Dashboard() {
         <Card className="lg:col-span-1">
           <CardHeader><CardTitle>Compliance Score</CardTitle></CardHeader>
           <CardContent className="flex flex-col items-center gap-3">
-            <ScoreGauge score={employees.length ? report.score : 100} label="Audit readiness" />
+            <ScoreGauge score={combinedScore} label="Audit readiness" />
             <p className="text-center text-sm text-muted-foreground">
-              {employees.length === 0
-                ? "Add employees to compute your score."
+              {employees.length === 0 && obligations.length === 0
+                ? "Add employees and seed the regulatory calendar to compute your score."
                 : critical.length
                   ? `${critical.length} high-risk issue(s) — audit exposure.`
                   : "No critical exposure detected."}
@@ -61,9 +75,10 @@ function Dashboard() {
         </Card>
 
         <div className="space-y-5 lg:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-4">
             <Stat icon={Users} label="Employees" value={String(employees.length)} />
             <Stat icon={Wallet} label="Payroll runs" value={String(runs.length)} />
+            <Stat icon={CalendarClock} label="At-risk filings" value={String(atRiskCount)} tone={atRiskCount ? "warn" : "ok"} />
             <Stat icon={AlertTriangle} label="Open findings" value={String(failing.length)} tone={failing.length ? "warn" : "ok"} />
           </div>
 
