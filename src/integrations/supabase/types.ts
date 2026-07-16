@@ -136,6 +136,68 @@ export type Database = {
           },
         ]
       }
+      compliance_obligations: {
+        Row: {
+          base_legal: string | null
+          category: string
+          code: string
+          company_id: string
+          completed_at: string | null
+          country_code: string
+          created_at: string
+          due_date: string
+          frequency: string
+          id: string
+          name: string
+          notes: string | null
+          period_label: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          base_legal?: string | null
+          category?: string
+          code: string
+          company_id: string
+          completed_at?: string | null
+          country_code?: string
+          created_at?: string
+          due_date: string
+          frequency?: string
+          id?: string
+          name: string
+          notes?: string | null
+          period_label?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          base_legal?: string | null
+          category?: string
+          code?: string
+          company_id?: string
+          completed_at?: string | null
+          country_code?: string
+          created_at?: string
+          due_date?: string
+          frequency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          period_label?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_obligations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           base_salary: number
