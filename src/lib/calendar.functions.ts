@@ -127,3 +127,38 @@ export function classifyRisk(dueISO: string, status: string): "overdue" | "criti
   if (days <= 14) return "soon";
   return "upcoming";
 }
+
+/** Build compliance findings from a list of obligation rows for the score. */
+export function obligationFindings(rows: { id: string; name: string; due_date: string; status: string; code: string }[]) {
+  const overdue = rows.filter((r) => classifyRisk(r.due_date, r.status) === "overdue");
+  const critical = rows.filter((r) => classifyRisk(r.due_date, r.status) === "critical");
+  const findings = [] as {
+    rule_code: string;
+    title: string;
+    severity: "critical" | "high" | "medium" | "info";
+    passed: boolean;
+    message: string;
+    weight: number;
+  }[];
+  findings.push({
+    rule_code: "ID-CAL-OVERDUE",
+    title: "No overdue regulatory obligations",
+    severity: "critical",
+    passed: overdue.length === 0,
+    weight: 30,
+    message: overdue.length
+      ? `${overdue.length} obligation(s) past due: ${overdue.slice(0, 3).map((o) => o.name).join(", ")}${overdue.length > 3 ? "…" : ""}`
+      : "All obligations up to date.",
+  });
+  findings.push({
+    rule_code: "ID-CAL-DUE-3D",
+    title: "No obligation due within 3 days",
+    severity: "high",
+    passed: critical.length === 0,
+    weight: 18,
+    message: critical.length
+      ? `${critical.length} obligation(s) due within 3 days.`
+      : "No imminent filings.",
+  });
+  return findings;
+}
