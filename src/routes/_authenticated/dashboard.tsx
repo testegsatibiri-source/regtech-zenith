@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, Users, Wallet, ArrowRight, CalendarClock } from "lucide-react";
 import { listEmployees, listPayrollRuns } from "@/lib/data.functions";
 import { listObligations, obligationFindings, classifyRisk } from "@/lib/calendar.functions";
+import { listContracts } from "@/lib/contracts.functions";
+import { evaluateContracts, type ContractLike } from "@/lib/engines/contracts";
 import { useCompany } from "@/lib/companyContext";
 import { evaluateCompany, scoreFindings, type Finding } from "@/lib/engines/compliance";
 import { ScoreGauge } from "@/components/ScoreGauge";
@@ -20,6 +22,7 @@ function Dashboard() {
   const fetchEmployees = useServerFn(listEmployees);
   const fetchRuns = useServerFn(listPayrollRuns);
   const fetchObligations = useServerFn(listObligations);
+  const fetchContracts = useServerFn(listContracts);
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees", companyId],
@@ -36,6 +39,11 @@ function Dashboard() {
     queryFn: () => fetchObligations({ data: { companyId: companyId! } }),
     enabled: !!companyId,
   });
+  const { data: contracts = [] } = useQuery({
+    queryKey: ["contracts", companyId],
+    queryFn: () => fetchContracts({ data: { companyId: companyId! } }),
+    enabled: !!companyId,
+  });
 
   if (!companyId) {
     return <EmptyCompany />;
@@ -43,8 +51,12 @@ function Dashboard() {
 
   const report = evaluateCompany(employees as never[]);
   const calFindings = obligationFindings(obligations);
-  const combined = [...report.findings, ...calFindings];
-  const combinedScore = employees.length || obligations.length ? scoreFindings(combined) : 100;
+  const contractFindings = evaluateContracts(
+    contracts as ContractLike[],
+    (employees as { id: string; full_name: string }[]).map((e) => ({ id: e.id, full_name: e.full_name })),
+  );
+  const combined = [...report.findings, ...calFindings, ...contractFindings];
+  const combinedScore = employees.length || obligations.length || contracts.length ? scoreFindings(combined) : 100;
   const failing = combined.filter((f) => !f.passed);
   const critical = failing.filter((f) => f.severity === "critical" || f.severity === "high");
   const atRiskCount = obligations.filter((o) => {

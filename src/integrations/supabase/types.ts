@@ -267,6 +267,78 @@ export type Database = {
           },
         ]
       }
+      employment_contracts: {
+        Row: {
+          base_salary: number
+          clauses: Json
+          company_id: string
+          contract_type: string
+          created_at: string
+          employee_id: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          position: string | null
+          probation_end_date: string | null
+          signed_at: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          base_salary?: number
+          clauses?: Json
+          company_id: string
+          contract_type: string
+          created_at?: string
+          employee_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          position?: string | null
+          probation_end_date?: string | null
+          signed_at?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          base_salary?: number
+          clauses?: Json
+          company_id?: string
+          contract_type?: string
+          created_at?: string
+          employee_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          position?: string | null
+          probation_end_date?: string | null
+          signed_at?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employment_contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employment_contracts_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payroll_items: {
         Row: {
           bpjs_employee: number
