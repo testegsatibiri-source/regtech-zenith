@@ -24,6 +24,10 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
 import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
+import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
+import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
+import { Route as ApiPublicV1CalculateTaxRouteImport } from './routes/api/public/v1/calculate-tax'
+import { Route as ApiPublicV1CalculateBpjsRouteImport } from './routes/api/public/v1/calculate-bpjs'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -99,6 +103,28 @@ const ApiPublicCalculateBpjsRoute = ApiPublicCalculateBpjsRouteImport.update({
   path: '/api/public/calculate-bpjs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1OpenapiDotjsonRoute =
+  ApiPublicV1OpenapiDotjsonRouteImport.update({
+    id: '/api/public/v1/openapi.json',
+    path: '/api/public/v1/openapi.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1HealthRoute = ApiPublicV1HealthRouteImport.update({
+  id: '/api/public/v1/health',
+  path: '/api/public/v1/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1CalculateTaxRoute = ApiPublicV1CalculateTaxRouteImport.update({
+  id: '/api/public/v1/calculate-tax',
+  path: '/api/public/v1/calculate-tax',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1CalculateBpjsRoute =
+  ApiPublicV1CalculateBpjsRouteImport.update({
+    id: '/api/public/v1/calculate-bpjs',
+    path: '/api/public/v1/calculate-bpjs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,6 +141,10 @@ export interface FileRoutesByFullPath {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
+  '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
+  '/api/public/v1/health': typeof ApiPublicV1HealthRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,6 +161,10 @@ export interface FileRoutesByTo {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
+  '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
+  '/api/public/v1/health': typeof ApiPublicV1HealthRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,6 +183,10 @@ export interface FileRoutesById {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
+  '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
+  '/api/public/v1/health': typeof ApiPublicV1HealthRoute
+  '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,6 +205,10 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/api/public/v1/calculate-bpjs'
+    | '/api/public/v1/calculate-tax'
+    | '/api/public/v1/health'
+    | '/api/public/v1/openapi.json'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -183,6 +225,10 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/api/public/v1/calculate-bpjs'
+    | '/api/public/v1/calculate-tax'
+    | '/api/public/v1/health'
+    | '/api/public/v1/openapi.json'
   id:
     | '__root__'
     | '/'
@@ -200,6 +246,10 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/api/public/v1/calculate-bpjs'
+    | '/api/public/v1/calculate-tax'
+    | '/api/public/v1/health'
+    | '/api/public/v1/openapi.json'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,6 +262,10 @@ export interface RootRouteChildren {
   ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
   ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
+  ApiPublicV1CalculateBpjsRoute: typeof ApiPublicV1CalculateBpjsRoute
+  ApiPublicV1CalculateTaxRoute: typeof ApiPublicV1CalculateTaxRoute
+  ApiPublicV1HealthRoute: typeof ApiPublicV1HealthRoute
+  ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -321,6 +375,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCalculateBpjsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/openapi.json': {
+      id: '/api/public/v1/openapi.json'
+      path: '/api/public/v1/openapi.json'
+      fullPath: '/api/public/v1/openapi.json'
+      preLoaderRoute: typeof ApiPublicV1OpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/health': {
+      id: '/api/public/v1/health'
+      path: '/api/public/v1/health'
+      fullPath: '/api/public/v1/health'
+      preLoaderRoute: typeof ApiPublicV1HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/calculate-tax': {
+      id: '/api/public/v1/calculate-tax'
+      path: '/api/public/v1/calculate-tax'
+      fullPath: '/api/public/v1/calculate-tax'
+      preLoaderRoute: typeof ApiPublicV1CalculateTaxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/calculate-bpjs': {
+      id: '/api/public/v1/calculate-bpjs'
+      path: '/api/public/v1/calculate-bpjs'
+      fullPath: '/api/public/v1/calculate-bpjs'
+      preLoaderRoute: typeof ApiPublicV1CalculateBpjsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -355,6 +437,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
   ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
+  ApiPublicV1CalculateBpjsRoute: ApiPublicV1CalculateBpjsRoute,
+  ApiPublicV1CalculateTaxRoute: ApiPublicV1CalculateTaxRoute,
+  ApiPublicV1HealthRoute: ApiPublicV1HealthRoute,
+  ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

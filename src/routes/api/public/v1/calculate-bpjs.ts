@@ -24,6 +24,7 @@ export const Route = createFileRoute("/api/public/v1/calculate-bpjs")({
         const traceId = traceIdFromRequest(request);
         const auth = await authenticateRequest(request);
         if (!auth.ok) return auth.response;
+        const authed = auth.auth;
 
         if (request.headers.get("content-length") && Number(request.headers.get("content-length")) > 8192) {
           return jsonResponse({ error: "Payload too large" }, 413);
@@ -61,11 +62,11 @@ export const Route = createFileRoute("/api/public/v1/calculate-bpjs")({
         async function finish(res: Response, status: number): Promise<Response> {
           const latencyMs = Math.round(performance.now() - start);
           await recordApiUsage({
-            keyId: auth.auth.key?.id ?? null,
+            keyId: authed.key?.id ?? null,
             endpoint: "/api/public/v1/calculate-bpjs",
             status,
             latencyMs,
-            ip: auth.auth.ip,
+            ip: authed.ip,
           });
           return res;
         }
