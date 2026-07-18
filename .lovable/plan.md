@@ -1,68 +1,110 @@
-## Diagnóstico: onde o UBoard Asia está hoje
+## Objetivo
 
-Mapeando o código real contra o roadmap proposto:
+Hardening de produção do Compliance OS — sem novos módulos de negócio. Foco em integridade de dados, contratos de plataforma multi-país, segurança de APIs, observabilidade e débito técnico.
 
-**Já entregue (Sprints 1–3 + parte da 4 e 10):**
-- Core multi-tenant: `companies`, `branches`, `employees` (com `country_metadata` JSONB), `profiles`, `user_roles` com `has_role()` — ✅ base pronta para multi-país.
-- **Rule Engines Indonésia**: PPh 21 TER (PP 58/2023), BPJS (Kesehatan/JHT/JP/JKK/JKM com tetos), THR — ✅ Sprint 3 concluído.
-- **Compliance Score** (`evaluateCompany` + `ScoreGauge`, 6 validadores ponderados) — ✅ Sprint 4 concluído.
-- **Dashboard** com findings priorizados — ✅ Sprint 5 concluído.
-- **Payroll runs + items** persistidos, execução mensal — ✅ núcleo funcional.
-- **AI Audit preditiva** (`/audit`) com estatística + narrativa via Lovable AI — ✅ Sprint 10 antecipado.
-- **API-as-a-Service** pública: `/api/public/calculate-tax`, `/calculate-bpjs`, `/openapi.json` + Swagger UI — ✅ monetização secundária pronta.
-- Autenticação (Email + Google), i18n EN/ID, landing comercial.
+## Ordem confirmada (revisada)
 
-**Ainda não existe:** Calendar de obrigações, Contratos, Employee Portal, Visa, ciclos ≠ mensal, Time & Attendance, Lifecycle/Offboarding.
+**H1 → H2 → H3 → H4 → H5.** H2 antes de H3 para estabilizar contratos (`CountryPack`, `rulesetVersion`, `/v1`) antes de endurecer as APIs em cima deles. Também prioriza o eixo de maior valor da plataforma: preparar MY/SG/PH sem refactor espalhado.
 
-## Análise da sua proposta de sequenciamento
+---
 
-Sua ordenação está **arquiteturalmente correta** em quase tudo. Três pontos merecem refinamento:
+## H1 — Fundação de dados (integridade + performance)
 
-### Onde concordo integralmente
-- **Payroll Cycles, Time & Attendance e Offboarding depois do núcleo**: correto. Nenhum é pré-requisito para validar o Compliance OS. Antecipá-los infla escopo e adia contato com cliente pagante.
-- **Time & Attendance como produto separado** consumido pelo Payroll: essa fronteira arquitetural é a decisão certa. Acoplar ponto ao Payroll cria o mesmo problema técnico que SAP tem hoje.
-- **Offboarding depois de Contratos**: dependência real; sem contrato estruturado o cálculo rescisório é heurística.
+Reduz risco de corrupção e degradação de queries agora que temos 8 tabelas com apenas PKs.
 
-### Onde eu ajustaria
+1. **Índices** (migração única):
+   - `companies(owner_id)`
+   - `branches(company_id)`
+   - `employees(company_id, status)`, `employees(branch_id)`
+   - `payroll_runs(company_id, period_year, period_month)`
+   - `payroll_items(run_id)`, `payroll_items(employee_id)`, `payroll_items(company_id)`
+   - `compliance_findings(company_id, run_id)`, `compliance_findings(company_id, severity, passed)`
+   - `compliance_obligations(company_id, due_date, status)`, `compliance_obligations(company_id, category)`
+   - `employment_contracts(company_id, employee_id)`, `employment_contracts(company_id, end_date)`
+   - GIN em `employees(country_metadata)` para lookups por NIK/NPWP.
 
-**1. Calendar antes de Contratos (Sprint 6 mantido, mas com escopo diferente).**
-Você não precisa esperar "Obligations" existirem como entidade rica. O Calendar mínimo viável é uma tabela `compliance_obligations` seedada por Country Pack (datas de PPh 21, SPT Masa, BPJS, THR, laporan tenaga kerja) + dispatcher de alertas. Isso destrava demonstração comercial em 1 sprint e alimenta o Compliance Score com uma dimensão temporal ("você tem 3 obrigações vencendo em 7 dias").
+2. **Refino de RLS**: substituir cada policy `FOR ALL` única por `SELECT / INSERT / UPDATE / DELETE` separadas, todas via `owns_company()`; reforçar `WITH CHECK (owner_id = auth.uid())` no INSERT de `companies`. Introduzir role `auditor` (enum já existe padrão via `app_role`) com policy `SELECT` cross-company via `has_role(auth.uid(),'auditor')` — sem alterar comportamento do app atual.
 
-**2. Employee Portal (Sprint 8) tem valor comercial mais alto do que "média".**
-Na Indonésia, o portal é o que reduz o custo de suporte do RH cliente (holerite digital, solicitação de THR, dados cadastrais). Ele também é o canal natural para coleta de NIK/NPWP faltantes — que hoje derrubam o Compliance Score. Eu o classificaria como **Alta**, não Média, mas manteria no Sprint 8.
+3. **Constraints**:
+   - `UNIQUE(company_id, period_year, period_month)` em `payroll_runs`
+   - `UNIQUE(company_id, code, period_label)` em `compliance_obligations` (idempotência de seed sob concorrência)
+   - CHECKs de domínio: `severity IN ('critical','high','medium','info')`, `status` de obrigações e contratos.
 
-**3. IA (Sprint 10) já parcialmente entregue.**
-O `/audit` que rodamos hoje cobre a parte de auditoria preditiva. O que resta da "camada IA" é: (a) explicação em linguagem natural de findings individuais, (b) recomendação automática de correção de cadastro, (c) chatbot regulatório sobre a base de conhecimento dos Country Packs. Isso pode virar Sprint 10 mais leve, ou ser dissolvido em melhorias transversais.
+4. **Hashes e versionamento de execução**: adicionar `snapshot_hash text`, `ruleset_hash text`, `ruleset_version text` em `payroll_runs`. Adicionar `ruleset_version` em `compliance_findings`. Preencher no `savePayrollRun` (SHA-256 de input + params) para replay determinístico e prova documental em autuação.
 
-### Risco de atraso na validação do Compliance OS
+---
 
-Os três módulos "depois" (Cycles, T&A, Lifecycle) têm padrão comum: **cada um sozinho é um mini-produto de 4–8 semanas**. Colocar qualquer um deles antes do Sprint 10 empurra o primeiro cliente pagante em 2–3 meses sem melhorar a proposta de valor central ("evite autuação da Kemenaker/DJP"). Manter a ordem que você propôs preserva o time-to-market.
+## H2 — Contratos de plataforma (o eixo mais valioso)
 
-## Roadmap validado
+Transforma o Compliance OS em plataforma multi-país. Sem esta camada, MY/SG/PH exigem edições espalhadas.
 
-| # | Sprint | Escopo mínimo | Status |
-|---|---|---|---|
-| 3 | THR Engine | Calendário lunar + trigger 15/7 dias antes do Eid | ✅ feito |
-| 4 | Compliance Score | Validadores ponderados + gauge | ✅ feito |
-| 5 | Dashboard | Findings priorizados + stats | ✅ feito |
-| 6 | **Regulatory Calendar** | `compliance_obligations` seedadas por Country Pack + alertas + integração ao Score | Próximo |
-| 7 | Contratos | PKWT/PKWTT, cláusulas, versionamento, expiração alimenta Score | |
-| 8 | Employee Portal (Alta) | Holerite, dados cadastrais self-service, coleta de NIK/NPWP | |
-| 9 | Visa / Expat | KITAS, IMTA, expiração no Calendar, PPh 26 | |
-| 10 | IA — completar | Explicação de findings, correção sugerida, chatbot regulatório (auditoria já feita) | Parcial |
-| 11 | Payroll Cycles | `payroll_periods` polimórfico (mensal/quinzenal/semanal/diário), fechamento parcial | |
-| 12 | Time & Attendance | Módulo independente com API contract publicado; Payroll consome eventos | |
-| 13 | Employment Lifecycle | Onboarding, movimentações, offboarding, cálculo final, obrigações pós-desligamento | |
+5. **`CountryPack` interface** em `src/lib/engines/types.ts`:
+   ```
+   interface CountryPack {
+     code: 'ID' | 'MY' | 'SG' | ...;
+     rulesetVersion: string;    // ex: 'ID-2024.11.01'
+     params: Record<string, unknown>;
+     taxEngine: (input) => TaxResult;
+     bpjsEngine?: (input) => SocialResult;
+     thrEngine?: (input) => ThrResult;
+     complianceRules: ComplianceRule[];
+   }
+   ```
+6. **Registry** `src/lib/engines/registry.ts`: `registerPack(pack)`, `getPack(code)`. Registrar `ID` no bootstrap. Refatorar `engines/compliance.ts` e `audit.functions.ts` para receber `pack` em vez de importar `ID_PARAMS` direto. Nenhuma UI depende de engines (confirmado — engines são puros).
 
-## Marco de validação comercial
+7. **Event Bus in-process** `src/lib/events/bus.ts` com tipos versionados: `PayrollFinalized@1`, `EmployeeUpserted@1`, `ObligationStatusChanged@1`, `ContractChanged@1`. Handlers async (recompute score, log de auditoria, invalidação de cache). Interface pronta para trocar por Postgres `NOTIFY` / `pg_net` sem tocar em callers.
 
-Sugiro tratar **fim do Sprint 9** como o "GA do Compliance OS" — é o ponto onde:
-- Fechamento mensal está completo (Payroll + Compliance + Calendar + Contratos + Portal + Expat).
-- Todas as fontes de risco de autuação indonésias mais comuns estão cobertas.
-- Sprints 10–13 viram melhorias, não bloqueios.
+8. **Versionamento de DTOs**: toda resposta pública ganha `schemaVersion: '1'` + `rulesetVersion` do pack usado. Payloads internos idem.
 
-## Próximo passo sugerido
+9. **`/api/public/v1/*`**: mover `calculate-tax` e `calculate-bpjs` para `/v1/`. Manter `/api/public/calculate-*` como alias com header `Deprecation: true` + `Sunset` (90 dias). OpenAPI `1.0.0` publicado em `/api/public/v1/openapi.json`.
 
-Iniciar **Sprint 6 — Regulatory Calendar**: (1) migração `compliance_obligations` + `obligation_events`, (2) seed do Indonesia Country Pack (PPh 21 masa, SPT Tahunan, BPJS, THR, LKPM), (3) rota `/calendar` com timeline e alertas, (4) integrar contagem "obrigações em risco" ao Compliance Score global.
+---
 
-Confirme se quer que eu execute o Sprint 6 nessa ordem, ou se prefere reordenar algo antes de eu partir para implementação.
+## H3 — Segurança das APIs públicas
+
+Agora que `/v1` está estável, blindar.
+
+10. **API Keys**: tabela `api_keys (id, company_id, hashed_key, prefix, scopes[], monthly_quota, created_at, revoked_at, last_used_at)` + `api_usage (key_id, ts, endpoint, latency_ms, status)`. Chaves formato `sk_live_...`; armazenar apenas hash SHA-256 + prefixo para exibição. Middleware em `src/lib/apiAuth.ts` valida `Authorization: Bearer sk_...`.
+
+11. **Quotas e rate limit**: contador diário/mensal em `api_usage`; bloqueio 429 acima da quota. Rate-limit por IP para endpoint demo (sem key) via token bucket em memória (interface trocável por Redis/KV).
+
+12. **CORS refinado**: `Allow-Origin: *` apenas para endpoints demo sem key; endpoints com key ecoam o origin da chave (allowlist por chave). Preflight explícito.
+
+13. **Validação estrita**: limites numéricos (`monthlyGross <= 1e12`), tamanho máximo de body 8KB, rejeitar payload não-JSON com 415.
+
+Nota: gestão de keys via seed SQL nesta fase; UI de gestão fica fora do escopo (não é módulo de negócio, é operacional — pode entrar num H6 futuro).
+
+---
+
+## H4 — Observabilidade
+
+14. **Métricas estruturadas** `src/lib/observability/metrics.ts`: `timed(name, fn)` e `counter(name, tags)`. Instrumentar `calculateTax`, `calculateBpjs`, `evaluateCompany`, `runComplianceAudit`, cada `createServerFn` mutador. Tabela `metrics_events (ts, name, tags jsonb, value_ms, trace_id)` + view SQL agregada por hora.
+
+15. **Correlation ID**: gerar/propagar `x-request-id` no `requestMiddleware` já existente em `src/start.ts`; incluir em todo log.
+
+16. **Structured logging**: substituir `console.error` por logger JSON (`{ level, ts, trace_id, span, engine, ruleset_version, err }`).
+
+17. **Cache de score**: memoize `evaluateCompany` por `(company_id, employees_hash)` no request + coluna `score_cache jsonb` em `companies`, invalidada por eventos do H2 (`EmployeeUpserted`, `PayrollFinalized`, `ObligationStatusChanged`). Métrica hit/miss.
+
+18. **Health endpoint** `/api/public/health` — retorna `{ status, db_latency_ms, ruleset_versions }`, sem PII, para monitoring externo.
+
+---
+
+## H5 — Relatório de débito técnico
+
+19. `docs/tech-debt.md` classificando cada item pendente pós-hardening (P0/P1/P2), com impacto, esforço, risco, arquivos referenciados e proposta de sprint. Inclui: gestão UI de API keys, migração do bus para pg_net/NOTIFY, backend de rate-limit distribuído, cobertura de pack MY/SG, testes de propriedade dos engines, políticas de retenção de `api_usage`/`metrics_events`, revisão de índices após 30 dias de produção via `pg_stat_statements`.
+
+---
+
+## Entregáveis por arquivo
+
+- **Migrações** (4): índices; RLS refinada + role auditor; hashes + constraints; api_keys/api_usage/metrics_events.
+- **Novos**: `src/lib/engines/types.ts`, `registry.ts`; `src/lib/events/bus.ts`; `src/lib/observability/{metrics,logger,traceId}.ts`; `src/lib/apiAuth.ts`; `src/routes/api/public/v1/{calculate-tax,calculate-bpjs,openapi[.]json,health}.ts`; `docs/tech-debt.md`.
+- **Refatorados**: `engines/compliance.ts` (recebe pack), `engines/indonesia.ts` (exporta pack via registry), `data.functions.ts` / `calendar.functions.ts` / `contracts.functions.ts` (emit eventos + hash), `audit.functions.ts` (usa registry + métricas), `openapiSpec.ts` (v1 + auth scheme + `rulesetVersion`), `apiCors.ts` (allowlist), rotas `/api/public/calculate-*` (aliases deprecated).
+- **UI**: nenhuma mudança de negócio; painel `/audit` mostra badge `rulesetVersion` (cosmético).
+
+## Fora do escopo
+
+Nenhum módulo novo (T&A, Portal, Ciclos, Offboarding permanecem no roadmap Sprint 8+). Sem UI de gestão de API keys. Sem troca do bus para infra externa.
+
+Confirme e sigo executando H1 → H2 → H3 → H4 → H5.
