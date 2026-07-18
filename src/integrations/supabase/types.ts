@@ -14,6 +14,94 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          allowed_origins: string[]
+          company_id: string
+          created_at: string
+          hashed_key: string
+          id: string
+          label: string | null
+          last_used_at: string | null
+          monthly_quota: number
+          prefix: string
+          revoked_at: string | null
+          scopes: string[]
+        }
+        Insert: {
+          allowed_origins?: string[]
+          company_id: string
+          created_at?: string
+          hashed_key: string
+          id?: string
+          label?: string | null
+          last_used_at?: string | null
+          monthly_quota?: number
+          prefix: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Update: {
+          allowed_origins?: string[]
+          company_id?: string
+          created_at?: string
+          hashed_key?: string
+          id?: string
+          label?: string | null
+          last_used_at?: string | null
+          monthly_quota?: number
+          prefix?: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_usage: {
+        Row: {
+          endpoint: string
+          id: number
+          ip: unknown
+          key_id: string | null
+          latency_ms: number
+          status_code: number
+          ts: string
+        }
+        Insert: {
+          endpoint: string
+          id?: number
+          ip?: unknown
+          key_id?: string | null
+          latency_ms: number
+          status_code: number
+          ts?: string
+        }
+        Update: {
+          endpoint?: string
+          id?: number
+          ip?: unknown
+          key_id?: string | null
+          latency_ms?: number
+          status_code?: number
+          ts?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_key_id_fkey"
+            columns: ["key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           city: string | null
@@ -58,6 +146,7 @@ export type Database = {
           legal_name: string | null
           name: string
           owner_id: string
+          score_cache: Json | null
           tax_id: string | null
           updated_at: string
         }
@@ -69,6 +158,7 @@ export type Database = {
           legal_name?: string | null
           name: string
           owner_id: string
+          score_cache?: Json | null
           tax_id?: string | null
           updated_at?: string
         }
@@ -80,6 +170,7 @@ export type Database = {
           legal_name?: string | null
           name?: string
           owner_id?: string
+          score_cache?: Json | null
           tax_id?: string | null
           updated_at?: string
         }
@@ -93,6 +184,7 @@ export type Database = {
           message: string | null
           passed: boolean
           rule_code: string
+          ruleset_version: string | null
           run_id: string | null
           severity: string
           title: string
@@ -104,6 +196,7 @@ export type Database = {
           message?: string | null
           passed?: boolean
           rule_code: string
+          ruleset_version?: string | null
           run_id?: string | null
           severity?: string
           title: string
@@ -115,6 +208,7 @@ export type Database = {
           message?: string | null
           passed?: boolean
           rule_code?: string
+          ruleset_version?: string | null
           run_id?: string | null
           severity?: string
           title?: string
@@ -339,6 +433,33 @@ export type Database = {
           },
         ]
       }
+      metrics_events: {
+        Row: {
+          id: number
+          name: string
+          tags: Json
+          trace_id: string | null
+          ts: string
+          value_ms: number | null
+        }
+        Insert: {
+          id?: number
+          name: string
+          tags?: Json
+          trace_id?: string | null
+          ts?: string
+          value_ms?: number | null
+        }
+        Update: {
+          id?: number
+          name?: string
+          tags?: Json
+          trace_id?: string | null
+          ts?: string
+          value_ms?: number | null
+        }
+        Relationships: []
+      }
       payroll_items: {
         Row: {
           bpjs_employee: number
@@ -415,6 +536,9 @@ export type Database = {
           id: string
           period_month: number
           period_year: number
+          ruleset_hash: string | null
+          ruleset_version: string | null
+          snapshot_hash: string | null
           status: string
           totals: Json
           updated_at: string
@@ -427,6 +551,9 @@ export type Database = {
           id?: string
           period_month: number
           period_year: number
+          ruleset_hash?: string | null
+          ruleset_version?: string | null
+          snapshot_hash?: string | null
           status?: string
           totals?: Json
           updated_at?: string
@@ -439,6 +566,9 @@ export type Database = {
           id?: string
           period_month?: number
           period_year?: number
+          ruleset_hash?: string | null
+          ruleset_version?: string | null
+          snapshot_hash?: string | null
           status?: string
           totals?: Json
           updated_at?: string
@@ -500,6 +630,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_api_quota: {
+        Args: { _key_id: string; _monthly_quota: number }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -507,10 +641,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_auditor: { Args: never; Returns: boolean }
       owns_company: { Args: { _company_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "manager" | "viewer"
+      app_role: "admin" | "manager" | "viewer" | "auditor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -638,7 +773,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "viewer"],
+      app_role: ["admin", "manager", "viewer", "auditor"],
     },
   },
 } as const
