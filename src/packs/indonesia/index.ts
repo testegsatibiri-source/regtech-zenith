@@ -79,20 +79,20 @@ const calendar: CalendarProvider = {
           for (let m = 1; m <= 12; m++) {
             const period_start = `${year}-${String(m).padStart(2, "0")}-01`;
             const period_end = period_start;
-            list.push({ period_start, period_end, due_date: computeDueDate(t, year, m) });
+            list.push({ period_start, period_end, due_date: computeDueDate(t, year, m).toISOString().slice(0,10) });
           }
         } else if (t.frequency === "annual") {
           list.push({
             period_start: `${year}-01-01`,
             period_end: `${year}-12-31`,
-            due_date: computeDueDate(t, year, 1),
+            due_date: computeDueDate(t, year, 1).toISOString().slice(0,10),
           });
         } else if (t.frequency === "quarterly") {
           for (const m of [3, 6, 9, 12]) {
             list.push({
               period_start: `${year}-${String(m - 2).padStart(2, "0")}-01`,
               period_end: `${year}-${String(m).padStart(2, "0")}-01`,
-              due_date: computeDueDate(t, year, m),
+              due_date: computeDueDate(t, year, m).toISOString().slice(0,10),
             });
           }
         }
@@ -103,7 +103,7 @@ const calendar: CalendarProvider = {
 
 
 const contracts: ContractProvider = {
-  validate: (c) => validateContract(c),
+  validate: (c) => evaluateContract(c as never).map(f => ({ code: f.rule_code, title: f.title, severity: f.severity as "critical"|"high"|"medium", passed: f.passed, message: f.message, weight: f.weight })),
   coverage: (activeEmployees, activeContracts) => {
     if (activeEmployees === 0) return 100;
     return Math.round((Math.min(activeContracts, activeEmployees) / activeEmployees) * 100);
