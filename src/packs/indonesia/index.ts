@@ -14,8 +14,9 @@ import type { AuditProvider } from "@/sdk/providers/AuditProvider";
 import { ID_PARAMS } from "@/lib/countryPacks";
 import { calculateTax, calculateBpjs, calculateThr, buildPayslip } from "@/lib/engines/indonesia";
 import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
-import { OBLIGATION_CATALOG_ID } from "@/lib/obligations.catalog";
-import { validateContract } from "@/lib/engines/contracts";
+import { ID_OBLIGATIONS, computeDueDate } from "@/lib/obligations.catalog";
+import { evaluateContract } from "@/lib/engines/contracts";
+
 
 const manifest: CountryManifest = {
   country: "ID",
@@ -65,16 +66,41 @@ const payroll: PayrollProvider = {
 
 const calendar: CalendarProvider = {
   templates: () =>
-    OBLIGATION_CATALOG_ID.map<ObligationTemplate>((t) => ({
+    ID_OBLIGATIONS.map<ObligationTemplate>((t) => ({
       code: t.code,
-      title: t.title,
+      title: t.name,
       category: t.category,
-      cadence: t.cadence as ObligationTemplate["cadence"],
-      severity: t.severity as ObligationTemplate["severity"],
-      legalBasis: t.legalBasis,
-      occurrences: (year: number) => t.occurrences(year),
+      cadence: (t.frequency === "one_off" ? "one_off" : t.frequency) as ObligationTemplate["cadence"],
+      severity: "high",
+      legalBasis: t.base_legal,
+      occurrences: (year: number) => {
+        const list: { period_start: string; period_end: string; due_date: string }[] = [];
+        if (t.frequency === "monthly") {
+          for (let m = 1; m <= 12; m++) {
+            const period_start = `${year}-${String(m).padStart(2, "0")}-01`;
+            const period_end = period_start;
+            list.push({ period_start, period_end, due_date: computeDueDate(t, year, m) });
+          }
+        } else if (t.frequency === "annual") {
+          list.push({
+            period_start: `${year}-01-01`,
+            period_end: `${year}-12-31`,
+            due_date: computeDueDate(t, year, 1),
+          });
+        } else if (t.frequency === "quarterly") {
+          for (const m of [3, 6, 9, 12]) {
+            list.push({
+              period_start: `${year}-${String(m - 2).padStart(2, "0")}-01`,
+              period_end: `${year}-${String(m).padStart(2, "0")}-01`,
+              due_date: computeDueDate(t, year, m),
+            });
+          }
+        }
+        return list;
+      },
     })),
 };
+
 
 const contracts: ContractProvider = {
   validate: (c) => validateContract(c),
