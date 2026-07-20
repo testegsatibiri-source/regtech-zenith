@@ -1,110 +1,122 @@
-## Objetivo
 
-Hardening de produção do Compliance OS — sem novos módulos de negócio. Foco em integridade de dados, contratos de plataforma multi-país, segurança de APIs, observabilidade e débito técnico.
+# Auditoria arquitetural e Sprint H5 — Compliance SDK
 
-## Ordem confirmada (revisada)
+## Onde estamos hoje (auditoria)
 
-**H1 → H2 → H3 → H4 → H5.** H2 antes de H3 para estabilizar contratos (`CountryPack`, `rulesetVersion`, `/v1`) antes de endurecer as APIs em cima deles. Também prioriza o eixo de maior valor da plataforma: preparar MY/SG/PH sem refactor espalhado.
+| Área | Estado atual | Gap vs. proposta |
+|------|--------------|------------------|
+| CountryPack | Interface única em `engines/types.ts` (tax + social + 13th + rules) | Falta split em Providers (Payroll / Tax / Benefits / Calendar / Contract / Rule / Audit) |
+| Runtime | `registry.ts` = `Map` simples + bootstrap direto no import | Sem carregador, sem validação de versão, sem resolução de dependências, sem cache |
+| Manifesto | Inexistente — código é a fonte da verdade | Falta `country.yaml`/`manifest.ts` com `version`, `engines`, `requiresCore` |
+| Versionamento | Só `rulesetVersion` string dentro do pack | Sem semver independente de Core / Pack, sem checagem de compatibilidade |
+| Instalação | Bootstrap hard-coded (`registerPack(indonesiaPack)`) | Sem "marketplace"/registrar dinâmico com UI de instalação |
+| Capability discovery | Consumidores assumem THR, BPJS etc. (`audit.tsx`, dashboard, calendar) | Falta `pack.supports("thr")`; UI condicional |
+| Metadata Registry | Só packs | Falta registry de providers/validators/reports/obligations/calculators |
+| DI | `getPack()` importado direto pelos consumers; `id-pack` importa `ID_PARAMS` | Falta container/injeção via interface |
+| Event Bus | `events/bus.ts` in-process, 4 tipos, sem emissão real (DEBT-001) | Falta catálogo oficial de eventos + emissão nas mutations |
+| Governance | Só `docs/tech-debt.md` | Faltam ADRs, Country Pack Spec, Contribution/Release/Security/Version/Migration policies |
 
----
+Diagnóstico: a fundação de H1–H4 é sólida, mas o `CountryPack` é monolítico e o Core ainda "conhece" a Indonésia por caminho de import. Antes de escrever MY/SG/PH, a plataforma precisa virar SDK.
 
-## H1 — Fundação de dados (integridade + performance)
+## Escopo desta sprint (H5 — SDK & Governance)
 
-Reduz risco de corrupção e degradação de queries agora que temos 8 tabelas com apenas PKs.
+Sem novos módulos de negócio. Só refactor de plataforma + docs.
 
-1. **Índices** (migração única):
-   - `companies(owner_id)`
-   - `branches(company_id)`
-   - `employees(company_id, status)`, `employees(branch_id)`
-   - `payroll_runs(company_id, period_year, period_month)`
-   - `payroll_items(run_id)`, `payroll_items(employee_id)`, `payroll_items(company_id)`
-   - `compliance_findings(company_id, run_id)`, `compliance_findings(company_id, severity, passed)`
-   - `compliance_obligations(company_id, due_date, status)`, `compliance_obligations(company_id, category)`
-   - `employment_contracts(company_id, employee_id)`, `employment_contracts(company_id, end_date)`
-   - GIN em `employees(country_metadata)` para lookups por NIK/NPWP.
+### 1. `@uboard/compliance-sdk` (pasta `src/sdk/`)
+Novo pacote lógico com contratos puros — zero dependência de Supabase, React ou libs de país:
+- `sdk/providers/` — um arquivo por provider:
+  - `PayrollProvider`, `TaxProvider`, `BenefitsProvider`, `CalendarProvider` (retorna templates de obrigação), `ContractProvider` (regras PKWT/PKWTT-like), `RuleProvider` (compliance rules), `AuditProvider` (heurísticas de auditoria/IA).
+- `sdk/CountryPack.ts` — interface do pack = manifest + mapa opcional `providers: Partial<Record<Capability, Provider>>`.
+- `sdk/Capability.ts` — enum: `payroll | tax | benefits | thirteenth | overtime | leave | calendar | contracts | audit`.
+- `sdk/manifest.ts` — tipo `CountryManifest { country, version (semver), engines[], supportedLanguages[], requiresCore }`.
+- `sdk/events.ts` — catálogo oficial versionado: `PayrollCalculated@1`, `TaxCalculated@1`, `ContractExpired@1`, `EmployeeCreated@1`, `RuleFailed@1`, `ComplianceUpdated@1`, `AuditCompleted@1` (+ manter os `@1` já existentes).
+- `sdk/errors.ts` — `PackNotFound`, `IncompatibleCoreVersion`, `CapabilityUnsupported`.
+- `sdk/version.ts` — `CORE_VERSION = "2.0.0"` + `satisfies(range, version)` mínimo (sem dep externa).
 
-2. **Refino de RLS**: substituir cada policy `FOR ALL` única por `SELECT / INSERT / UPDATE / DELETE` separadas, todas via `owns_company()`; reforçar `WITH CHECK (owner_id = auth.uid())` no INSERT de `companies`. Introduzir role `auditor` (enum já existe padrão via `app_role`) com policy `SELECT` cross-company via `has_role(auth.uid(),'auditor')` — sem alterar comportamento do app atual.
+### 2. Country Runtime (`src/sdk/runtime.ts`)
+Substitui o `Map` bruto do `registry.ts`:
+- `CountryRuntime.install(pack)` — valida manifest, checa `requiresCore` contra `CORE_VERSION`, resolve providers, popula cache.
+- `CountryRuntime.get(code)` — lookup com erro tipado.
+- `CountryRuntime.supports(code, capability)` — capability discovery.
+- `CountryRuntime.list()` — inclui `status: installed|incompatible`.
+- Emite `CountryPackInstalled@1` / `CountryPackFailed@1` no bus.
 
-3. **Constraints**:
-   - `UNIQUE(company_id, period_year, period_month)` em `payroll_runs`
-   - `UNIQUE(company_id, code, period_label)` em `compliance_obligations` (idempotência de seed sob concorrência)
-   - CHECKs de domínio: `severity IN ('critical','high','medium','info')`, `status` de obrigações e contratos.
+### 3. Reescrever Indonesia como pack SDK
+- Novo `src/packs/indonesia/` com:
+  - `manifest.ts` (`version: "1.7.0"`, `engines: ["payroll","tax","benefits","thirteenth","overtime","calendar","contracts","audit"]`, `requiresCore: ">=2.0.0"`).
+  - `providers/tax.ts`, `providers/benefits.ts` (BPJS), `providers/thirteenth.ts` (THR), `providers/payroll.ts` (compõe os anteriores), `providers/calendar.ts` (move `obligations.catalog.ts`), `providers/contracts.ts` (move `engines/contracts.ts`), `providers/rules.ts` (move compliance rules), `providers/audit.ts` (move heurísticas de `audit.functions.ts`).
+  - `params.ts` (ex-`ID_PARAMS`).
+  - `index.ts` — exporta `indonesiaPack: CountryPack`.
+- `src/lib/engines/*` vira thin shim que re-exporta do SDK+pack, para não quebrar imports enquanto migra callers. Marcado `@deprecated`.
 
-4. **Hashes e versionamento de execução**: adicionar `snapshot_hash text`, `ruleset_hash text`, `ruleset_version text` em `payroll_runs`. Adicionar `ruleset_version` em `compliance_findings`. Preencher no `savePayrollRun` (SHA-256 de input + params) para replay determinístico e prova documental em autuação.
+### 4. Dependency Injection nos consumers
+Substituir imports diretos em:
+- `src/lib/data.functions.ts` — usa `runtime.get(company.country).providers.payroll`.
+- `src/lib/audit.functions.ts` — usa `providers.audit` (elimina DEBT-005).
+- `src/lib/calendar.functions.ts` — usa `providers.calendar` para templates de obligation.
+- `src/lib/contracts.functions.ts` — usa `providers.contracts`.
+- `src/routes/_authenticated/dashboard.tsx` + `audit.tsx` + `calendar.tsx` — chamam `runtime.supports(...)` antes de renderizar cards de THR/BPJS/etc.
 
----
+### 5. Event Bus oficial
+- Estender `src/lib/events/bus.ts` para importar o catálogo do SDK (`sdk/events.ts`).
+- Emitir eventos nas mutations que hoje não emitem (fecha DEBT-001):
+  - `finalizePayrollRun` → `PayrollCalculated@1` + `PayrollFinalized@1`.
+  - `upsertEmployee` → `EmployeeCreated@1` / `EmployeeUpserted@1`.
+  - `updateObligationStatus` → `ObligationStatusChanged@1`.
+  - `upsertContract` → `ContractChanged@1`; scheduler detector emite `ContractExpired@1`.
+  - `runComplianceAudit` → `AuditCompleted@1` + `RuleFailed@1` por finding crítico.
+- Handler default assina `ComplianceUpdated@1` para invalidar `companies.score_cache` (fecha DEBT-007).
 
-## H2 — Contratos de plataforma (o eixo mais valioso)
+### 6. "Marketplace" interno (UI mínima)
+- Nova rota `/settings/country-packs` (só leitura + toggle install/uninstall no runtime em memória — persistência real fica para depois).
+- Lista packs disponíveis com badge de versão, capabilities suportadas, status de compatibilidade.
+- Stub `malaysiaPack` (manifest `0.1.0`, sem providers) só para provar multi-pack (fecha DEBT-004).
 
-Transforma o Compliance OS em plataforma multi-país. Sem esta camada, MY/SG/PH exigem edições espalhadas.
+### 7. Governance (`docs/governance/`)
+Documentos novos, curtos e opinativos:
+- `ADR-0001-compliance-sdk.md` — decisão desta sprint.
+- `ADR-0002-event-catalog.md` — versionamento `@N` de eventos.
+- `country-pack-spec.md` — contrato que cada pack deve implementar.
+- `contribution-guide.md` — como abrir novo pack (MY/SG/PH).
+- `release-process.md` — semver de Core vs. Pack.
+- `security-policy.md` — RLS, hashing, service-role rules (referencia o que já existe).
+- `api-version-policy.md` — regras de `/api/public/v1` + sunset.
+- `migration-policy.md` — como migrar params sem deploy (referencia DEBT-009).
+- Atualizar `docs/tech-debt.md` marcando DEBT-001/004/005/007 fechados.
 
-5. **`CountryPack` interface** em `src/lib/engines/types.ts`:
-   ```
-   interface CountryPack {
-     code: 'ID' | 'MY' | 'SG' | ...;
-     rulesetVersion: string;    // ex: 'ID-2024.11.01'
-     params: Record<string, unknown>;
-     taxEngine: (input) => TaxResult;
-     bpjsEngine?: (input) => SocialResult;
-     thrEngine?: (input) => ThrResult;
-     complianceRules: ComplianceRule[];
-   }
-   ```
-6. **Registry** `src/lib/engines/registry.ts`: `registerPack(pack)`, `getPack(code)`. Registrar `ID` no bootstrap. Refatorar `engines/compliance.ts` e `audit.functions.ts` para receber `pack` em vez de importar `ID_PARAMS` direto. Nenhuma UI depende de engines (confirmado — engines são puros).
+## Fora de escopo
+- Persistência real de instalação de packs (marketplace real).
+- Escrever regras de MY/SG/PH (só stub vazio).
+- Loader de `country.yaml` do disco — o manifest fica em TS por enquanto (spec documentada em YAML no `country-pack-spec.md`).
+- Qualquer mudança em auth, UI theming, i18n, ou motores de cálculo em si.
 
-7. **Event Bus in-process** `src/lib/events/bus.ts` com tipos versionados: `PayrollFinalized@1`, `EmployeeUpserted@1`, `ObligationStatusChanged@1`, `ContractChanged@1`. Handlers async (recompute score, log de auditoria, invalidação de cache). Interface pronta para trocar por Postgres `NOTIFY` / `pg_net` sem tocar em callers.
+## Notas técnicas
 
-8. **Versionamento de DTOs**: toda resposta pública ganha `schemaVersion: '1'` + `rulesetVersion` do pack usado. Payloads internos idem.
+```text
+src/
+├── sdk/                         # contratos puros, sem I/O
+│   ├── Capability.ts
+│   ├── CountryPack.ts
+│   ├── manifest.ts
+│   ├── version.ts
+│   ├── errors.ts
+│   ├── events.ts
+│   ├── runtime.ts
+│   └── providers/
+│       ├── PayrollProvider.ts
+│       ├── TaxProvider.ts
+│       ├── BenefitsProvider.ts
+│       ├── CalendarProvider.ts
+│       ├── ContractProvider.ts
+│       ├── RuleProvider.ts
+│       └── AuditProvider.ts
+├── packs/
+│   ├── indonesia/…              # reimplementa ID via SDK
+│   └── malaysia/manifest.ts     # stub
+├── lib/engines/*                # shims @deprecated → SDK
+└── docs/governance/*.md
+```
 
-9. **`/api/public/v1/*`**: mover `calculate-tax` e `calculate-bpjs` para `/v1/`. Manter `/api/public/calculate-*` como alias com header `Deprecation: true` + `Sunset` (90 dias). OpenAPI `1.0.0` publicado em `/api/public/v1/openapi.json`.
+Compatibilidade: `engines/registry.ts::getPack` mantém API pública durante a migração — internamente delega ao `CountryRuntime`. Nenhuma tabela nova, nenhuma migração SQL nesta sprint.
 
----
-
-## H3 — Segurança das APIs públicas
-
-Agora que `/v1` está estável, blindar.
-
-10. **API Keys**: tabela `api_keys (id, company_id, hashed_key, prefix, scopes[], monthly_quota, created_at, revoked_at, last_used_at)` + `api_usage (key_id, ts, endpoint, latency_ms, status)`. Chaves formato `sk_live_...`; armazenar apenas hash SHA-256 + prefixo para exibição. Middleware em `src/lib/apiAuth.ts` valida `Authorization: Bearer sk_...`.
-
-11. **Quotas e rate limit**: contador diário/mensal em `api_usage`; bloqueio 429 acima da quota. Rate-limit por IP para endpoint demo (sem key) via token bucket em memória (interface trocável por Redis/KV).
-
-12. **CORS refinado**: `Allow-Origin: *` apenas para endpoints demo sem key; endpoints com key ecoam o origin da chave (allowlist por chave). Preflight explícito.
-
-13. **Validação estrita**: limites numéricos (`monthlyGross <= 1e12`), tamanho máximo de body 8KB, rejeitar payload não-JSON com 415.
-
-Nota: gestão de keys via seed SQL nesta fase; UI de gestão fica fora do escopo (não é módulo de negócio, é operacional — pode entrar num H6 futuro).
-
----
-
-## H4 — Observabilidade
-
-14. **Métricas estruturadas** `src/lib/observability/metrics.ts`: `timed(name, fn)` e `counter(name, tags)`. Instrumentar `calculateTax`, `calculateBpjs`, `evaluateCompany`, `runComplianceAudit`, cada `createServerFn` mutador. Tabela `metrics_events (ts, name, tags jsonb, value_ms, trace_id)` + view SQL agregada por hora.
-
-15. **Correlation ID**: gerar/propagar `x-request-id` no `requestMiddleware` já existente em `src/start.ts`; incluir em todo log.
-
-16. **Structured logging**: substituir `console.error` por logger JSON (`{ level, ts, trace_id, span, engine, ruleset_version, err }`).
-
-17. **Cache de score**: memoize `evaluateCompany` por `(company_id, employees_hash)` no request + coluna `score_cache jsonb` em `companies`, invalidada por eventos do H2 (`EmployeeUpserted`, `PayrollFinalized`, `ObligationStatusChanged`). Métrica hit/miss.
-
-18. **Health endpoint** `/api/public/health` — retorna `{ status, db_latency_ms, ruleset_versions }`, sem PII, para monitoring externo.
-
----
-
-## H5 — Relatório de débito técnico
-
-19. `docs/tech-debt.md` classificando cada item pendente pós-hardening (P0/P1/P2), com impacto, esforço, risco, arquivos referenciados e proposta de sprint. Inclui: gestão UI de API keys, migração do bus para pg_net/NOTIFY, backend de rate-limit distribuído, cobertura de pack MY/SG, testes de propriedade dos engines, políticas de retenção de `api_usage`/`metrics_events`, revisão de índices após 30 dias de produção via `pg_stat_statements`.
-
----
-
-## Entregáveis por arquivo
-
-- **Migrações** (4): índices; RLS refinada + role auditor; hashes + constraints; api_keys/api_usage/metrics_events.
-- **Novos**: `src/lib/engines/types.ts`, `registry.ts`; `src/lib/events/bus.ts`; `src/lib/observability/{metrics,logger,traceId}.ts`; `src/lib/apiAuth.ts`; `src/routes/api/public/v1/{calculate-tax,calculate-bpjs,openapi[.]json,health}.ts`; `docs/tech-debt.md`.
-- **Refatorados**: `engines/compliance.ts` (recebe pack), `engines/indonesia.ts` (exporta pack via registry), `data.functions.ts` / `calendar.functions.ts` / `contracts.functions.ts` (emit eventos + hash), `audit.functions.ts` (usa registry + métricas), `openapiSpec.ts` (v1 + auth scheme + `rulesetVersion`), `apiCors.ts` (allowlist), rotas `/api/public/calculate-*` (aliases deprecated).
-- **UI**: nenhuma mudança de negócio; painel `/audit` mostra badge `rulesetVersion` (cosmético).
-
-## Fora do escopo
-
-Nenhum módulo novo (T&A, Portal, Ciclos, Offboarding permanecem no roadmap Sprint 8+). Sem UI de gestão de API keys. Sem troca do bus para infra externa.
-
-Confirme e sigo executando H1 → H2 → H3 → H4 → H5.
+Ordem de execução: SDK → Runtime → pack ID reescrito → shims → DI nos consumers → eventos → UI de packs → governance/docs → typecheck.
