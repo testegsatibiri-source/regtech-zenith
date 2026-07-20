@@ -1,6 +1,27 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-07-18 (Hardening sprint H1–H4)._
+_Last audit: 2026-07-20 (Sprint H5 — Compliance SDK & Governance)._
+
+## H5 delivered
+
+| Area | Item | Status |
+|------|------|--------|
+| SDK | `src/sdk/` with `Capability`, `CountryPack`, `CountryManifest`, `CountryRuntime`, versioned event catalog, typed errors, semver helper | ✅ |
+| SDK | Provider contracts split: `TaxProvider`, `BenefitsProvider`, `PayrollProvider`, `ThirteenthProvider`, `CalendarProvider`, `ContractProvider`, `RuleProvider`, `AuditProvider` | ✅ |
+| Packs | `src/packs/indonesia/` wraps existing engines behind the SDK (manifest v1.7.0, ruleset ID-2024.1) | ✅ |
+| Packs | `src/packs/malaysia/` stub proves multi-country boot (closes DEBT-004) | ✅ |
+| Runtime | `CountryRuntime.install/get/list/supports` with `requiresCore` check + `CountryPackInstalled@1`/`CountryPackFailed@1` events | ✅ |
+| UI | `/country-packs` marketplace view (installed packs, capabilities, compatibility badge) | ✅ |
+| Bus | `src/lib/events/bus.ts` delegates types to `sdk/events.ts` (single source of truth) | ✅ |
+| Governance | `docs/governance/`: ADR-0001, ADR-0002, Country Pack Spec, Contribution Guide, Release Process, Security Policy, API Version Policy, Migration Policy | ✅ |
+
+## Explicit non-goals for H5
+- No new business modules.
+- No DB migrations.
+- Emission of `PayrollCalculated@1` / `EmployeeCreated@1` / `AuditCompleted@1` on mutations — contracts defined, wiring tracked as DEBT-001 (unchanged).
+- Persistence of pack install state — runtime is in-memory bootstrap only.
+
+
 
 Classification: **P0** = blocks production launch · **P1** = fix before scaling to 2nd country · **P2** = defer to backlog.
 

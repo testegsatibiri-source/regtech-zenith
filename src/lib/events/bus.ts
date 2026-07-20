@@ -1,13 +1,9 @@
-// H2 — In-process Event Bus with versioned event types.
-// Interface is intentionally minimal so it can be swapped for
-// Postgres NOTIFY / pg_net / a queue without touching callers.
+// H2/H5 — In-process Event Bus. Types delegated to the SDK event catalog.
 import { getLogger } from "@/lib/observability/logger";
+import type { SdkEvent } from "@/sdk/events";
 
-export type DomainEvent =
-  | { type: "PayrollFinalized@1"; companyId: string; runId: string; rulesetVersion: string; ts: string }
-  | { type: "EmployeeUpserted@1"; companyId: string; employeeId: string; ts: string }
-  | { type: "ObligationStatusChanged@1"; companyId: string; obligationId: string; status: string; ts: string }
-  | { type: "ContractChanged@1"; companyId: string; contractId: string; ts: string };
+export type DomainEvent = SdkEvent;
+
 
 export type EventHandler<E extends DomainEvent = DomainEvent> = (event: E) => Promise<void> | void;
 
