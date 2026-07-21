@@ -4,7 +4,7 @@
 import { CountryRuntime } from "@/sdk";
 import type { InstalledPack, HealthReport } from "@/sdk";
 import { CORE_VERSION } from "@/sdk";
-import { SDK_VERSION } from "@/sdk/version";
+const SDK_VERSION = CORE_VERSION; // SDK versioning tracks CORE for now (see architecture-freeze.md).
 import type { PlatformContext } from "./context";
 import { permissionService } from "../permissionService";
 import { auditService } from "./audit";
@@ -50,6 +50,7 @@ export interface PackDetailDTO extends PackSummaryDTO {
 function packToSummary(rec: InstalledPack): PackSummaryDTO {
   const m = rec.pack.manifest;
   const sig = m.signature ?? null;
+  const provides = [...(m.provides ?? m.engines ?? [])];
   return {
     country: m.country,
     name: m.name,
@@ -58,11 +59,11 @@ function packToSummary(rec: InstalledPack): PackSummaryDTO {
     rulesetVersion: m.rulesetVersion,
     status: rec.status,
     reason: rec.reason,
-    provides: [...(m.provides ?? m.capabilities ?? [])],
+    provides,
     requires: [...(m.requires ?? [])],
-    capabilities: [...(m.capabilities ?? m.provides ?? [])],
+    capabilities: provides,
     signature: sig ? { publisher: sig.publisher, algo: sig.algo, checksum: sig.checksum } : null,
-    languages: [...(m.languages ?? [])],
+    languages: [...(m.supportedLanguages ?? [])],
     requiresCore: m.requiresCore,
   };
 }
