@@ -4,7 +4,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { ID_PARAMS } from "./countryPacks";
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
+import type { IndonesiaParams } from "./countryPacks";
 import { evaluateCompany, type Finding } from "./engines/compliance";
 
 export type AuditSeverity = "critical" | "high" | "medium" | "info";
@@ -145,7 +147,9 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     const insights: AuditInsight[] = [];
 
     // ---- Minimum wage (UMP) ----
-    const umpJakarta = ID_PARAMS.minimumWage["DKI Jakarta"];
+    const pack = CountryRuntime.get("ID");
+    const params = pack.params as unknown as IndonesiaParams;
+    const umpJakarta = params.minimumWage["DKI Jakarta"];
     const belowUmp = emps.filter((e) => Number(e.base_salary) < umpJakarta);
     if (belowUmp.length) {
       insights.push({
@@ -195,7 +199,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     // ---- Overtime (Omnibus Law) ----
     const otViolations = emps.filter((e) => {
       const h = Number((e.country_metadata as Record<string, unknown> | null)?.weekly_overtime_hours ?? 0);
-      return h > ID_PARAMS.overtime.maxPerWeek;
+      return h > params.overtime.maxPerWeek;
     });
     if (otViolations.length) {
       const dept = otViolations.reduce<Record<string, number>>((a, e) => {
