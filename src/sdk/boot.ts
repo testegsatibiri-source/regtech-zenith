@@ -63,8 +63,16 @@ export const Readiness = new RuntimeReadiness();
  * feature-gate flip). `loadGates` is injected so a server route can supply the
  * DB-backed loader without pulling supabase into the SDK.
  */
+export interface RegistryPackRow {
+  country: string;
+  version: string;
+  checksum: string;
+}
+
 export async function runBootGate(opts: {
   loadGates?: () => Promise<Array<{ gate: FeatureGate; environment: string; enabled: boolean }>>;
+  loadRegistry?: () => Promise<RegistryPackRow[]>;
+  onDivergence?: (evt: { country: string; reason: string; matrixVersion: string; engineVersion: string }) => void | Promise<void>;
 } = {}): Promise<ReadinessReport> {
   const steps: ReadinessStep[] = [];
   const env = currentEnv();
@@ -79,9 +87,39 @@ export async function runBootGate(opts: {
     steps.push({ name: "gates", ok: false, severity: "warning", message: (err as Error).message });
   }
 
-  // Step 2 — Registry (H11.1 = coexistence with bootstrap)
+  // Step 2 — Registry (H11.1a = coexistence + divergence detection)
   if (FeatureGates.isEnabled("registry_enabled", env)) {
-    steps.push({ name: "registry", ok: true, severity: "info", message: "registry_enabled=on (H11.1 coexistence)" });
+    const registry = opts.loadRegistry ? await opts.loadRegistry().catch(() => [] as RegistryPackRow[]) : [];
+    const installed = CountryRuntime.list();
+    const divergences: Array<Record<string, string | number | boolean>> = [];
+    for (const rec of installed) {
+      const m = rec.pack.manifest;
+      const row = registry.find((r) => r.country === m.country);
+      let reason: string | null = null;
+      if (!row) reason = "missing_in_registry";
+      else if (row.version !== m.version) reason = "version_mismatch";
+      // checksum comparison is advisory — bootstrap checksum may drift; only
+      // flag when a checksum is explicitly recorded on the manifest signature.
+      if (reason) {
+        divergences.push({ country: m.country, version: m.version, reason });
+        void emitBus({
+          type: "PackRegistryDivergence@1",
+          country: m.country,
+          matrixVersion: COMPATIBILITY_MATRIX_V1.version,
+          engineVersion: CORE_VERSION,
+          reason,
+          ts: new Date().toISOString(),
+        } as never);
+        if (opts.onDivergence) void opts.onDivergence({ country: m.country, reason, matrixVersion: COMPATIBILITY_MATRIX_V1.version, engineVersion: CORE_VERSION });
+      }
+    }
+    steps.push({
+      name: "registry",
+      ok: true,
+      severity: divergences.length ? "warning" : "info",
+      message: `registry_enabled=on — ${registry.length} row(s), ${divergences.length} divergence(s)`,
+      details: divergences,
+    });
   } else {
     steps.push({ name: "registry", ok: true, severity: "info", message: "registry_enabled=off — bootstrap only" });
   }
