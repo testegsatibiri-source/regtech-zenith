@@ -3,7 +3,7 @@
 // operators/auditors/CTOs — not a customer app view.
 import { createFileRoute, Outlet, Link, redirect, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Package, Rocket, Sliders, Flag, ClipboardList, ShieldAlert, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, Rocket, Sliders, Flag, ClipboardList, ShieldAlert, LogOut, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -35,6 +35,7 @@ function PlatformLayout() {
 
   const nav = [
     { to: "/platform", label: "Overview", icon: LayoutDashboard },
+    { to: "/platform/readiness", label: "Readiness", icon: Activity },
     { to: "/platform/packs", label: "Country Packs", icon: Package },
     { to: "/platform/releases", label: "Release Center", icon: Rocket },
     { to: "/platform/parameters", label: "Parameters", icon: Sliders },
