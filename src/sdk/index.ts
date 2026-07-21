@@ -25,3 +25,16 @@ export type { CalendarProvider, ObligationTemplate } from "./providers/CalendarP
 export type { ContractProvider, ContractLike, ContractFinding } from "./providers/ContractProvider";
 export type { RuleProvider } from "./providers/RuleProvider";
 export type { AuditProvider, AuditHeuristic, AuditContext } from "./providers/AuditProvider";
+// H10 additions
+export type { ConfigProvider, ConfigContext, ConfigValue } from "./config";
+export { ConfigService, StaticConfigProvider, ConfigMissing } from "./config";
+export type { TrustPolicy, SigningCapability } from "./trust-policy";
+export { TRUST_POLICIES, currentTrustPolicy } from "./trust-policy";
+export type { TrustStore, TrustedKey } from "./trust-store";
+export { MemoryTrustStore } from "./trust-store";
+export type { PackSignatureRecord, VerificationResult } from "./signing";
+export { verifyEd25519 } from "./signing";
+export type { CompatibilityReport, CompatCheck, CompatibilityInput } from "./compatibility";
+export { CompatibilityService, compatibilityService } from "./compatibility";
+export type { PackState, TransitionGuard } from "./lifecycle";
+export { canTransition, guardsFor, GUARDS } from "./lifecycle";
