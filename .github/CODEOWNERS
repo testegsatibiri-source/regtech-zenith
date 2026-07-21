@@ -1,0 +1,34 @@
+# CODEOWNERS — mechanical enforcement of docs/governance/permission-matrix.md
+#
+# Placeholder handles (@cto-global, @country-cto-id, ...) are wired to real
+# GitHub teams when the organisation is provisioned. Order matters: the LAST
+# matching rule wins.
+
+# --- Default fallback ---
+*                                       @cto-global
+
+# --- Core ---
+/src/lib/engines/                       @cto-global
+/src/lib/observability/                 @cto-global
+/src/lib/events/                        @cto-global
+/src/lib/apiAuth.ts                     @cto-global
+/src/lib/apiCors.ts                     @cto-global
+/src/router.tsx                         @cto-global
+/src/start.ts                           @cto-global
+/src/routes/                            @cto-global
+
+# --- SDK & Runtime (frozen surface, see architecture-freeze.md) ---
+/src/sdk/                               @cto-global @sdk-maintainers
+
+# --- Country Packs ---
+/src/packs/indonesia/                   @country-cto-id
+/src/packs/philippines/                 @country-cto-ph
+/src/packs/malaysia/                    @country-cto-my
+
+# --- Governance & architecture (extra protection layer) ---
+/docs/governance/                       @cto-global @ceo
+/docs/architecture/                     @cto-global @ceo
+/docs/adr/                              @cto-global @ceo
+
+# --- CI / workflows / repo config ---
+/.github/                               @cto-global
