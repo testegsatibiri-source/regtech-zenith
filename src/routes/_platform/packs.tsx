@@ -101,9 +101,9 @@ function PackDetailPanel({ country, onClose }: { country: string; onClose: () =>
               Re-check
             </Button>
           </div>
-          {health?.details ? (
+          {health?.checks ? (
             <pre className="mt-2 max-h-40 overflow-auto rounded bg-muted p-2 text-xs">
-              {JSON.stringify(health.details, null, 2)}
+              {JSON.stringify(health.checks, null, 2)}
             </pre>
           ) : null}
         </section>
