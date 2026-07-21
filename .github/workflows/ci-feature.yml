@@ -1,0 +1,49 @@
+name: CI · Feature
+
+on:
+  pull_request:
+    branches: [develop]
+
+concurrency:
+  group: ci-feature-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bunx tsgo --noEmit
+
+      - name: Lint
+        run: bunx eslint .
+
+      - name: Unit tests
+        run: bun test
+
+      - name: Country pack conformance
+        run: bun test src/packs/
+
+      - name: SDK validator + testkit
+        run: bun test src/sdk/
+
+      - name: Build (dry)
+        run: bun run build
