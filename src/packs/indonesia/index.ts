@@ -1,7 +1,10 @@
-// H5/H6 — Indonesia CountryPack (SDK). Providers declare `version`; manifest
-// carries the expanded H6 shape (provides/requires/events/features/signature/…).
+// H5/H6/H11.1a — Indonesia CountryPack. v1.9.0 with:
+//   • paramsVersion 2026.1 (TER B/C tables + UMP 2026)
+//   • interfaceVersion 1.0.0 (frozen)
+//   • signatureBlock (author + platform countersign)
+//   • ConfigService-driven params
 import type { CountryPack, Providers, HealthReport } from "@/sdk/CountryPack";
-import type { CountryManifest } from "@/sdk/manifest";
+import type { CountryManifest, SignatureBlock } from "@/sdk/manifest";
 import type { Capability } from "@/sdk/Capability";
 import type { TaxProvider } from "@/sdk/providers/TaxProvider";
 import type { BenefitsProvider } from "@/sdk/providers/BenefitsProvider";
@@ -12,25 +15,37 @@ import type { ContractProvider } from "@/sdk/providers/ContractProvider";
 import type { RuleProvider } from "@/sdk/providers/RuleProvider";
 import type { AuditProvider } from "@/sdk/providers/AuditProvider";
 
-// Pack-internal engines (owned by this pack, not imported by any other pack).
 import { ID_PARAMS } from "@/lib/countryPacks";
 import { calculateTax, calculateBpjs, calculateThr, buildPayslip } from "@/lib/engines/indonesia";
 import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
-import { ID_OBLIGATIONS, computeDueDate } from "@/lib/obligations.catalog";
+import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
+
+import { TER_TABLES } from "./params/ter-tables";
+import { thrDueDate } from "./params/eid-al-fitr";
+import { buildIndonesiaParamsMap } from "./params";
+import { ID_SIGNATURE_BLOCK } from "./signature";
+
+// Eagerly register the THR calendar resolver so obligations.catalog can
+// answer due dates without waiting on a dynamic import.
+registerThrDueResolver(thrDueDate);
 
 const PROVIDES: Capability[] = [
   "payroll", "tax", "benefits", "thirteenth", "overtime",
   "calendar", "contracts", "audit", "rules",
 ];
 
+const RULESET_VERSION = "ID-2026.1";
+const PACK_VERSION = "1.9.0";
+
 const manifest: CountryManifest = {
   country: "ID",
   name: "Indonesia",
   currency: "IDR",
-  version: "1.8.0",
-  rulesetVersion: `ID-${ID_PARAMS.version}`,
-  engines: PROVIDES,   // legacy alias — mirrors provides
+  version: PACK_VERSION,
+  rulesetVersion: RULESET_VERSION,
+  interfaceVersion: "1.0.0",
+  engines: PROVIDES,
   provides: PROVIDES,
   requires: [],
   events: {
@@ -38,9 +53,10 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["ter-2024", "thr", "bpjs"],
+  features: ["ter-2024", "thr", "bpjs", "ump-2026"],
   supportedLanguages: ["id", "en"],
   requiresCore: ">=2.0.0",
+  signatureBlock: ID_SIGNATURE_BLOCK as SignatureBlock,
 };
 
 // ---- Providers ----
@@ -48,7 +64,7 @@ const manifest: CountryManifest = {
 const tax: TaxProvider = {
   version: "1.0.0",
   calculate: (input) => {
-    const r = calculateTax(input);
+    const r = calculateTax({ ...input, tables: TER_TABLES });
     return { category: r.category, rate: r.rate, tax: r.tax, surcharge: r.npwpSurcharge };
   },
 };
@@ -72,7 +88,7 @@ const thirteenth: ThirteenthProvider = {
 const payroll: PayrollProvider = {
   version: "1.0.0",
   buildPayslip: (input) => {
-    const p = buildPayslip(input);
+    const p = buildPayslip({ ...input, tables: TER_TABLES });
     return {
       gross: p.gross,
       tax: { category: p.tax.category, rate: p.tax.rate, tax: p.tax.tax, surcharge: p.tax.npwpSurcharge },
@@ -159,9 +175,9 @@ function health(): HealthReport {
     { name: "ruleset.version.present", ok: !!manifest.rulesetVersion },
     { name: "calendar.templates.non-empty", ok: (calendar.templates()?.length ?? 0) > 0 },
     { name: "rules.non-empty", ok: (rules.rules()?.length ?? 0) > 0 },
+    { name: "signature.author.present", ok: !!manifest.signatureBlock?.author?.keyId },
   ] as { name: string; ok: boolean; message?: string }[];
 
-  // Live smoke test: engines don't throw on a canonical input.
   try {
     tax.calculate({ monthlyGross: 10_000_000, maritalStatus: "TK/0", hasNpwp: true });
     checks.push({ name: "tax.calculate.smoke", ok: true });
@@ -174,6 +190,18 @@ function health(): HealthReport {
   } catch (err) {
     checks.push({ name: "benefits.calculate.smoke", ok: false, message: (err as Error).message });
   }
+  try {
+    contracts.validate({ contract_type: "PKWTT", start_date: "2024-01-01", status: "active" } as never);
+    checks.push({ name: "contracts.validate.smoke", ok: true });
+  } catch (err) {
+    checks.push({ name: "contracts.validate.smoke", ok: false, message: (err as Error).message });
+  }
+  try {
+    thirteenth.calculate({ monthlySalary: 5_000_000, monthsOfService: 12 });
+    checks.push({ name: "thirteenth.calculate.smoke", ok: true });
+  } catch (err) {
+    checks.push({ name: "thirteenth.calculate.smoke", ok: false, message: (err as Error).message });
+  }
 
   const failing = checks.filter((c) => !c.ok);
   const status: HealthReport["status"] = failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
@@ -182,7 +210,10 @@ function health(): HealthReport {
 
 export const indonesiaPack: CountryPack = {
   manifest,
-  params: ID_PARAMS as unknown as Record<string, unknown>,
+  params: {
+    ...(ID_PARAMS as unknown as Record<string, unknown>),
+    ...buildIndonesiaParamsMap(),
+  },
   providers,
   supports: (c: Capability) => PROVIDES.includes(c),
   health,
