@@ -1,9 +1,9 @@
-// DEPRECATED — kept as alias to /api/public/v1/calculate-bpjs for 90 days.
+// H2/H3/H6 — DEPRECATED alias for /api/public/v1/calculate-bpjs (sunset 2026-10-15).
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { calculateBpjs } from "@/lib/engines/indonesia";
 import { API_CORS_HEADERS, jsonResponse } from "@/lib/apiCors";
-import { getPack } from "@/lib/engines/registry";
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
 
 const inputSchema = z.object({ salary: z.number().nonnegative().max(1e12) });
 
@@ -22,17 +22,19 @@ export const Route = createFileRoute("/api/public/calculate-bpjs")({
         try { raw = await request.json(); } catch { return jsonResponse({ error: "Invalid JSON body" }, 400, DEPRECATION_HEADERS); }
         const parsed = inputSchema.safeParse(raw);
         if (!parsed.success) return jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422, DEPRECATION_HEADERS);
-        const result = calculateBpjs(parsed.data.salary);
-        const pack = getPack("ID");
+
+        const pack = CountryRuntime.get("ID");
+        const benefits = pack.providers.benefits!;
+        const result = benefits.calculate({ salary: parsed.data.salary });
         return jsonResponse({
           schemaVersion: "1",
           engine: "BPJS",
-          country: "ID",
-          rulesetVersion: pack.rulesetVersion,
+          country: pack.manifest.country,
+          rulesetVersion: pack.manifest.rulesetVersion,
           deprecated: true,
           successor: "/api/public/v1/calculate-bpjs",
           input: parsed.data,
-          result: { ...result, currency: "IDR" },
+          result: { ...result, currency: pack.manifest.currency },
         }, 200, DEPRECATION_HEADERS);
       },
     },

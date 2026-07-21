@@ -5,7 +5,7 @@ import type { TaxCalcInput, BenefitsInput } from "@/sdk";
 export interface TaxCase {
   name: string;
   input: TaxCalcInput;
-  expected: { rate: number; taxMin?: number; taxMax?: number; surcharge?: number; category?: string };
+  expected: { rate?: number; taxMin?: number; taxMax?: number; surcharge?: number; category?: string };
 }
 
 export const ID_TAX_CASES: TaxCase[] = [

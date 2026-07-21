@@ -1,10 +1,12 @@
-// H2/H3 — Versioned public endpoint: POST /api/public/v1/calculate-tax
+// H2/H3/H6 — Versioned public endpoint: POST /api/public/v1/calculate-tax.
+// Uses CountryRuntime for pack + provider discovery (no direct pack imports).
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { MARITAL_STATUS } from "@/lib/countryPacks";
 import { API_CORS_HEADERS, corsHeadersFor, jsonResponse } from "@/lib/apiCors";
 import { authenticateRequest, recordApiUsage } from "@/lib/apiAuth";
-import { getPack } from "@/lib/engines/registry";
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
 import { timed } from "@/lib/observability/metrics";
 import { traceIdFromRequest } from "@/lib/observability/traceId";
 
@@ -43,26 +45,30 @@ export const Route = createFileRoute("/api/public/v1/calculate-tax")({
           return finish(jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422), 422);
         }
 
-        const pack = getPack(parsed.data.country);
-        const result = await timed("engine.tax", () => pack.taxEngine(parsed.data), {
-          country: pack.code,
+        const pack = CountryRuntime.get(parsed.data.country);
+        const tax = pack.providers.tax;
+        if (!tax) return finish(jsonResponse({ error: `No tax provider for ${pack.manifest.country}` }, 501), 501);
+
+        const result = await timed("engine.tax", () => tax.calculate(parsed.data), {
+          country: pack.manifest.country,
           trace_id: traceId,
         });
 
         const response = jsonResponse({
           schemaVersion: "1",
           engine: "PPh21-TER",
-          country: pack.code,
-          rulesetVersion: pack.rulesetVersion,
+          country: pack.manifest.country,
+          rulesetVersion: pack.manifest.rulesetVersion,
+          providerVersion: tax.version,
           input: parsed.data,
           result: {
             terCategory: result.category,
             effectiveRate: result.rate,
             npwpSurcharge: result.surcharge,
             tax: result.tax,
-            currency: pack.currency,
+            currency: pack.manifest.currency,
           },
-        }, 200, { "x-request-id": traceId, "x-ruleset-version": pack.rulesetVersion });
+        }, 200, { "x-request-id": traceId, "x-ruleset-version": pack.manifest.rulesetVersion });
         return finish(response, 200);
 
         async function finish(res: Response, status: number): Promise<Response> {
