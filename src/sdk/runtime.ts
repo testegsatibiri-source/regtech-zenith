@@ -137,6 +137,7 @@ class Runtime {
   /** Build a fresh ProviderContext for a pack. Cheap; safe to call per-invocation. */
   contextFor(code: string): ProviderContext {
     const pack = this.get(code);
+    const config = new ConfigService([new StaticConfigProvider(pack.params ?? {})]);
     return {
       country: pack.manifest.country,
       rulesetVersion: pack.manifest.rulesetVersion,
@@ -147,6 +148,7 @@ class Runtime {
         const capKey = capability as unknown as keyof Providers;
         return foreign.providers[capKey];
       },
+      config,
     };
   }
 
