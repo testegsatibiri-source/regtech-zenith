@@ -345,6 +345,9 @@ export type Database = {
           ok: boolean
           pack_country: string
           pack_version: string
+          published_report_ref: string | null
+          rejections: Json
+          source: string
         }
         Insert: {
           checks?: Json
@@ -356,6 +359,9 @@ export type Database = {
           ok: boolean
           pack_country: string
           pack_version: string
+          published_report_ref?: string | null
+          rejections?: Json
+          source?: string
         }
         Update: {
           checks?: Json
@@ -367,8 +373,19 @@ export type Database = {
           ok?: boolean
           pack_country?: string
           pack_version?: string
+          published_report_ref?: string | null
+          rejections?: Json
+          source?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "compatibility_reports_published_report_ref_fkey"
+            columns: ["published_report_ref"]
+            isOneToOne: false
+            referencedRelation: "pack_registry"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       compliance_findings: {
         Row: {
@@ -977,6 +994,7 @@ export type Database = {
           capabilities: string[]
           created_at: string
           id: string
+          key_id: string | null
           provider: string
           public_key: string
           publisher: string
@@ -988,6 +1006,7 @@ export type Database = {
           capabilities?: string[]
           created_at?: string
           id?: string
+          key_id?: string | null
           provider?: string
           public_key: string
           publisher: string
@@ -999,6 +1018,7 @@ export type Database = {
           capabilities?: string[]
           created_at?: string
           id?: string
+          key_id?: string | null
           provider?: string
           public_key?: string
           publisher?: string
