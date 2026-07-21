@@ -142,15 +142,18 @@ export class CompatibilityService {
     }
 
     for (const s of signatures) {
-      const key = await store.find(s.signer, s.publicKey);
+      // H11.1a — prefer keyId lookup; fall back to (publisher, publicKey).
+      const key =
+        (store.findByKeyId && s.keyId ? await store.findByKeyId(s.keyId) : undefined) ??
+        (await store.find(s.signer, s.publicKey));
       if (!key) {
-        const msg = `unknown key for ${s.signer}`;
+        const msg = `unknown key for ${s.signer} (keyId=${s.keyId})`;
         checks.push(err("signatures", msg, "key_unknown"));
         rejections.push({ code: "key_unknown", message: msg, signer: s.signer });
         continue;
       }
       if (!key.active) {
-        const msg = `revoked key for ${s.signer}`;
+        const msg = `revoked key for ${s.signer} (keyId=${s.keyId})`;
         checks.push(err("signatures", msg, "key_revoked"));
         rejections.push({ code: "key_revoked", message: msg, signer: s.signer });
         continue;
@@ -161,7 +164,7 @@ export class CompatibilityService {
         rejections.push({ code: "capability_missing", message: msg, signer: s.signer });
         continue;
       }
-      const res = await verifyEd25519(bytes, s.signature, s.publicKey);
+      const res = await verifyEd25519(bytes, s.signature, key.publicKey);
       if (!res.verified) {
         if (res.reason === "crypto-unavailable") {
           checks.push(warn("signatures", `verification skipped (${res.reason})`));

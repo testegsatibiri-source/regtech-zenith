@@ -1,29 +1,11 @@
 // Indonesia Rule Engines: PPh 21 (TER), BPJS, THR + Compliance validators.
+// H11.1a — TER tables no longer embedded here; they arrive as parameters from
+// the Country Pack (StaticConfigProvider). Historical exports remain valid
+// because we resolve default tables from the pack params for legacy call sites.
 import { ID_PARAMS } from "../countryPacks";
+import { TER_TABLES, type TerTable } from "@/packs/indonesia/params/ter-tables";
 
 // ---------- Tax Engine: PPh 21 via TER (Tarif Efektif Rata-rata, PP 58/2023) ----------
-
-// TER Category A monthly effective-rate table [upperBound, rate]
-const TER_A: [number, number][] = [
-  [5400000, 0], [5650000, 0.0025], [5950000, 0.005], [6300000, 0.0075],
-  [6750000, 0.01], [7500000, 0.0125], [8550000, 0.015], [9650000, 0.0175],
-  [10050000, 0.02], [10350000, 0.0225], [10700000, 0.025], [11050000, 0.03],
-  [11600000, 0.035], [12500000, 0.04], [13750000, 0.05], [15100000, 0.06],
-  [16950000, 0.07], [19750000, 0.08], [24150000, 0.09], [26450000, 0.1],
-  [28000000, 0.11], [30050000, 0.12], [32400000, 0.13], [35400000, 0.14],
-  [39100000, 0.15], [43850000, 0.16], [47800000, 0.17], [51400000, 0.18],
-  [56300000, 0.19], [62200000, 0.2], [68600000, 0.21], [77500000, 0.22],
-  [89000000, 0.23], [103000000, 0.24], [125000000, 0.25], [157000000, 0.26],
-  [206000000, 0.27], [337000000, 0.28], [454000000, 0.29], [550000000, 0.3],
-  [695000000, 0.31], [910000000, 0.32], [1400000000, 0.33],
-];
-
-// Zero-tax thresholds per TER category (below this = 0%)
-const TER_ZERO: Record<"A" | "B" | "C", number> = {
-  A: 5400000,
-  B: 6200000,
-  C: 6600000,
-};
 
 export function terCategory(maritalStatus: string): "A" | "B" | "C" {
   const s = maritalStatus.toUpperCase();
@@ -32,18 +14,21 @@ export function terCategory(maritalStatus: string): "A" | "B" | "C" {
   return "C"; // K/3
 }
 
-export function terRate(monthlyGross: number, category: "A" | "B" | "C"): number {
-  if (monthlyGross <= TER_ZERO[category]) return 0;
-  for (const [bound, rate] of TER_A) {
+export function terRate(monthlyGross: number, category: "A" | "B" | "C", table?: TerTable): number {
+  const t = table ?? TER_TABLES[category];
+  if (monthlyGross <= t.zeroThreshold) return 0;
+  for (const [bound, rate] of t.brackets) {
     if (monthlyGross <= bound) return rate;
   }
-  return 0.34;
+  return t.topRate;
 }
 
 export interface TaxInput {
   monthlyGross: number;
   maritalStatus: string;
   hasNpwp?: boolean;
+  /** Optional injected TER tables (from ConfigService). Falls back to defaults. */
+  tables?: Record<"A" | "B" | "C", TerTable>;
 }
 export interface TaxResult {
   category: "A" | "B" | "C";
@@ -52,11 +37,11 @@ export interface TaxResult {
   npwpSurcharge: number;
 }
 
-export function calculateTax({ monthlyGross, maritalStatus, hasNpwp = true }: TaxInput): TaxResult {
+export function calculateTax({ monthlyGross, maritalStatus, hasNpwp = true, tables }: TaxInput): TaxResult {
   const category = terCategory(maritalStatus);
-  const rate = terRate(monthlyGross, category);
+  const table = (tables ?? TER_TABLES)[category];
+  const rate = terRate(monthlyGross, category, table);
   let tax = Math.round(monthlyGross * rate);
-  // No NPWP => 20% higher PPh 21
   const npwpSurcharge = hasNpwp ? 0 : Math.round(tax * 0.2);
   tax += npwpSurcharge;
   return { category, rate, tax, npwpSurcharge };
@@ -111,6 +96,7 @@ export interface PayslipInput {
   allowances?: number;
   maritalStatus: string;
   hasNpwp?: boolean;
+  tables?: Record<"A" | "B" | "C", TerTable>;
 }
 export interface Payslip {
   gross: number;
@@ -119,9 +105,9 @@ export interface Payslip {
   net: number;
   employerCost: number;
 }
-export function buildPayslip({ baseSalary, allowances = 0, maritalStatus, hasNpwp = true }: PayslipInput): Payslip {
+export function buildPayslip({ baseSalary, allowances = 0, maritalStatus, hasNpwp = true, tables }: PayslipInput): Payslip {
   const gross = baseSalary + allowances;
-  const tax = calculateTax({ monthlyGross: gross, maritalStatus, hasNpwp });
+  const tax = calculateTax({ monthlyGross: gross, maritalStatus, hasNpwp, tables });
   const bpjs = calculateBpjs(baseSalary);
   const net = gross - tax.tax - bpjs.employee.total;
   const employerCost = gross + bpjs.employer.total;

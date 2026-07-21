@@ -1,7 +1,7 @@
 // H5/H6 — Compliance SDK public surface.
 export type { Capability } from "./Capability";
 export { CAPABILITIES } from "./Capability";
-export type { CountryManifest, PackSignature, PackDependency } from "./manifest";
+export type { CountryManifest, PackSignature, PackDependency, SignatureEnvelope, SignatureBlock } from "./manifest";
 export type { CountryPack, Providers, HealthCheck, HealthReport } from "./CountryPack";
 export { CountryRuntime } from "./runtime";
 export type { InstalledPack, PackStatus } from "./runtime";
@@ -46,5 +46,5 @@ export type { CompatibilityMatrix, MatrixCheck, MatrixReport } from "./compatibi
 export { COMPATIBILITY_MATRIX_V1, checkMatrix, checkPackAgainstMatrix } from "./compatibility-matrix";
 export type { SignatureRejectionCode, SignatureRejection } from "./signature-rejection";
 export { SIGNATURE_REJECTION_LABELS } from "./signature-rejection";
-export type { ReadinessReport, ReadinessStatus, ReadinessStep } from "./boot";
+export type { ReadinessReport, ReadinessStatus, ReadinessStep, RegistryPackRow } from "./boot";
 export { runBootGate, getReadinessReport, Readiness } from "./boot";

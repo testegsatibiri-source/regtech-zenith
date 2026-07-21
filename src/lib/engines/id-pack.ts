@@ -3,21 +3,35 @@ import { ID_PARAMS } from "../countryPacks";
 import { calculateTax, calculateBpjs, calculateThr, terCategory } from "./indonesia";
 import type { CountryPack, ComplianceRule } from "./types";
 
+import { UMP_2026, UMP_FALLBACK } from "@/packs/indonesia/params/ump-2026";
+
+const UMP_BY_PROVINCE = new Map<string, number>(
+  [...UMP_2026, UMP_FALLBACK].map((e) => [e.province, e.amount]),
+);
+function resolveUmp(province: string | undefined | null): { amount: number; province: string; stale: boolean } {
+  if (province && UMP_BY_PROVINCE.has(province)) {
+    const entry = [...UMP_2026, UMP_FALLBACK].find((e) => e.province === province)!;
+    return { amount: entry.amount, province: entry.province, stale: !!entry.stale };
+  }
+  return { amount: UMP_FALLBACK.amount, province: "Other (fallback)", stale: false };
+}
+
 const rules: ComplianceRule[] = [
   {
     code: "ID-UMR-01",
     title: "Base salary ≥ Minimum Wage (UMP)",
     severity: "critical",
     weight: 30,
-    evaluate: (e, ctx) => {
-      const wages = (ctx.params.minimumWage ?? {}) as Record<string, number>;
-      const ump = wages["DKI Jakarta"] ?? wages.Other ?? 0;
+    evaluate: (e) => {
+      const meta = (e.country_metadata ?? {}) as Record<string, unknown>;
+      const province = (meta.province as string | undefined) ?? null;
+      const { amount: ump, province: resolved, stale } = resolveUmp(province);
       const ok = e.base_salary >= ump;
       return {
         passed: ok,
         message: ok
-          ? "Above regional minimum wage."
-          : `Base salary below UMP (${ump.toLocaleString("id-ID")}). Risk of Kemenaker sanction.`,
+          ? `Above ${resolved} UMP (${ump.toLocaleString("id-ID")})${stale ? " — using stale figure, DEBT-024" : ""}.`
+          : `Base salary below UMP for ${resolved} (${ump.toLocaleString("id-ID")}). Risk of Kemenaker sanction.`,
       };
     },
   },

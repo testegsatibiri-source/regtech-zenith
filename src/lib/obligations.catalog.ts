@@ -104,13 +104,31 @@ export const ID_OBLIGATIONS: ObligationTemplate[] = [
     category: "labor",
     frequency: "annual",
     base_legal: "PP 36/2021; Permenaker 6/2016",
-    // Eid al-Fitr 1447H falls on ~2026-03-20; THR due 7 days prior.
-    // Approximated; refined by the THR engine per year.
-    annualMonth: 3,
-    annualDay: 13,
+    // Due date resolved dynamically from the Eid al-Fitr calendar table
+    // (see @/packs/indonesia/params/eid-al-fitr). If the year is not
+    // seeded, computeDueDate marks it as needs_review.
     notes: "Must be paid at least 7 days before the religious holiday (Eid).",
   },
 ];
+
+// Deferred import to avoid a compile-time cycle between the shared catalog
+// and the Indonesia pack. Resolved lazily inside computeDueDate.
+type ThrDueResolver = (year: number) => string | null;
+let _thrDueResolver: ThrDueResolver | null = null;
+async function loadThrResolver(): Promise<ThrDueResolver> {
+  if (_thrDueResolver) return _thrDueResolver;
+  const mod = await import("@/packs/indonesia/params/eid-al-fitr");
+  _thrDueResolver = mod.thrDueDate;
+  return _thrDueResolver;
+}
+// Synchronous accessor used at boot; populated eagerly by the pack module.
+export function registerThrDueResolver(r: ThrDueResolver): void { _thrDueResolver = r; }
+
+export interface DueDateResult {
+  date: Date;
+  status: "resolved" | "needs_review";
+  reason?: string;
+}
 
 /** Build one materialised due date for a template within a given period. */
 export function computeDueDate(
@@ -118,14 +136,37 @@ export function computeDueDate(
   periodYear: number,
   periodMonth: number, // 1-12
 ): Date {
+  const r = computeDueDateWithStatus(tpl, periodYear, periodMonth);
+  return r.date;
+}
+
+export function computeDueDateWithStatus(
+  tpl: ObligationTemplate,
+  periodYear: number,
+  periodMonth: number,
+): DueDateResult {
+  if (tpl.code === "ID-THR") {
+    const resolver = _thrDueResolver;
+    const iso = resolver ? resolver(periodYear) : null;
+    if (iso) return { date: new Date(iso + "T00:00:00Z"), status: "resolved" };
+    // No entry → default to mid-March (guaranteed too-early) and flag review.
+    return {
+      date: new Date(Date.UTC(periodYear, 2, 15)),
+      status: "needs_review",
+      reason: `Eid al-Fitr calendar not seeded for ${periodYear}`,
+    };
+  }
   if (tpl.frequency === "annual" && tpl.annualMonth && tpl.annualDay) {
-    return new Date(Date.UTC(periodYear, tpl.annualMonth - 1, tpl.annualDay));
+    return { date: new Date(Date.UTC(periodYear, tpl.annualMonth - 1, tpl.annualDay)), status: "resolved" };
   }
   const offset = tpl.monthOffset ?? 0;
   const day = tpl.dueDay ?? 1;
-  const target = new Date(Date.UTC(periodYear, periodMonth - 1 + offset, day));
-  return target;
+  return { date: new Date(Date.UTC(periodYear, periodMonth - 1 + offset, day)), status: "resolved" };
 }
+
+// Ensure the resolver is registered as soon as this module is loaded on the
+// server (best-effort; no-op if the pack module is not part of the bundle).
+void loadThrResolver();
 
 /** Build the human-readable period label. */
 export function periodLabel(tpl: ObligationTemplate, year: number, month: number): string {
