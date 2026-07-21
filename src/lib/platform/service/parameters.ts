@@ -12,7 +12,8 @@ export interface RuntimeParametersDTO {
   country: string;
   rulesetVersion: string;
   packVersion: string;
-  params: Record<string, unknown>;
+  /** JSON-safe serialization of the runtime params snapshot. */
+  params: string;
   source: "country-pack";
 }
 
@@ -26,7 +27,7 @@ export const parametersService = {
       country,
       rulesetVersion: pack.manifest.rulesetVersion,
       packVersion: pack.manifest.version,
-      params: pack.params,
+      params: JSON.stringify(pack.params ?? {}),
       source: "country-pack",
     };
   },

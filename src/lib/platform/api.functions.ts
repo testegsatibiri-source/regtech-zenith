@@ -147,9 +147,9 @@ export const importParameters = createServerFn({ method: "POST" })
     z.object({
       country: CountryCode,
       parameterKey: z.string().min(1),
-      payload: z.any(),
+      payload: z.unknown(),
       notes: z.string().max(500).optional(),
-    }).parse(data),
+    }).parse(data) as { country: string; parameterKey: string; payload: unknown; notes?: string },
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId, {

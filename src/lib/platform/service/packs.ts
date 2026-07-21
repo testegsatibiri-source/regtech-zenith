@@ -26,8 +26,8 @@ export interface PackSummaryDTO {
 }
 
 export interface PackDetailDTO extends PackSummaryDTO {
-  manifest: unknown;
-  validation: InstalledPack["validation"] | null;
+  manifest: Record<string, unknown> | null;
+  validation: { errors: string[]; warnings: string[] } | null;
   installations: Array<{
     id: string;
     pack_version: string;
@@ -88,8 +88,10 @@ export const packsService = {
 
     return {
       ...packToSummary(rec),
-      manifest: rec.pack.manifest,
-      validation: rec.validation ?? null,
+      manifest: JSON.parse(JSON.stringify(rec.pack.manifest)) as Record<string, unknown>,
+      validation: rec.validation
+        ? { errors: [...rec.validation.errors], warnings: [...(rec.validation.warnings ?? [])] }
+        : null,
       installations: (installations ?? []).map((r) => ({
         id: r.id,
         pack_version: r.pack_version,
