@@ -292,6 +292,27 @@ export type Database = {
           },
         ]
       }
+      country_cto_scopes: {
+        Row: {
+          country_code: string
+          granted_at: string
+          granted_by: string | null
+          user_id: string
+        }
+        Insert: {
+          country_code: string
+          granted_at?: string
+          granted_by?: string | null
+          user_id: string
+        }
+        Update: {
+          country_code?: string
+          granted_at?: string
+          granted_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           base_salary: number
@@ -460,6 +481,134 @@ export type Database = {
         }
         Relationships: []
       }
+      pack_feature_flags: {
+        Row: {
+          country_code: string
+          created_at: string
+          effective_from: string | null
+          effective_to: string | null
+          enabled: boolean
+          environment: Database["public"]["Enums"]["pack_flag_environment"]
+          flag: string
+          id: string
+          rollout_percentage: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          enabled?: boolean
+          environment?: Database["public"]["Enums"]["pack_flag_environment"]
+          flag: string
+          id?: string
+          rollout_percentage?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          enabled?: boolean
+          environment?: Database["public"]["Enums"]["pack_flag_environment"]
+          flag?: string
+          id?: string
+          rollout_percentage?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      pack_installations: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          archived_at: string | null
+          archived_by: string | null
+          country_code: string
+          created_at: string
+          deprecated_at: string | null
+          deprecated_by: string | null
+          id: string
+          installed_by: string | null
+          installed_core_version: string | null
+          installed_from: Database["public"]["Enums"]["pack_install_source"]
+          installed_sdk_version: string | null
+          manifest_checksum: string | null
+          manifest_signature: string | null
+          notes: string | null
+          pack_version: string
+          released_at: string | null
+          released_by: string | null
+          rollback_of: string | null
+          runtime_version: string | null
+          status: Database["public"]["Enums"]["pack_installation_status"]
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          country_code: string
+          created_at?: string
+          deprecated_at?: string | null
+          deprecated_by?: string | null
+          id?: string
+          installed_by?: string | null
+          installed_core_version?: string | null
+          installed_from?: Database["public"]["Enums"]["pack_install_source"]
+          installed_sdk_version?: string | null
+          manifest_checksum?: string | null
+          manifest_signature?: string | null
+          notes?: string | null
+          pack_version: string
+          released_at?: string | null
+          released_by?: string | null
+          rollback_of?: string | null
+          runtime_version?: string | null
+          status?: Database["public"]["Enums"]["pack_installation_status"]
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          country_code?: string
+          created_at?: string
+          deprecated_at?: string | null
+          deprecated_by?: string | null
+          id?: string
+          installed_by?: string | null
+          installed_core_version?: string | null
+          installed_from?: Database["public"]["Enums"]["pack_install_source"]
+          installed_sdk_version?: string | null
+          manifest_checksum?: string | null
+          manifest_signature?: string | null
+          notes?: string | null
+          pack_version?: string
+          released_at?: string | null
+          released_by?: string | null
+          rollback_of?: string | null
+          runtime_version?: string | null
+          status?: Database["public"]["Enums"]["pack_installation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_installations_rollback_of_fkey"
+            columns: ["rollback_of"]
+            isOneToOne: false
+            referencedRelation: "pack_installations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payroll_items: {
         Row: {
           bpjs_employee: number
@@ -583,6 +732,51 @@ export type Database = {
           },
         ]
       }
+      platform_audit_log: {
+        Row: {
+          action: string
+          actor: string | null
+          at: string
+          component: string | null
+          correlation_id: string | null
+          country_code: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          payload: Json
+          request_id: string | null
+          target: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          at?: string
+          component?: string | null
+          correlation_id?: string | null
+          country_code?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          payload?: Json
+          request_id?: string | null
+          target?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          at?: string
+          component?: string | null
+          correlation_id?: string | null
+          country_code?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          payload?: Json
+          request_id?: string | null
+          target?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -604,6 +798,72 @@ export type Database = {
           email?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      regulatory_parameters: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          approved_at: string | null
+          approved_by: string | null
+          author: string | null
+          checksum: string | null
+          country_code: string
+          created_at: string
+          effective_from: string | null
+          effective_to: string | null
+          id: string
+          notes: string | null
+          parameter_key: string
+          payload: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["regulatory_parameter_status"]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          checksum?: string | null
+          country_code: string
+          created_at?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          id?: string
+          notes?: string | null
+          parameter_key: string
+          payload?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["regulatory_parameter_status"]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          checksum?: string | null
+          country_code?: string
+          created_at?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          id?: string
+          notes?: string | null
+          parameter_key?: string
+          payload?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["regulatory_parameter_status"]
+          updated_at?: string
+          version?: number
         }
         Relationships: []
       }
@@ -642,10 +902,39 @@ export type Database = {
         Returns: boolean
       }
       is_auditor: { Args: never; Returns: boolean }
+      is_country_cto: { Args: { _code: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
+      is_platform_auditor: { Args: never; Returns: boolean }
+      is_platform_operator: { Args: never; Returns: boolean }
       owns_company: { Args: { _company_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "manager" | "viewer" | "auditor"
+      app_role:
+        | "admin"
+        | "manager"
+        | "viewer"
+        | "auditor"
+        | "platform_admin"
+        | "country_cto"
+        | "platform_operator"
+        | "platform_auditor"
+      pack_flag_environment: "preview" | "production" | "all"
+      pack_install_source: "manual" | "pipeline" | "rollback" | "marketplace"
+      pack_installation_status:
+        | "draft"
+        | "candidate"
+        | "approved"
+        | "released"
+        | "deprecated"
+        | "archived"
+        | "rolled_back"
+      regulatory_parameter_status:
+        | "draft"
+        | "review"
+        | "approved"
+        | "active"
+        | "superseded"
+        | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -773,7 +1062,35 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "viewer", "auditor"],
+      app_role: [
+        "admin",
+        "manager",
+        "viewer",
+        "auditor",
+        "platform_admin",
+        "country_cto",
+        "platform_operator",
+        "platform_auditor",
+      ],
+      pack_flag_environment: ["preview", "production", "all"],
+      pack_install_source: ["manual", "pipeline", "rollback", "marketplace"],
+      pack_installation_status: [
+        "draft",
+        "candidate",
+        "approved",
+        "released",
+        "deprecated",
+        "archived",
+        "rolled_back",
+      ],
+      regulatory_parameter_status: [
+        "draft",
+        "review",
+        "approved",
+        "active",
+        "superseded",
+        "archived",
+      ],
     },
   },
 } as const
