@@ -18,7 +18,7 @@ export interface ReadinessStep {
   ok: boolean;
   severity: "error" | "warning" | "info";
   message?: string;
-  details?: unknown;
+  details?: Array<Record<string, string | number | boolean>>;
 }
 
 export interface ReadinessReport {
@@ -99,7 +99,7 @@ export async function runBootGate(opts: {
       ok: matrix.ok,
       severity: matrix.ok ? "info" : "error",
       message: `matrix v${matrix.matrixVersion}`,
-      details: matrix.checks,
+      details: matrix.checks.map((c) => ({ ...c })),
     });
   } else {
     steps.push({ name: "compatibility_matrix", ok: true, severity: "info", message: "gate off" });

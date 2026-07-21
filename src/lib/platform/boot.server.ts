@@ -26,7 +26,7 @@ export async function ensureBoot(): Promise<ReadinessReport> {
           environment: currentEnv(),
           runtime_version: CORE_VERSION,
           sdk_version: CORE_VERSION,
-          report: report as unknown as Record<string, unknown>,
+          report: JSON.parse(JSON.stringify(report)),
         });
       } catch {
         /* boot must not fail if persistence is transient */
