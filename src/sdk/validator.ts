@@ -8,6 +8,7 @@ import { CAPABILITIES } from "./Capability";
 import { CORE_VERSION, capabilitySatisfies, satisfies } from "./version";
 import { EXPECTED_INTERFACES } from "./interfaces";
 import { SDK_EVENT_TYPES, type SdkEventType } from "./events";
+import { SUPPORTED_PACK_INTERFACE_RANGE, PACK_INTERFACE_VERSION } from "./INTERFACE_VERSION";
 
 export interface ValidationReport {
   ok: boolean;
@@ -49,6 +50,17 @@ export function validatePack(pack: CountryPack): ValidationReport {
   // --- Core compat ---
   if (!satisfies(m.requiresCore, CORE_VERSION)) {
     errors.push(`requires core ${m.requiresCore}, running ${CORE_VERSION}`);
+  }
+
+  // --- H11-Freeze: Country Pack Interface version ---
+  if (m.interfaceVersion) {
+    if (!satisfies(SUPPORTED_PACK_INTERFACE_RANGE, m.interfaceVersion)) {
+      errors.push(
+        `manifest.interfaceVersion ${m.interfaceVersion} outside supported range ${SUPPORTED_PACK_INTERFACE_RANGE} (Core interface ${PACK_INTERFACE_VERSION})`,
+      );
+    }
+  } else {
+    warnings.push(`manifest.interfaceVersion missing — assume ${PACK_INTERFACE_VERSION}; will be required in H12`);
   }
 
   // --- provides ↔ providers coherence ---

@@ -20,7 +20,11 @@ export type SdkEvent =
   | { type: "CountryPackInstalled@1"; country: string; version: string; ts: string }
   | { type: "CountryPackValidated@1"; country: string; ok: boolean; errors: number; warnings: number; ts: string }
   | { type: "CountryPackFailed@1"; country: string; reason: string; ts: string }
-  | { type: "CountryPackHealthChecked@1"; country: string; status: "ok" | "warn" | "error"; ts: string };
+  | { type: "CountryPackHealthChecked@1"; country: string; status: "ok" | "warn" | "error"; ts: string }
+  // H11 boot / marketplace transition
+  | { type: "RuntimeBootCompleted@1"; status: "ready" | "degraded" | "failed" | "booting"; matrixVersion: string; ts: string }
+  | { type: "PackRegistryDivergence@1"; country: string; matrixVersion: string; engineVersion: string; reason: string; ts: string }
+  | { type: "BootstrapRemoved@1"; ts: string };
 
 export type SdkEventType = SdkEvent["type"];
 
@@ -40,4 +44,7 @@ export const SDK_EVENT_TYPES: readonly SdkEventType[] = [
   "CountryPackValidated@1",
   "CountryPackFailed@1",
   "CountryPackHealthChecked@1",
+  "RuntimeBootCompleted@1",
+  "PackRegistryDivergence@1",
+  "BootstrapRemoved@1",
 ] as const;
