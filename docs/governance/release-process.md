@@ -56,8 +56,25 @@ Gates apply to Core releases as well:
 - No frozen-surface change (see
   `docs/governance/architecture-freeze.md`) without the required ADR.
 
+## Pipeline (Sprint H9-DevOps)
+
+The gates above are enforced by the workflows in `.github/workflows/`:
+
+- `ci-feature.yml` — PR to `develop` (typecheck, lint, unit, conformance, validator, build).
+- `ci-develop.yml` — push `develop` → deploy Preview.
+- `release-validation.yml` — push `release` → migration dry-run + deploy Staging.
+- `production-deploy.yml` — push `main` → migration apply + deploy Production (gated by `production` environment approval).
+- `rollback.yml` — `workflow_dispatch` for app / edge / pack / migration.
+
+See `docs/adr/ADR-0009-production-pipeline.md` and
+`docs/governance/rollback-playbook.md`.
+
 ## Related
 
 - `docs/governance/permission-matrix.md` — "Approve Release" column.
 - `docs/governance/architecture-freeze.md` — extra gates for frozen surfaces.
 - `docs/governance/contribution-guide.md` — PR workflow feeding this process.
+- `docs/governance/branch-protection.md` — GitFlow enforcement.
+- `docs/governance/environments.md` — env × secrets × reviewers matrix.
+- `docs/governance/secrets-inventory.md` — secret ownership and rotation.
+- `docs/governance/rollback-playbook.md` — undo procedures.
