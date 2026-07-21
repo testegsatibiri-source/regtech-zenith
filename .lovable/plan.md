@@ -1,53 +1,106 @@
-## DEBT-019 — Remove the ID-hardcoded `legacy-bridge`
+## Sprint H7-Gov — Engineering Governance (revised)
 
-### Current state (verified)
+Docs-and-config only. No app code, no schema, no runtime changes. Incorporates all 8 adjustments plus the new `architecture-freeze.md`.
 
-- `src/lib/engines/legacy-bridge.ts` wires `taxEngine`/`socialEngine`/`thirteenthEngine` from `@/lib/engines/indonesia` regardless of the requested country code. Only `complianceRules` are country-correct (they flow through `RuleProvider`).
-- The only real consumer of the bridge is `src/lib/engines/compliance.ts` (`evaluateEmployee` / `evaluateCompany`), and it uses **only** `pack.complianceRules` + `pack.params` + `pack.rulesetVersion`. It never touches `taxEngine`/`socialEngine`/`thirteenthEngine`.
-- Callers of `evaluateCompany`/`evaluateEmployee` (`audit.functions.ts`, `dashboard.tsx`, `payroll.tsx`, `employees.tsx`) all default to Indonesia — so today the bug is latent, not visible, but it will corrupt PH/MY the moment anyone passes another code.
-- `listLegacyPacks` and the full `CountryPack` legacy shape (`taxEngine`, `socialEngine`, `thirteenthEngine`) have zero remaining callers.
+### CI runner
+GitHub Actions with `oven-sh/setup-bun@v2`. No alternative provider.
 
-Conclusion: the bridge's engine wiring is dead code that also lies about correctness. The right fix is to delete the bridge and have compliance read directly from `CountryRuntime`.
+### Deliverables
 
-### Goal
+**1. Repository Strategy** — `docs/architecture/repository-strategy.md` (new).
+- Decision: **monorepo now**.
+- Explicit **exit criteria** (any one triggers a split evaluation, not automatic):
+  - Country Pack maintained by an external organization.
+  - Independent release cadence required (pack ships > 2× the Core rhythm).
+  - Contractual/regulatory isolation requirement for a pack's source.
+  - Team scale: > 5 full-time contributors dedicated to a single pack.
+- Folder layout, import rules (Core → SDK only; Packs → SDK only), branch conventions (`main`, `feat/*`, `fix/*`, `pack/{code}/*`, `chore/*`, `docs/*`).
+- Pack publication model (in-repo, semver per `manifest.version`).
 
-Kill DEBT-019 with zero behavior change for ID and correct multi-country behavior for PH/MY going forward. Keep Core edits minimal and additive.
+**2. Permission Matrix** — `docs/governance/permission-matrix.md` (new).
+- Roles: CEO, CTO Global, Country CTO {code}, Contributor, Auditor.
+- Columns: **Edit / Review / Merge / Approve Release**.
+- Scopes: Core, SDK, Runtime, Pack-{code}, Docs, CI config.
+- Cross-references CODEOWNERS (mechanism) and Contribution Workflow (process).
 
-### Plan
+**3. Release Policy** — extend `docs/governance/release-process.md`.
+- New "Component Versioning" section (Core / SDK / each Pack — independent semver; `manifest.version` vs `rulesetVersion` restated).
+- New **"Release Gates" section — a Country Pack MUST NOT be released if**:
+  - Conformance Suite fails (`bun test src/packs/{code}/`).
+  - `validatePack()` returns any error (warnings allowed, must be documented).
+  - `pack.health()` returns `status: "error"`.
+- Changelog location per component.
 
-1. **Rewrite `src/lib/engines/compliance.ts` to consume `CountryRuntime` directly.**
-   - Replace `getPack` with a small helper that returns `{ rules, params, rulesetVersion }` sourced from `CountryRuntime.get(code)` + its `RuleProvider` (`providers.rules?.rules() ?? []`).
-   - Change `evaluateEmployee` / `evaluateCompany` signatures from `pack: CountryPack` to `code: CountryCode = "ID"` (keep the default so existing ID callers are untouched). Public return types (`Finding`, `ComplianceReport`) stay identical.
-   - Ensure `import "@/sdk/bootstrap"` so packs are registered before first call (same pattern the bridge uses today).
+**4. CODEOWNERS** — `.github/CODEOWNERS` (new).
+- Core: `/src/lib/engines/`, `/src/lib/observability/`, `/src/lib/apiAuth.ts`, `/src/lib/apiCors.ts`, `/src/lib/events/`, `/src/router.tsx`, `/src/start.ts`, `/src/routes/` → `@cto-global`.
+- SDK: `/src/sdk/` → `@cto-global @sdk-maintainers`.
+- Packs: `/src/packs/indonesia/` → `@country-cto-id`; `/src/packs/philippines/` → `@country-cto-ph`; `/src/packs/malaysia/` → `@country-cto-my`.
+- Governance & architecture (extra protection layer): `/docs/governance/`, `/docs/architecture/`, `/docs/adr/` (reserved for future ADRs outside `governance/`) → `@cto-global @ceo`.
+- CI/workflows: `/.github/` → `@cto-global`.
+- Header comment documents placeholder handles (real teams assigned when org is created).
 
-2. **Delete `src/lib/engines/legacy-bridge.ts`** and remove its imports.
+**5. Contribution Workflow** — extend `docs/governance/contribution-guide.md`.
+- Ordered flow: Branch → Develop → Test Kit → PR opened → **ADR gate** → Code review → CODEOWNERS approval → Merge → Release.
+- **ADR gate** (mandatory step before merge): "Does this change touch SDK contracts, Runtime, Providers, Manifest schema, or event catalog? → Yes → Architecture Review + ADR under `docs/governance/ADR-XXXX-*.md` required before approval. → No → proceed to code review." Add checkbox to PR template.
+- PR template `.github/pull_request_template.md` with checkboxes: tests green, ADR filed if required, no Core edits for pack-only PRs, `docs/tech-debt.md` updated.
 
-3. **Shrink `src/lib/engines/types.ts`** to the surface still in use:
-   - Keep: `CountryCode`, `EmployeeLike`, `Severity`, `ComplianceRule`, `Ctx`, and any input/output types still referenced by `id-pack.ts` and callers.
-   - Remove the dead legacy `CountryPack` interface fields `taxEngine`, `socialEngine`, `thirteenthEngine` (nothing imports them outside `id-pack.ts` and the bridge). `id-pack.ts` can keep exporting its concrete engines directly (used only by the PH-safe SDK path and by the bridge that we're removing).
+**6. CI/CD Segmentation** — `.github/workflows/` (4 pipelines).
+- `ci-shared.yml`: reusable setup (bun install + cache).
+- `ci-core.yml`: paths `src/lib/**`, `src/routes/**`, `src/router.tsx`, `src/start.ts`, `vite.config.ts`, `tsconfig.json`. Runs `tsgo --noEmit` + full `bun test`.
+- `ci-sdk.yml`: paths `src/sdk/**`. Runs typecheck + `bun test src/sdk/`.
+- `ci-packs.yml`: matrix over `src/packs/{indonesia,philippines,malaysia}/**`. Runs the pack's conformance suite + coexistence test.
+- `ci-docs.yml` (new, per your suggestion): paths `docs/**`, `.github/**`, `**/*.md`. Validates:
+  - Markdown lint (`markdownlint-cli2`).
+  - Internal link check (`lychee` limited to repo).
+  - YAML lint on `.github/workflows/*.yml`.
+  - CODEOWNERS syntax check (`gh api` dry-run OR `codeowners-validator`).
+  - Cross-references: fail if a doc links to a governance file that doesn't exist.
+- Per-component concurrency groups to cancel superseded runs.
 
-4. **Verify no other imports break.** Grep for `legacy-bridge`, `getLegacyPack`, `listLegacyPacks`, `taxEngine`, `socialEngine`, `thirteenthEngine` after the edit — should be zero hits outside `id-pack.ts` internals.
+**7. Tech Debt classification** — extend `docs/tech-debt.md`.
+- Replace ad-hoc `P0/P1/P2` legend with fixed taxonomy: **P0 · P1 · P2 · P3 · Deferred · Won't Do**.
+  - P0 blocks production launch.
+  - P1 blocks next country expansion.
+  - P2 post-GA polish.
+  - P3 nice-to-have.
+  - Deferred: valid but timeboxed out.
+  - Won't Do: explicitly rejected (with reason).
+- Reclassify existing DEBT-001…DEBT-021 into the new scale (no content changes, only tags).
 
-5. **Tests.**
-   - Existing `bun test src/packs/` (13 ID + 16 PH + 6 coexistence) must stay green.
-   - Add a focused test: `evaluateCompany([...], "PH")` returns `rulesetVersion` matching the PH pack (proves the country parameter is honored, which the bridge silently broke).
-
-6. **Docs.** In `docs/tech-debt.md`, move DEBT-019 to a "Closed" entry under the PH validation section and note the compliance-engine migration.
-
-### Non-goals
-
-- No API endpoint changes (DEBT-018 stays open).
-- No changes to `id-pack.ts` engine internals.
-- No UI/route changes; call sites keep their current default-ID behavior.
+**8. Architecture Freeze** — `docs/governance/architecture-freeze.md` (new, per your recommendation).
+- Declares frozen surfaces (effective Sprint H7-Gov):
+  - **SDK contracts** (`src/sdk/providers/*`, `src/sdk/CountryPack.ts`, `src/sdk/manifest.ts`).
+  - **Runtime** (`src/sdk/runtime.ts`, `src/sdk/context.ts`, `src/sdk/validator.ts`, `src/sdk/interfaces.ts`).
+  - **Event catalog** (`src/sdk/events.ts`, `src/lib/events/bus.ts`).
+  - **Capability list** (`src/sdk/Capability.ts`).
+- Change policy: any modification requires an approved ADR + `@cto-global` + `@ceo` sign-off.
+- **Escape valve — v3.0 criteria**: enumerate objective triggers (breaking change accumulated in ≥ 3 ADRs; capability model insufficient for a signed pack contract; > 5 packs live requiring lifecycle state machine as a required, not optional, feature).
+- Non-frozen: params, `rulesetVersion` content, Pack internals, UI, business modules, DB schema.
 
 ### Files touched
 
-- Edit: `src/lib/engines/compliance.ts`, `src/lib/engines/types.ts`, `docs/tech-debt.md`
-- Delete: `src/lib/engines/legacy-bridge.ts`
-- Add: one test (location TBD — likely `src/packs/philippines/__tests__/compliance-runtime.test.ts`)
+New:
+- `docs/architecture/repository-strategy.md`
+- `docs/governance/permission-matrix.md`
+- `docs/governance/architecture-freeze.md`
+- `.github/CODEOWNERS`
+- `.github/pull_request_template.md`
+- `.github/workflows/ci-shared.yml`
+- `.github/workflows/ci-core.yml`
+- `.github/workflows/ci-sdk.yml`
+- `.github/workflows/ci-packs.yml`
+- `.github/workflows/ci-docs.yml`
 
-### Success metrics
+Edited (docs only):
+- `docs/governance/release-process.md` (+ Component Versioning + Release Gates)
+- `docs/governance/contribution-guide.md` (+ ordered flow + ADR gate)
+- `docs/tech-debt.md` (reclassify to P0/P1/P2/P3/Deferred/Won't Do)
 
-- `rg "legacy-bridge|getLegacyPack|listLegacyPacks"` → 0 hits.
-- `evaluateCompany(emps, "PH").rulesetVersion` equals PH pack's `rulesetVersion` (not ID's).
-- All existing tests green; new test green.
+### Explicit non-goals
+Marketplace, lifecycle state machine, signature verification, hot reload, remote plugins, microservices, actual GitHub team creation, real runtime code changes.
+
+### Success criteria
+- All 10 new artifacts + 3 doc edits exist and cross-reference each other consistently.
+- All YAML workflows lint clean; `ci-docs.yml` self-validates the new docs.
+- Zero changes under `src/lib/`, `src/sdk/`, `src/packs/`, `src/routes/`, `supabase/`.
+- `docs/tech-debt.md` uses the new fixed classification end-to-end.
