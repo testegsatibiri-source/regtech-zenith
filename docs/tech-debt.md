@@ -1,25 +1,33 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-07-20 (Sprint H5 — Compliance SDK & Governance)._
+_Last audit: 2026-07-20 (Sprint H6 — SDK Hardening: DI, Validator, Test Kit)._
 
-## H5 delivered
+## H6 delivered
 
 | Area | Item | Status |
 |------|------|--------|
-| SDK | `src/sdk/` with `Capability`, `CountryPack`, `CountryManifest`, `CountryRuntime`, versioned event catalog, typed errors, semver helper | ✅ |
-| SDK | Provider contracts split: `TaxProvider`, `BenefitsProvider`, `PayrollProvider`, `ThirteenthProvider`, `CalendarProvider`, `ContractProvider`, `RuleProvider`, `AuditProvider` | ✅ |
-| Packs | `src/packs/indonesia/` wraps existing engines behind the SDK (manifest v1.7.0, ruleset ID-2024.1) | ✅ |
-| Packs | `src/packs/malaysia/` stub proves multi-country boot (closes DEBT-004) | ✅ |
-| Runtime | `CountryRuntime.install/get/list/supports` with `requiresCore` check + `CountryPackInstalled@1`/`CountryPackFailed@1` events | ✅ |
-| UI | `/country-packs` marketplace view (installed packs, capabilities, compatibility badge) | ✅ |
-| Bus | `src/lib/events/bus.ts` delegates types to `sdk/events.ts` (single source of truth) | ✅ |
-| Governance | `docs/governance/`: ADR-0001, ADR-0002, Country Pack Spec, Contribution Guide, Release Process, Security Policy, API Version Policy, Migration Policy | ✅ |
+| DI | `src/lib/engines/registry.ts` removed; all API routes + audit + compliance resolve packs via `CountryRuntime` (`src/lib/engines/legacy-bridge.ts` wraps the Runtime for legacy helpers) | ✅ |
+| SDK | Capability versioning: every provider carries `readonly version`; `EXPECTED_INTERFACES` + `capabilitySatisfies()` enforce same-major + minor floor | ✅ |
+| SDK | Manifest expanded: `provides` / `requires` / `events{emits,consumes}` / `permissions` / `features` / `dependencies` / `signature` / `lifecycleHooks` (declarative only for perms and signature) | ✅ |
+| SDK | `ProviderContext` (`src/sdk/context.ts`) — siblings + foreign lookup injected by Runtime; providers no longer import siblings by path | ✅ |
+| SDK | Compatibility Validator (`src/sdk/validator.ts`) — plugged into `CountryRuntime.install()`; errors block install, warnings mark pack `degraded`; emits `CountryPackValidated@1` | ✅ |
+| SDK | `CountryPack.health?()` optional runtime self-check; Indonesia ships 6 checks incl. live smoke tests; Runtime exposes `health(code)` + emits `CountryPackHealthChecked@1` | ✅ |
+| Test Kit | `src/sdk/testkit/` — `runManifestSuite`, `runTaxProviderSuite`, `runBenefitsProviderSuite`, `runIsolationSuite` + Indonesia fixtures; `bun test src/packs/` → 13 tests green | ✅ |
+| Packs | Indonesia pack updated (v1.8.0) with all new manifest fields, provider versions, and health check; Malaysia stub adopts new shape | ✅ |
+| UI | `/country-packs` now shows validator report (errors / warnings), health checks (with re-check), provider versions, events, permissions, features, signature status | ✅ |
+| Ops | `CORE_VERSION` bumped 2.0.0 → 2.1.0 (backward-compat additions) | ✅ |
+| Governance | ADR-0003 (provider isolation) · ADR-0004 (conformance testing) · ADR-0005 (capability versioning) · `country-pack-spec.md` rewritten | ✅ |
 
-## Explicit non-goals for H5
+## Closed by H6
+- **DEBT-001 · Wire callers to DI.** API routes, audit fn, compliance/contracts helpers all read from `CountryRuntime` — no direct `import from @/packs/*` or dead `registry.ts` remains. UI callers still consume legacy engine helpers, which internally read from the Runtime via `legacy-bridge`.
+- **DEBT-005 · AI audit params via Runtime.** `audit.functions.ts` now reads `params` from `CountryRuntime.get("ID").params`.
+
+## Explicit non-goals for H6
 - No new business modules.
 - No DB migrations.
-- Emission of `PayrollCalculated@1` / `EmployeeCreated@1` / `AuditCompleted@1` on mutations — contracts defined, wiring tracked as DEBT-001 (unchanged).
-- Persistence of pack install state — runtime is in-memory bootstrap only.
+- No Sprint H7 lifecycle state machine (`Installing → Ready → Deprecated → …`) — reserved as its own sprint. `lifecycleHooks` fields exist on the manifest but the Runtime does not read them yet.
+- Permission enforcement and signature verification are still declarative (DEBT-015, DEBT-016).
+
 
 
 
