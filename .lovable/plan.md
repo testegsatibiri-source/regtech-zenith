@@ -1,106 +1,140 @@
-## Sprint H7-Gov — Engineering Governance (revised)
+# Sprint H8-BO — Compliance OS Platform (Backoffice) · Revisão final v3
 
-Docs-and-config only. No app code, no schema, no runtime changes. Incorporates all 8 adjustments plus the new `architecture-freeze.md`.
+Os 5 refinamentos foram aceitos integralmente. O ponto mais importante: **a UI nunca conhece o `CountryRuntime` diretamente**. Passa por 3 camadas — HTTP → Application Service → Runtime.
 
-### CI runner
-GitHub Actions with `oven-sh/setup-bun@v2`. No alternative provider.
+## Arquitetura em camadas
 
-### Deliverables
+```text
+Platform UI (React)
+      ↓  useServerFn
+Platform HTTP API           ← createServerFn (thin, valida input + auth)
+      ↓
+Platform Application Service ← lógica de negócio (reutilizável por CLI, jobs)
+      ↓
+PermissionService (Policy → Decision)   +   CountryRuntime   +   Supabase
+```
 
-**1. Repository Strategy** — `docs/architecture/repository-strategy.md` (new).
-- Decision: **monorepo now**.
-- Explicit **exit criteria** (any one triggers a split evaluation, not automatic):
-  - Country Pack maintained by an external organization.
-  - Independent release cadence required (pack ships > 2× the Core rhythm).
-  - Contractual/regulatory isolation requirement for a pack's source.
-  - Team scale: > 5 full-time contributors dedicated to a single pack.
-- Folder layout, import rules (Core → SDK only; Packs → SDK only), branch conventions (`main`, `feat/*`, `fix/*`, `pack/{code}/*`, `chore/*`, `docs/*`).
-- Pack publication model (in-repo, semver per `manifest.version`).
+- **UI:** consome apenas server fns em `src/lib/platform/api.functions.ts`. Sem imports de `@/sdk/*`.
+- **HTTP API (thin):** valida `data` (Zod), monta `PolicyContext` (actor, país-alvo, ambiente, correlation_id), delega ao Application Service, mapeia erros.
+- **Application Service:** `src/lib/platform/service/*.ts` (packs, releases, parameters, audit, dashboard, flags). Recebe `context` via DI (não importa `supabase` global). Reutilizável por qualquer front-end futuro.
+- **PermissionService:** avalia `Policy` (regras) sobre `Role + PolicyContext` retornando `Decision { allow, reason }`. Preparado para escopos futuros (empresa, região, produto, ambiente) — hoje decide só por role + country scope, mas a assinatura já leva o `context` completo.
 
-**2. Permission Matrix** — `docs/governance/permission-matrix.md` (new).
-- Roles: CEO, CTO Global, Country CTO {code}, Contributor, Auditor.
-- Columns: **Edit / Review / Merge / Approve Release**.
-- Scopes: Core, SDK, Runtime, Pack-{code}, Docs, CI config.
-- Cross-references CODEOWNERS (mechanism) and Contribution Workflow (process).
+## Módulos entregues (P0)
 
-**3. Release Policy** — extend `docs/governance/release-process.md`.
-- New "Component Versioning" section (Core / SDK / each Pack — independent semver; `manifest.version` vs `rulesetVersion` restated).
-- New **"Release Gates" section — a Country Pack MUST NOT be released if**:
-  - Conformance Suite fails (`bun test src/packs/{code}/`).
-  - `validatePack()` returns any error (warnings allowed, must be documented).
-  - `pack.health()` returns `status: "error"`.
-- Changelog location per component.
+### `/platform` — Dashboard
+Indicadores via `dashboardService.snapshot()`: packs instalados/degradados, health médio, releases pendentes por estado, parâmetros pendentes de review/approve, Conformance Score por país, últimos 10 eventos de audit.
 
-**4. CODEOWNERS** — `.github/CODEOWNERS` (new).
-- Core: `/src/lib/engines/`, `/src/lib/observability/`, `/src/lib/apiAuth.ts`, `/src/lib/apiCors.ts`, `/src/lib/events/`, `/src/router.tsx`, `/src/start.ts`, `/src/routes/` → `@cto-global`.
-- SDK: `/src/sdk/` → `@cto-global @sdk-maintainers`.
-- Packs: `/src/packs/indonesia/` → `@country-cto-id`; `/src/packs/philippines/` → `@country-cto-ph`; `/src/packs/malaysia/` → `@country-cto-my`.
-- Governance & architecture (extra protection layer): `/docs/governance/`, `/docs/architecture/`, `/docs/adr/` (reserved for future ADRs outside `governance/`) → `@cto-global @ceo`.
-- CI/workflows: `/.github/` → `@cto-global`.
-- Header comment documents placeholder handles (real teams assigned when org is created).
+### `/platform/packs` — Platform Administration
+Lista packs (via service, não runtime direto). Ações: Install, Reinstall, Uninstall, Rollback, Toggle Feature Flag. Cada ação passa por `permissionService.check("pack.install", ctx)` etc.
 
-**5. Contribution Workflow** — extend `docs/governance/contribution-guide.md`.
-- Ordered flow: Branch → Develop → Test Kit → PR opened → **ADR gate** → Code review → CODEOWNERS approval → Merge → Release.
-- **ADR gate** (mandatory step before merge): "Does this change touch SDK contracts, Runtime, Providers, Manifest schema, or event catalog? → Yes → Architecture Review + ADR under `docs/governance/ADR-XXXX-*.md` required before approval. → No → proceed to code review." Add checkbox to PR template.
-- PR template `.github/pull_request_template.md` with checkboxes: tests green, ADR filed if required, no Core edits for pack-only PRs, `docs/tech-debt.md` updated.
+### `/platform/countries/$code` — Country Administration
+- **Parameters:** **read-only**, com banner destacado:
+  > **Read Only** · Runtime Source: Country Pack `v1.8.0` · Migration planned (DEBT-022)
+  Permitido: view, diff entre versões, import (cria `draft`), export JSON, histórico.
+- **Calendar:** CRUD templates (auditado).
+- **Translations:** editor JSON por locale (auditado).
+- **Rules:** read-only (ruleset + interfaceVersion + effective date do runtime record).
 
-**6. CI/CD Segmentation** — `.github/workflows/` (4 pipelines).
-- `ci-shared.yml`: reusable setup (bun install + cache).
-- `ci-core.yml`: paths `src/lib/**`, `src/routes/**`, `src/router.tsx`, `src/start.ts`, `vite.config.ts`, `tsconfig.json`. Runs `tsgo --noEmit` + full `bun test`.
-- `ci-sdk.yml`: paths `src/sdk/**`. Runs typecheck + `bun test src/sdk/`.
-- `ci-packs.yml`: matrix over `src/packs/{indonesia,philippines,malaysia}/**`. Runs the pack's conformance suite + coexistence test.
-- `ci-docs.yml` (new, per your suggestion): paths `docs/**`, `.github/**`, `**/*.md`. Validates:
-  - Markdown lint (`markdownlint-cli2`).
-  - Internal link check (`lychee` limited to repo).
-  - YAML lint on `.github/workflows/*.yml`.
-  - CODEOWNERS syntax check (`gh api` dry-run OR `codeowners-validator`).
-  - Cross-references: fail if a doc links to a governance file that doesn't exist.
-- Per-component concurrency groups to cancel superseded runs.
+### `/platform/releases` — Release Center
+Workflow completo de 6 estados: `draft → candidate → approved → released → deprecated → archived` (+ `rolled_back` como transição especial de `released`). Cada transição chama `releaseService.transition(from, to, ctx)` que valida gates (Conformance/Validator/Health) antes de `approved → released`.
 
-**7. Tech Debt classification** — extend `docs/tech-debt.md`.
-- Replace ad-hoc `P0/P1/P2` legend with fixed taxonomy: **P0 · P1 · P2 · P3 · Deferred · Won't Do**.
-  - P0 blocks production launch.
-  - P1 blocks next country expansion.
-  - P2 post-GA polish.
-  - P3 nice-to-have.
-  - Deferred: valid but timeboxed out.
-  - Won't Do: explicitly rejected (with reason).
-- Reclassify existing DEBT-001…DEBT-021 into the new scale (no content changes, only tags).
+### `/platform/developer` — Developer Center
+Cards linkando OpenAPI, Country Pack Spec, ADRs (0001-0008), Architecture Freeze, Test Kit, PR templates.
 
-**8. Architecture Freeze** — `docs/governance/architecture-freeze.md` (new, per your recommendation).
-- Declares frozen surfaces (effective Sprint H7-Gov):
-  - **SDK contracts** (`src/sdk/providers/*`, `src/sdk/CountryPack.ts`, `src/sdk/manifest.ts`).
-  - **Runtime** (`src/sdk/runtime.ts`, `src/sdk/context.ts`, `src/sdk/validator.ts`, `src/sdk/interfaces.ts`).
-  - **Event catalog** (`src/sdk/events.ts`, `src/lib/events/bus.ts`).
-  - **Capability list** (`src/sdk/Capability.ts`).
-- Change policy: any modification requires an approved ADR + `@cto-global` + `@ceo` sign-off.
-- **Escape valve — v3.0 criteria**: enumerate objective triggers (breaking change accumulated in ≥ 3 ADRs; capability model insufficient for a signed pack contract; > 5 packs live requiring lifecycle state machine as a required, not optional, feature).
-- Non-frozen: params, `rulesetVersion` content, Pack internals, UI, business modules, DB schema.
+### Stubs "Coming Soon"
+`/platform/monitor`, `/platform/governance`, `/platform/audit`, `/platform/marketplace`.
 
-### Files touched
+## Migração SQL única
 
-New:
-- `docs/architecture/repository-strategy.md`
-- `docs/governance/permission-matrix.md`
-- `docs/governance/architecture-freeze.md`
-- `.github/CODEOWNERS`
-- `.github/pull_request_template.md`
-- `.github/workflows/ci-shared.yml`
-- `.github/workflows/ci-core.yml`
-- `.github/workflows/ci-sdk.yml`
-- `.github/workflows/ci-packs.yml`
-- `.github/workflows/ci-docs.yml`
+- **Enum `app_role`:** `+ platform_admin, country_cto, platform_operator, platform_auditor`.
+- **`country_cto_scopes(user_id, country_code)`** — PK composta.
+- **`regulatory_parameters`** (schema pronto para DEBT-022, hoje nenhuma linha vira `active` via UI):
+  `id, country_code, parameter_key, payload jsonb, effective_from, effective_to, version int, status enum('draft','review','approved','active','superseded','archived'), author, reviewed_by/at, approved_by/at, activated_by/at, checksum, timestamps`.
+  Trigger: apenas um `active` por `(country, key)`.
+- **`pack_installations`:** `id, country_code, pack_version, status enum('draft','candidate','approved','released','deprecated','archived','rolled_back'), installed_from, installed_core_version, installed_sdk_version, runtime_version, manifest_checksum, manifest_signature, installed_by, approved_by/at, released_by/at, deprecated_by/at, archived_by/at, rollback_of, notes, timestamps`.
+- **`pack_feature_flags`:** `id, country_code, flag, enabled, rollout_percentage (0-100), environment enum('preview','production','all'), effective_from/to, updated_by/at`.
+- **`platform_audit_log`:** `id, actor, action, target, country_code, component, old_value jsonb, new_value jsonb, correlation_id, request_id, payload, at`.
+- Helpers `SECURITY DEFINER`: `is_platform_admin()`, `is_country_cto(code)`, `is_platform_operator()`, `is_platform_auditor()`.
+- RLS + GRANTs (`authenticated` + `service_role`, sem `anon`) em todas as novas tabelas.
 
-Edited (docs only):
-- `docs/governance/release-process.md` (+ Component Versioning + Release Gates)
-- `docs/governance/contribution-guide.md` (+ ordered flow + ADR gate)
-- `docs/tech-debt.md` (reclassify to P0/P1/P2/P3/Deferred/Won't Do)
+## Novos arquivos de código
 
-### Explicit non-goals
-Marketplace, lifecycle state machine, signature verification, hot reload, remote plugins, microservices, actual GitHub team creation, real runtime code changes.
+```text
+src/lib/platform/
+  policy/
+    types.ts             # Policy, PolicyContext, Decision
+    policies.ts          # catálogo de policies (pack.install, release.approve, ...)
+  permissionService.ts   # PermissionService.check(action, ctx): Decision
+  service/
+    packs.ts             # packsService.list/install/rollback (usa runtime + supabase)
+    releases.ts          # releasesService.list/transition (gates conformance/validator/health)
+    parameters.ts        # parametersService.list/diff/import/export (read-only sobre runtime)
+    audit.ts             # auditService.list/record
+    dashboard.ts         # dashboardService.snapshot
+    flags.ts             # flagsService.list/set
+    context.ts           # buildPlatformContext(request) → PolicyContext + correlation_id
+  api.functions.ts       # createServerFn wrappers (thin, chama services)
 
-### Success criteria
-- All 10 new artifacts + 3 doc edits exist and cross-reference each other consistently.
-- All YAML workflows lint clean; `ci-docs.yml` self-validates the new docs.
-- Zero changes under `src/lib/`, `src/sdk/`, `src/packs/`, `src/routes/`, `supabase/`.
-- `docs/tech-debt.md` uses the new fixed classification end-to-end.
+src/routes/_platform/
+  route.tsx              # ssr:false, beforeLoad valida qualquer platform_* / country_cto
+  index.tsx              # dashboard
+  packs.tsx
+  countries.$code.tsx    # 4 abas via search params
+  releases.tsx
+  developer.tsx
+  monitor.tsx | governance.tsx | audit.tsx | marketplace.tsx (stubs)
+
+src/components/platform/
+  PlatformShell.tsx      # layout + sidebar (tema distinto)
+  ReadOnlyBanner.tsx
+```
+
+Todas as rotas `/platform/*` incluem `robots: noindex, nofollow` no `head()`.
+
+## Governança e docs
+
+- **ADR-0006** — Backoffice as separate product surface (Platform vs Customer).
+- **ADR-0007** — Regulatory Parameters versioning + workflow completo (schema-only nesta sprint).
+- **ADR-0008** — **Platform Application Service Layer**: toda operação administrativa passa por serviço; HTTP e UI são camadas finas; futuros CLIs/jobs consomem o mesmo serviço.
+- `docs/governance/permission-matrix.md` — adiciona as 4 roles e conceito Policy → Decision.
+- `docs/tech-debt.md`:
+  - **DEBT-022 (P1):** Runtime consome `regulatory_parameters` (destrava edição no Backoffice).
+  - **DEBT-023 (P1):** UI real de Monitor/Governance/Audit/Marketplace.
+  - **DEBT-024 (Deferred):** Extrair `/platform` para repo próprio.
+  - **DEBT-025 (P2):** `company_settings` no produto cliente (Customer Configuration).
+  - **DEBT-026 (P2):** UI de gestão de `platform_operator`/`platform_auditor`.
+  - **DEBT-027 (P2):** `manifest_signature` real (assinatura criptográfica).
+  - **DEBT-028 (P1) — NOVO:** `ConfigurationService` resolvendo parâmetros em cascata (Runtime → DB override → Feature flag → Env). Providers passam a solicitar parâmetros ao serviço em vez de importar direto.
+
+## Testes
+
+- `permissionService` — matriz roles × ações × contextos (com/sem country scope).
+- `releasesService.transition` — grafo completo de transições válidas/inválidas; gates falhando bloqueiam `approved → released`.
+- `parametersService` — importar não muda estado ativo; export/diff funcionam.
+- Trigger `only_one_active_per_key` — falha ao inserir 2 ativos.
+- Guard `/platform/*` — nega usuário sem role.
+- Isolamento `country_cto` — CTO da Indonésia não vê PH.
+
+## Métricas de sucesso
+
+| Métrica | Meta |
+|---|---|
+| Arquivos alterados em Core/SDK/Runtime/Packs | **0** |
+| Novos arquivos em `src/routes/_platform/` | ~11 |
+| Novos arquivos em `src/lib/platform/` | ~10 (policy + services + api) |
+| Novas tabelas | 5 |
+| ADRs novos | 3 (0006, 0007, 0008) |
+| Novos débitos registrados | 7 (DEBT-022 → 028) |
+| Imports de `@/sdk/*` em rotas/componentes de `/platform` | **0** |
+
+## O que **não** faço
+
+- Não torno `regulatory_parameters` fonte oficial (DEBT-022).
+- Não altero nada em Core/SDK/Runtime/Packs.
+- Não implemento ConfigurationService (DEBT-028) — apenas registro no backlog.
+- Não implemento Marketplace, Monitor, Governance, Audit Center reais.
+- Não implemento assinatura criptográfica real (aceito `null` na coluna).
+- Não extraio Backoffice para repo separado.
+- Não crio Customer Configuration.
+
+Pronto para executar assim que aprovar.
