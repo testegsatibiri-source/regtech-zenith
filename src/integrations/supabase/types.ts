@@ -14,6 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_escalations: {
+        Row: {
+          after_seconds: number
+          id: string
+          notification_id: string
+          rule_id: string
+          step_order: number
+        }
+        Insert: {
+          after_seconds: number
+          id?: string
+          notification_id: string
+          rule_id: string
+          step_order: number
+        }
+        Update: {
+          after_seconds?: number
+          id?: string
+          notification_id?: string
+          rule_id?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_escalations_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "alert_notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_escalations_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_incidents: {
+        Row: {
+          id: string
+          incident_id: string | null
+          observed_value: number | null
+          resolved_at: string | null
+          rule_id: string
+          triggered_at: string
+        }
+        Insert: {
+          id?: string
+          incident_id?: string | null
+          observed_value?: number | null
+          resolved_at?: string | null
+          rule_id: string
+          triggered_at?: string
+        }
+        Update: {
+          id?: string
+          incident_id?: string | null
+          observed_value?: number | null
+          resolved_at?: string | null
+          rule_id?: string
+          triggered_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_incidents_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_incidents_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          id: string
+          rule_id: string
+          target: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          rule_id: string
+          target: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          rule_id?: string
+          target?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_notifications_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_rules: {
+        Row: {
+          comparator: string
+          created_at: string
+          enabled: boolean
+          id: string
+          layer: string
+          metric: string
+          name: string
+          severity: string
+          threshold: number
+          updated_at: string
+          window_seconds: number
+        }
+        Insert: {
+          comparator: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          layer: string
+          metric: string
+          name: string
+          severity?: string
+          threshold: number
+          updated_at?: string
+          window_seconds?: number
+        }
+        Update: {
+          comparator?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          layer?: string
+          metric?: string
+          name?: string
+          severity?: string
+          threshold?: number
+          updated_at?: string
+          window_seconds?: number
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           allowed_origins: string[]
@@ -454,9 +612,52 @@ export type Database = {
           },
         ]
       }
+      incidents: {
+        Row: {
+          country_code: string | null
+          description: string | null
+          id: string
+          layer: string
+          opened_at: string
+          opened_by: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string | null
+          description?: string | null
+          id?: string
+          layer?: string
+          opened_at?: string
+          opened_by?: string | null
+          resolved_at?: string | null
+          severity: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string | null
+          description?: string | null
+          id?: string
+          layer?: string
+          opened_at?: string
+          opened_by?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       metrics_events: {
         Row: {
           id: number
+          layer: string
           name: string
           tags: Json
           trace_id: string | null
@@ -465,6 +666,7 @@ export type Database = {
         }
         Insert: {
           id?: number
+          layer?: string
           name: string
           tags?: Json
           trace_id?: string | null
@@ -473,11 +675,42 @@ export type Database = {
         }
         Update: {
           id?: number
+          layer?: string
           name?: string
           tags?: Json
           trace_id?: string | null
           ts?: string
           value_ms?: number | null
+        }
+        Relationships: []
+      }
+      metrics_export_log: {
+        Row: {
+          created_at: string
+          exported_from: string
+          exported_to: string
+          id: string
+          rows_exported: number
+          sink: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          exported_from: string
+          exported_to: string
+          id?: string
+          rows_exported: number
+          sink?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          exported_from?: string
+          exported_to?: string
+          id?: string
+          rows_exported?: number
+          sink?: string
+          storage_path?: string
         }
         Relationships: []
       }
@@ -608,6 +841,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pack_lifecycle_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          from_state: Database["public"]["Enums"]["pack_state"] | null
+          id: string
+          metadata: Json | null
+          pack_id: string
+          reason: string | null
+          to_state: Database["public"]["Enums"]["pack_state"]
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          from_state?: Database["public"]["Enums"]["pack_state"] | null
+          id?: string
+          metadata?: Json | null
+          pack_id: string
+          reason?: string | null
+          to_state: Database["public"]["Enums"]["pack_state"]
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          from_state?: Database["public"]["Enums"]["pack_state"] | null
+          id?: string
+          metadata?: Json | null
+          pack_id?: string
+          reason?: string | null
+          to_state?: Database["public"]["Enums"]["pack_state"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_lifecycle_events_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "pack_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_registry: {
+        Row: {
+          checksum: string
+          compatibility_report: Json | null
+          country_code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          interface_version: string
+          manifest: Json
+          pack_version: string
+          publisher: string
+          requires_core: string
+          signatures: Json
+          state: Database["public"]["Enums"]["pack_state"]
+          updated_at: string
+        }
+        Insert: {
+          checksum: string
+          compatibility_report?: Json | null
+          country_code: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          interface_version: string
+          manifest: Json
+          pack_version: string
+          publisher: string
+          requires_core: string
+          signatures?: Json
+          state?: Database["public"]["Enums"]["pack_state"]
+          updated_at?: string
+        }
+        Update: {
+          checksum?: string
+          compatibility_report?: Json | null
+          country_code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          interface_version?: string
+          manifest?: Json
+          pack_version?: string
+          publisher?: string
+          requires_core?: string
+          signatures?: Json
+          state?: Database["public"]["Enums"]["pack_state"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pack_signing_keys: {
+        Row: {
+          active: boolean
+          algo: string
+          capabilities: string[]
+          created_at: string
+          id: string
+          provider: string
+          public_key: string
+          publisher: string
+          revoked_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          algo?: string
+          capabilities?: string[]
+          created_at?: string
+          id?: string
+          provider?: string
+          public_key: string
+          publisher: string
+          revoked_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          algo?: string
+          capabilities?: string[]
+          created_at?: string
+          id?: string
+          provider?: string
+          public_key?: string
+          publisher?: string
+          revoked_at?: string | null
+        }
+        Relationships: []
       }
       payroll_items: {
         Row: {
@@ -777,6 +1138,89 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_invitations: {
+        Row: {
+          accepted_at: string | null
+          country_code: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["app_role"]
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          country_code?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role: Database["public"]["Enums"]["app_role"]
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      postmortems: {
+        Row: {
+          author_id: string | null
+          cause: string
+          created_at: string
+          id: string
+          incident_id: string
+          prevention: string
+          published_at: string | null
+          resolution: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          cause: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          prevention: string
+          published_at?: string | null
+          resolution: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          cause?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          prevention?: string
+          published_at?: string | null
+          resolution?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "postmortems_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -867,6 +1311,60 @@ export type Database = {
         }
         Relationships: []
       }
+      role_capabilities: {
+        Row: {
+          capability: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          scope: string
+        }
+        Insert: {
+          capability: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          scope?: string
+        }
+        Update: {
+          capability?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          scope?: string
+        }
+        Relationships: []
+      }
+      trust_policies: {
+        Row: {
+          allow_experimental: boolean
+          distinct_signers: boolean
+          environment: string
+          id: string
+          required_capabilities: string[]
+          required_signatures: number
+          updated_at: string
+        }
+        Insert: {
+          allow_experimental?: boolean
+          distinct_signers?: boolean
+          environment: string
+          id?: string
+          required_capabilities?: string[]
+          required_signatures?: number
+          updated_at?: string
+        }
+        Update: {
+          allow_experimental?: boolean
+          distinct_signers?: boolean
+          environment?: string
+          id?: string
+          required_capabilities?: string[]
+          required_signatures?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -892,6 +1390,10 @@ export type Database = {
     Functions: {
       check_api_quota: {
         Args: { _key_id: string; _monthly_quota: number }
+        Returns: boolean
+      }
+      has_capability: {
+        Args: { _capability: string; _country_code?: string; _user_id: string }
         Returns: boolean
       }
       has_role: {
@@ -928,6 +1430,15 @@ export type Database = {
         | "deprecated"
         | "archived"
         | "rolled_back"
+      pack_state:
+        | "experimental"
+        | "draft"
+        | "review"
+        | "approved"
+        | "published"
+        | "deprecated"
+        | "yanked"
+        | "archived"
       regulatory_parameter_status:
         | "draft"
         | "review"
@@ -1082,6 +1593,16 @@ export const Constants = {
         "deprecated",
         "archived",
         "rolled_back",
+      ],
+      pack_state: [
+        "experimental",
+        "draft",
+        "review",
+        "approved",
+        "published",
+        "deprecated",
+        "yanked",
+        "archived",
       ],
       regulatory_parameter_status: [
         "draft",
