@@ -100,7 +100,7 @@ export const releasesService = {
     }
 
     const now = new Date().toISOString();
-    const patch: Record<string, unknown> = { status: input.to };
+    const patch: Record<string, string | null> = { status: input.to };
     if (input.to === "approved") { patch.approved_by = ctx.policy.actorId; patch.approved_at = now; }
     if (input.to === "released") { patch.released_by = ctx.policy.actorId; patch.released_at = now; }
     if (input.to === "deprecated") { patch.deprecated_by = ctx.policy.actorId; patch.deprecated_at = now; }
@@ -109,7 +109,7 @@ export const releasesService = {
 
     const { data: updated, error: updateError } = await ctx.supabase
       .from("pack_installations")
-      .update(patch)
+      .update(patch as never)
       .eq("id", input.id)
       .select()
       .single();
