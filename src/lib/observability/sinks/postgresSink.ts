@@ -11,9 +11,9 @@ export class PostgresSink implements MetricSink {
     const rows = events.map((e) => ({
       name: e.name,
       layer: e.layer,
-      value: e.value,
+      value_ms: Math.round(e.value),
       ts: e.ts ?? new Date().toISOString(),
-      tags: e.tags ?? {},
+      tags: (e.tags ?? {}) as never,
     }));
     const { error } = await supabaseAdmin.from("metrics_events").insert(rows);
     if (error) throw error;
