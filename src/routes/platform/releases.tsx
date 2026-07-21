@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_platform/releases")({
+export const Route = createFileRoute("/platform/releases")({
   component: ReleasesPage,
 });
 

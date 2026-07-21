@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_platform/packs")({
+export const Route = createFileRoute("/platform/packs")({
   component: PacksPage,
 });
 

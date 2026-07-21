@@ -13,8 +13,15 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
+import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
+import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
+import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
+import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
+import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -50,6 +57,11 @@ const ApiDocsRoute = ApiDocsRouteImport.update({
   path: '/api-docs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformRouteRoute = PlatformRouteRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -58,6 +70,36 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformIndexRoute = PlatformIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformReleasesRoute = PlatformReleasesRouteImport.update({
+  id: '/releases',
+  path: '/releases',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformParametersRoute = PlatformParametersRouteImport.update({
+  id: '/parameters',
+  path: '/parameters',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformPacksRoute = PlatformPacksRouteImport.update({
+  id: '/packs',
+  path: '/packs',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformFlagsRoute = PlatformFlagsRouteImport.update({
+  id: '/flags',
+  path: '/flags',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformAuditRoute = PlatformAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => PlatformRouteRoute,
 } as any)
 const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
   id: '/payroll',
@@ -135,6 +177,7 @@ const ApiPublicV1CalculateBpjsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
@@ -146,6 +189,12 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/platform/audit': typeof PlatformAuditRoute
+  '/platform/flags': typeof PlatformFlagsRoute
+  '/platform/packs': typeof PlatformPacksRoute
+  '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/releases': typeof PlatformReleasesRoute
+  '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
@@ -167,6 +216,12 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/platform/audit': typeof PlatformAuditRoute
+  '/platform/flags': typeof PlatformFlagsRoute
+  '/platform/packs': typeof PlatformPacksRoute
+  '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/releases': typeof PlatformReleasesRoute
+  '/platform': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
@@ -179,6 +234,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
@@ -190,6 +246,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/platform/audit': typeof PlatformAuditRoute
+  '/platform/flags': typeof PlatformFlagsRoute
+  '/platform/packs': typeof PlatformPacksRoute
+  '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/releases': typeof PlatformReleasesRoute
+  '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
@@ -202,6 +264,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/platform'
     | '/api-docs'
     | '/auth'
     | '/calculator'
@@ -213,6 +276,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/platform/audit'
+    | '/platform/flags'
+    | '/platform/packs'
+    | '/platform/parameters'
+    | '/platform/releases'
+    | '/platform/'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
@@ -234,6 +303,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/platform/audit'
+    | '/platform/flags'
+    | '/platform/packs'
+    | '/platform/parameters'
+    | '/platform/releases'
+    | '/platform'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
@@ -245,6 +320,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/platform'
     | '/api-docs'
     | '/auth'
     | '/calculator'
@@ -256,6 +332,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/employees'
     | '/_authenticated/payroll'
+    | '/platform/audit'
+    | '/platform/flags'
+    | '/platform/packs'
+    | '/platform/parameters'
+    | '/platform/releases'
+    | '/platform/'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
@@ -268,6 +350,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  PlatformRouteRoute: typeof PlatformRouteRouteWithChildren
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
@@ -311,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -324,6 +414,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/platform/': {
+      id: '/platform/'
+      path: '/'
+      fullPath: '/platform/'
+      preLoaderRoute: typeof PlatformIndexRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/releases': {
+      id: '/platform/releases'
+      path: '/releases'
+      fullPath: '/platform/releases'
+      preLoaderRoute: typeof PlatformReleasesRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/parameters': {
+      id: '/platform/parameters'
+      path: '/parameters'
+      fullPath: '/platform/parameters'
+      preLoaderRoute: typeof PlatformParametersRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/packs': {
+      id: '/platform/packs'
+      path: '/packs'
+      fullPath: '/platform/packs'
+      preLoaderRoute: typeof PlatformPacksRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/flags': {
+      id: '/platform/flags'
+      path: '/flags'
+      fullPath: '/platform/flags'
+      preLoaderRoute: typeof PlatformFlagsRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/audit': {
+      id: '/platform/audit'
+      path: '/audit'
+      fullPath: '/platform/audit'
+      preLoaderRoute: typeof PlatformAuditRouteImport
+      parentRoute: typeof PlatformRouteRoute
     }
     '/_authenticated/payroll': {
       id: '/_authenticated/payroll'
@@ -449,9 +581,32 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface PlatformRouteRouteChildren {
+  PlatformAuditRoute: typeof PlatformAuditRoute
+  PlatformFlagsRoute: typeof PlatformFlagsRoute
+  PlatformPacksRoute: typeof PlatformPacksRoute
+  PlatformParametersRoute: typeof PlatformParametersRoute
+  PlatformReleasesRoute: typeof PlatformReleasesRoute
+  PlatformIndexRoute: typeof PlatformIndexRoute
+}
+
+const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
+  PlatformAuditRoute: PlatformAuditRoute,
+  PlatformFlagsRoute: PlatformFlagsRoute,
+  PlatformPacksRoute: PlatformPacksRoute,
+  PlatformParametersRoute: PlatformParametersRoute,
+  PlatformReleasesRoute: PlatformReleasesRoute,
+  PlatformIndexRoute: PlatformIndexRoute,
+}
+
+const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(
+  PlatformRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  PlatformRouteRoute: PlatformRouteRouteWithChildren,
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,

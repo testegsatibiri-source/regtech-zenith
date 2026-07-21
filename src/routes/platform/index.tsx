@@ -5,7 +5,7 @@ import { getDashboardSnapshot } from "@/lib/platform/api.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_platform/")({
+export const Route = createFileRoute("/platform/")({
   component: PlatformOverview,
 });
 

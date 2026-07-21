@@ -5,7 +5,7 @@ import { listAudit } from "@/lib/platform/api.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_platform/audit")({
+export const Route = createFileRoute("/platform/audit")({
   component: AuditPage,
 });
 

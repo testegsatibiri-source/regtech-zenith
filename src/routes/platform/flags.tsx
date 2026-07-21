@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_platform/flags")({
+export const Route = createFileRoute("/platform/flags")({
   component: FlagsPage,
 });
 

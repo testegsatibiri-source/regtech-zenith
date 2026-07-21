@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMemo, useState } from "react";
 
-export const Route = createFileRoute("/_platform/parameters")({
+export const Route = createFileRoute("/platform/parameters")({
   component: ParametersPage,
 });
 
