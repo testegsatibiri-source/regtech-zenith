@@ -70,8 +70,8 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 - **DEBT-003 · API key management UI.** `api_keys` table is live but there is no admin surface to mint/revoke keys. Ship `/settings/api-keys` route with server-fn `createApiKey` returning the raw key exactly once. Without it, keyed callers can't onboard.
 
 ### P1 — Before adding the 2nd country pack
-- **DEBT-004 · Malaysia scaffold to prove the contract.** Add stub `my-pack.ts` (empty rules, EPF placeholder) and register it — this exercises `registerPack` and confirms no ID-specific import leaked.
-- **DEBT-005 · AI audit still imports `ID_PARAMS` directly.** Refactor `audit.functions.ts` to pull params from `getPack(company.country).params` so audit works for MY/SG without code change.
+- **DEBT-004 · [CLOSED in H5] Malaysia scaffold.**
+- **DEBT-005 · [CLOSED in H6] AI audit reads params from Runtime.**
 - **DEBT-006 · N+1 in `runComplianceAudit` and `listObligations`.** Both fetch employees, then loop over related rows client-side. Rewrite as a single join / RPC or batch with `.in('employee_id', ids)` to keep latency < 300ms at 500 employees.
 - **DEBT-007 · Score cache invalidation.** `companies.score_cache` exists but nothing reads or writes it. Subscribe to `PayrollFinalized@1` + `ObligationStatusChanged@1` + `ContractChanged@1` and recompute; dashboard reads from cache first, falls back to compute.
 - **DEBT-008 · CORS refinement for keyed callers.** `apiCors.corsHeadersFor` supports per-key `allowed_origins` but v1 routes still return `*`. Switch to `corsHeadersFor(origin, authed.key?.allowedOrigins ?? ["*"])` once keys are in production.
@@ -79,9 +79,15 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 ### P2 — Post-GA polish
 - **DEBT-009 · Move ID params to Edge Config / config table.** `ID_PARAMS` is a TS constant — every legislative change requires a deploy. Migrate to `regulatory_parameters` table keyed by `(country, version, effective_from)` so `Regulatory Update Service` can hot-swap without deploy.
 - **DEBT-010 · Persist metrics to `metrics_events`.** Currently only structured logs; add async batched writer for durable analytics.
-- **DEBT-011 · Linter WARN 0029 on `has_role`.** Function is intentionally executable by `authenticated` because RLS policies elsewhere call it inline. Accepted risk — documented here so future scans don't re-flag it.
+- **DEBT-011 · Linter WARN 0029 on `has_role`.** Function is intentionally executable by `authenticated` because RLS policies elsewhere call it inline. Accepted risk.
 - **DEBT-012 · Legacy alias sunset.** Remove `/api/public/calculate-tax` and `/api/public/calculate-bpjs` on 2026-10-15 per the `Sunset` header contract.
 - **DEBT-013 · SSR bearer for admin-scoped calls.** `apiAuth` uses `supabaseAdmin` for key lookup — correct, but consider a read replica once traffic > 100 rps.
+
+### Opened by H6
+- **DEBT-014 · Test Kit coverage for Calendar / Contract / Payroll providers.** Only Manifest / Tax / Benefits / Isolation ship in H6. Add parametric suites + country fixtures.
+- **DEBT-015 · Enforce `manifest.permissions`.** Field is declarative today. Runtime should gate provider methods that need e.g. `storage.write` via a capability broker at `contextFor()` time.
+- **DEBT-016 · Verify `manifest.signature.checksum`.** Structural check only in H6. Compute a canonical hash of the pack bundle and reject on mismatch; establish publisher key store.
+- **DEBT-017 · Country Pack Lifecycle (Sprint H7).** Implement the state machine `Installing → Validating → Initializing → Ready → Deprecated → Disabled → Failed`, wire `lifecycleHooks`, persist state across restarts, expose rollback in `/country-packs`.
 
 ---
 
@@ -93,6 +99,7 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 ---
 
 ## Fast follow-ups (< 1 hour each)
-1. Emit `PayrollFinalized@1` inside `finalizePayrollRun` (DEBT-001, DEBT-002 together).
+1. Emit `PayrollFinalized@1` inside `finalizePayrollRun` (still DEBT-001-adjacent — mutation-side wiring).
 2. Build `/settings/api-keys` route (DEBT-003).
-3. Register empty `malaysiaPack` to prove multi-country boot (DEBT-004).
+3. Expand Test Kit with `runCalendarProviderSuite` (DEBT-014).
+
