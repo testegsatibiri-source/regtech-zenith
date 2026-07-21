@@ -1,0 +1,75 @@
+name: CI · Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/**"
+      - "**/*.md"
+  pull_request:
+    paths:
+      - "docs/**"
+      - ".github/**"
+      - "**/*.md"
+
+concurrency:
+  group: ci-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Markdown lint
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            docs/**/*.md
+            .github/**/*.md
+            *.md
+
+      - name: Internal link check (lychee)
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: >-
+            --no-progress
+            --offline
+            --include-fragments
+            docs/**/*.md .github/**/*.md *.md
+          fail: true
+
+      - name: YAML lint (workflows)
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .github/workflows
+          config_data: |
+            extends: default
+            rules:
+              line-length: disable
+              document-start: disable
+              truthy:
+                check-keys: false
+
+      - name: CODEOWNERS syntax
+        uses: mszostok/codeowners-validator@v0.7.4
+        with:
+          checks: "files,syntax,duppatterns"
+
+      - name: Cross-reference check (governance docs exist)
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          # Every markdown link like (docs/governance/xxx.md) or
+          # (docs/architecture/xxx.md) must resolve to a real file.
+          while IFS= read -r target; do
+            if [ ! -f "$target" ]; then
+              echo "::error::Broken cross-reference: $target"
+              missing=1
+            fi
+          done < <(grep -rhoE '\(docs/(governance|architecture)/[^)]+\.md\)' docs .github 2>/dev/null \
+                   | tr -d '()' | sort -u)
+          exit $missing

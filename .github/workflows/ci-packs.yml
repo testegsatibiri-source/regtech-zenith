@@ -1,0 +1,48 @@
+name: CI · Country Packs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/packs/**"
+      - "src/sdk/testkit/**"
+  pull_request:
+    paths:
+      - "src/packs/**"
+      - "src/sdk/testkit/**"
+
+concurrency:
+  group: ci-packs-${{ github.ref }}-${{ matrix.pack }}
+  cancel-in-progress: true
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pack: [indonesia, philippines, malaysia]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bunx tsgo --noEmit
+
+      - name: Conformance + coexistence
+        run: bun test src/packs/${{ matrix.pack }}/

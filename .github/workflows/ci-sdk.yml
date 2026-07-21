@@ -1,0 +1,21 @@
+name: CI · SDK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/sdk/**"
+  pull_request:
+    paths:
+      - "src/sdk/**"
+
+concurrency:
+  group: ci-sdk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sdk:
+    uses: ./.github/workflows/ci-shared.yml
+    with:
+      test-command: "bun test src/sdk/"
+      typecheck: true

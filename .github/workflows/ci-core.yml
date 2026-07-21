@@ -1,0 +1,37 @@
+name: CI · Core
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/lib/**"
+      - "src/routes/**"
+      - "src/router.tsx"
+      - "src/start.ts"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "package.json"
+      - "bun.lock"
+      - "bun.lockb"
+  pull_request:
+    paths:
+      - "src/lib/**"
+      - "src/routes/**"
+      - "src/router.tsx"
+      - "src/start.ts"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "package.json"
+      - "bun.lock"
+      - "bun.lockb"
+
+concurrency:
+  group: ci-core-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    uses: ./.github/workflows/ci-shared.yml
+    with:
+      test-command: "bun test"
+      typecheck: true
