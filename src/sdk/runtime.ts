@@ -1,5 +1,5 @@
-// H5/H6 — Country Runtime: install/get/list/supports/resolve/health,
-// with Compatibility Validator + ProviderContext injection.
+// H5/H6/H10 — Country Runtime: install/get/list/supports/resolve/health,
+// with Compatibility Validator + ProviderContext injection + ConfigService.
 import type { CountryPack, Providers, HealthReport } from "./CountryPack";
 import type { Capability } from "./Capability";
 import { CORE_VERSION, satisfies } from "./version";
@@ -12,6 +12,7 @@ import {
 import { emit as emitBus } from "@/lib/events/bus";
 import { validatePack, type ValidationReport } from "./validator";
 import type { ProviderContext } from "./context";
+import { ConfigService, StaticConfigProvider } from "./config";
 
 export type PackStatus = "installed" | "degraded" | "incompatible" | "failed";
 
