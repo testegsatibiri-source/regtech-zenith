@@ -1,6 +1,27 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-07-21 (Sprint H7-Gov — Engineering Governance)._
+_Last audit: 2026-07-21 (Sprint H10 — Observability, IAM, Marketplace, Signing)._
+
+## H10 delivered
+
+| Area | Item | Status |
+|------|------|--------|
+| IAM | `role_capabilities` table + seed + `has_capability()` DB helper + local `src/lib/platform/capabilities.ts` mirror | ✅ |
+| IAM | `platform_invitations` table (7-day expiry, admin-only management) | ✅ |
+| MKT | `pack_registry` + `pack_lifecycle_events` + 8-state enum (`experimental`→…→`archived`) | ✅ |
+| MKT | `src/sdk/lifecycle.ts` — state machine + transition guards | ✅ |
+| MKT | `src/sdk/compatibility.ts` — CompatibilityService (core + validator + deps + signatures × TrustPolicy) | ✅ |
+| Sig | `trust_policies` table (preview/staging/production) + `pack_signing_keys` (algo, capabilities, provider) | ✅ |
+| Sig | `src/sdk/trust-policy.ts`, `src/sdk/trust-store.ts` (Memory + DbTrustStore), `src/sdk/signing.ts` (Ed25519 Web Crypto) | ✅ |
+| Cfg | `src/sdk/config.ts` — `ConfigProvider` interface + `ConfigService` + `StaticConfigProvider`; wired into `ProviderContext.config` | ✅ |
+| Obs | `metrics_events.layer` (`runtime|api|database|packs|business`) + index; `metrics_export_log` for hot→cold | ✅ |
+| Obs | `src/lib/observability/sink.ts` (MetricSink registry) + `PostgresSink` + `FileSink` stub | ✅ |
+| Obs | `incidents` + `postmortems` tables; `alert_rules` + `alert_notifications` + `alert_escalations` + `alert_incidents`; `alerts.ts` dispatcher (Slack/Email/Webhook functional; SMS/WhatsApp/PagerDuty stubs) | ✅ |
+| Docs | ADR-0010 … ADR-0015 | ✅ |
+
+**H11 preview:** remove `bootstrap.ts` (registry-only), Version Compatibility Matrix, signature enforcement in production, capabilities editor UI.
+
+
 
 ## Classification (H7-Gov)
 
