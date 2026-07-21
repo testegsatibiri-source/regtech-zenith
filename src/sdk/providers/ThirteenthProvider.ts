@@ -1,3 +1,5 @@
+import type { ProviderContext } from "../context";
+
 export interface ThirteenthInput {
   monthlySalary: number;
   monthsOfService: number;
@@ -8,5 +10,6 @@ export interface ThirteenthOutput {
   prorated: boolean;
 }
 export interface ThirteenthProvider {
-  calculate(input: ThirteenthInput): ThirteenthOutput;
+  readonly version: string;
+  calculate(input: ThirteenthInput, ctx?: ProviderContext): ThirteenthOutput;
 }

@@ -1,5 +1,6 @@
 import type { TaxCalcOutput } from "./TaxProvider";
 import type { BenefitsOutput } from "./BenefitsProvider";
+import type { ProviderContext } from "../context";
 
 export interface PayslipInput {
   baseSalary: number;
@@ -15,5 +16,6 @@ export interface Payslip {
   employerCost: number;
 }
 export interface PayrollProvider {
-  buildPayslip(input: PayslipInput): Payslip;
+  readonly version: string;
+  buildPayslip(input: PayslipInput, ctx?: ProviderContext): Payslip;
 }

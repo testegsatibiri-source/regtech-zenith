@@ -1,4 +1,4 @@
-// H5 — Country Pack contract (SDK). Composes providers + manifest.
+// H5/H6 — Country Pack contract (SDK). Composes providers + manifest + health.
 import type { CountryManifest } from "./manifest";
 import type { Capability } from "./Capability";
 import type { TaxProvider } from "./providers/TaxProvider";
@@ -21,9 +21,21 @@ export interface Providers {
   audit?: AuditProvider;
 }
 
+export interface HealthCheck {
+  name: string;
+  ok: boolean;
+  message?: string;
+}
+export interface HealthReport {
+  status: "ok" | "warn" | "error";
+  checks: HealthCheck[];
+}
+
 export interface CountryPack {
   manifest: CountryManifest;
   params: Record<string, unknown>;
   providers: Providers;
   supports(capability: Capability): boolean;
+  /** H6 — optional runtime self-check. Called on demand by the Runtime. */
+  health?(): Promise<HealthReport> | HealthReport;
 }

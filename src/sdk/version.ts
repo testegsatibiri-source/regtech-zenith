@@ -1,5 +1,5 @@
-// H5 — Core version + minimal semver range check.
-export const CORE_VERSION = "2.0.0";
+// H5/H6 — Core version + minimal semver range check + capability version check.
+export const CORE_VERSION = "2.1.0";
 
 function parse(v: string): [number, number, number] {
   const [a = "0", b = "0", c = "0"] = v.replace(/^[^\d]*/, "").split(".");
@@ -27,4 +27,16 @@ export function satisfies(range: string, version: string): boolean {
     case "^": return v[0] === target[0] && c >= 0;
     default: return false;
   }
+}
+
+/**
+ * Capability compatibility (H6): provider `actual` is compatible with `expected`
+ * iff same major AND actual.minor >= expected.minor. Accepts "x.y" or "x.y.z".
+ */
+export function capabilitySatisfies(expected: string, actual: string): boolean {
+  const e = parse(expected);
+  const a = parse(actual);
+  if (a[0] !== e[0]) return false;
+  if (a[1] < e[1]) return false;
+  return true;
 }
