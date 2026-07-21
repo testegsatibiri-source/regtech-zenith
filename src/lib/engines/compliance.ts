@@ -1,10 +1,9 @@
-// H2/H6 — Compliance Engine driven by CountryPack rules.
-// Legacy `CountryPack` shape is produced on demand by `legacy-bridge`, which
-// reads from the SDK Runtime — no direct pack imports here.
-import type { CountryPack, EmployeeLike, Severity } from "./types";
-import { getLegacyPack } from "./legacy-bridge";
-
-const getPack = (code: "ID" | "MY" | "SG" | "PH" | "VN" | "TH" = "ID") => getLegacyPack(code);
+// H2/H6/PH — Compliance Engine driven directly by the SDK CountryRuntime.
+// Reads RuleProvider + params + rulesetVersion per country code, so PH/MY
+// return their own rules (not silently ID's, as the retired legacy-bridge did).
+import "@/sdk/bootstrap";
+import { CountryRuntime } from "@/sdk";
+import type { ComplianceRule, CountryCode, EmployeeLike, Severity } from "./types";
 
 export type { EmployeeLike, Severity } from "./types";
 
@@ -26,6 +25,21 @@ export interface ComplianceReport {
   rulesetVersion: string;
 }
 
+interface PackView {
+  rules: ComplianceRule[];
+  params: Record<string, unknown>;
+  rulesetVersion: string;
+}
+
+function packView(code: CountryCode): PackView {
+  const p = CountryRuntime.get(code);
+  return {
+    rules: p.providers.rules?.rules() ?? [],
+    params: p.params,
+    rulesetVersion: p.manifest.rulesetVersion,
+  };
+}
+
 export function scoreFindings(findings: Finding[]): number {
   const total = findings.reduce((a, f) => a + f.weight, 0);
   if (total === 0) return 100;
@@ -33,9 +47,10 @@ export function scoreFindings(findings: Finding[]): number {
   return Math.round((passed / total) * 100);
 }
 
-export function evaluateEmployee(emp: EmployeeLike, pack: CountryPack = getPack("ID")): Finding[] {
-  return pack.complianceRules.map((r) => {
-    const { passed, message } = r.evaluate(emp, { params: pack.params });
+export function evaluateEmployee(emp: EmployeeLike, code: CountryCode = "ID"): Finding[] {
+  const { rules, params } = packView(code);
+  return rules.map((r) => {
+    const { passed, message } = r.evaluate(emp, { params });
     return {
       rule_code: r.code,
       title: r.title,
@@ -49,10 +64,11 @@ export function evaluateEmployee(emp: EmployeeLike, pack: CountryPack = getPack(
 
 export function evaluateCompany(
   employees: EmployeeLike[],
-  pack: CountryPack = getPack("ID"),
+  code: CountryCode = "ID",
 ): ComplianceReport {
+  const { rulesetVersion } = packView(code);
   const byEmployee = employees.map((e) => {
-    const f = evaluateEmployee(e, pack);
+    const f = evaluateEmployee(e, code);
     return { name: e.full_name, score: scoreFindings(f), findings: f };
   });
   const all = byEmployee.flatMap((e) => e.findings);
@@ -64,6 +80,6 @@ export function evaluateCompany(
     passedWeight,
     findings: all,
     byEmployee,
-    rulesetVersion: pack.rulesetVersion,
+    rulesetVersion,
   };
 }
