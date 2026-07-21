@@ -103,3 +103,12 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 2. Build `/settings/api-keys` route (DEBT-003).
 3. Expand Test Kit with `runCalendarProviderSuite` (DEBT-014).
 
+
+## PH validation findings (Sprint PH-Validation, 2026-07-21)
+
+Building the Philippines pack required **zero edits outside `src/packs/philippines/` and `src/sdk/testkit/fixtures/PH.ts`**, with the sole planned exception of the one-line registration in `src/sdk/bootstrap.ts`. Findings surfaced for future work:
+
+- **DEBT-018 · Public API multi-country.** Endpoints `/api/public/v1/calculate-tax` and `/calculate-bpjs` remain ID-only (fields `maritalStatus`, `hasNpwp`, currency IDR). Deferred until a real PH API customer exists — do NOT anticipate this complexity.
+- **DEBT-019 · `legacy-bridge.getLegacyPack` is ID-hardcoded.** It wires `calculateTax`/`calculateBpjs`/`calculateThr` from `@/lib/engines/indonesia` regardless of the requested code. `compliance.evaluateCompany` still works for PH because rules flow through `RuleProvider`, but any call to `getLegacyPack("PH").taxEngine` returns Indonesia numbers. Migrate consumers to `CountryRuntime.get(code).providers.tax` and delete the bridge once done.
+- **DEBT-020 · i18n `en-PH` / `fil` locale.** Manifest advertises `supportedLanguages: ["en", "fil"]` but no UI copy exists. Non-blocking.
+- **DEBT-021 · `/country-packs` UI is ID-centric in copy.** Renders PH correctly (validator + health) but labels/blurbs assume Indonesia terms. Non-blocking.
