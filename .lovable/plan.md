@@ -1,122 +1,119 @@
+# Sprint H6 — SDK Hardening: DI, Validator, Test Kit
+### + adoção das suas 4 sugestões / H7 reservado para Lifecycle
 
-# Auditoria arquitetural e Sprint H5 — Compliance SDK
+## Análise das suas propostas (relevância × viabilidade × timing)
 
-## Onde estamos hoje (auditoria)
+| # | Proposta | Relevância | Viabilidade | Onde entra |
+|---|---|---|---|---|
+| 1 | **Capability Versioning** (`interfaceVersion` por provider) | Alta — hoje `requiresCore` é grosso demais; um bump em `TaxProvider` força bump do Core inteiro. Desacopla evolução por capacidade. | Alta — 1 campo por interface + checagem no Validator. | **H6, agora** |
+| 2 | **Manifesto expandido** (`provides`/`requires`/`events`/`permissions`/`dependencies`/`features`) | Alta — habilita o Runtime a resolver dependências entre packs e a autorizar acesso a APIs sensíveis (ex.: `permissions: ["storage.read"]`). | Alta para `provides/requires/events/features`; média para `permissions` (precisa enforcement no runtime — só declaração agora). | **H6, agora** (declarativo + validação) |
+| 3 | **Health Check por pack** (`pack.health()` → ok/warnings/errors) | Alta — detecta pack "meio instalado" (ex.: `calendar` declarado mas `templates()` vazio, params faltando). Diferente do Validator: roda em runtime, não só em install. | Alta — método opcional na interface `CountryPack`; UI `/country-packs` mostra status. | **H6, agora** |
+| 4 | **Signature reservada** (`signature/publisher/checksum` no manifesto) | Média/estratégica — sem uso imediato, mas travar o contrato agora evita breaking change quando publishers externos entrarem. | Trivial — só campos opcionais tipados; Validator ignora se ausente, valida formato se presente. | **H6, agora** (só contrato + tipos) |
+| 5 | **Country Pack Lifecycle** (`Installing → Validating → Initializing → Ready → Deprecated → Disabled → Failed`) | Alta para operação (rollback, hot-swap, troubleshooting). | Média — exige state machine + persistência + hooks (`onInstall`, `onEnable`, `onDisable`). Escopo próprio. | **H7 (sprint seguinte)** — reservo espaço no manifesto (`lifecycleHooks?`) mas não implemento. |
 
-| Área | Estado atual | Gap vs. proposta |
-|------|--------------|------------------|
-| CountryPack | Interface única em `engines/types.ts` (tax + social + 13th + rules) | Falta split em Providers (Payroll / Tax / Benefits / Calendar / Contract / Rule / Audit) |
-| Runtime | `registry.ts` = `Map` simples + bootstrap direto no import | Sem carregador, sem validação de versão, sem resolução de dependências, sem cache |
-| Manifesto | Inexistente — código é a fonte da verdade | Falta `country.yaml`/`manifest.ts` com `version`, `engines`, `requiresCore` |
-| Versionamento | Só `rulesetVersion` string dentro do pack | Sem semver independente de Core / Pack, sem checagem de compatibilidade |
-| Instalação | Bootstrap hard-coded (`registerPack(indonesiaPack)`) | Sem "marketplace"/registrar dinâmico com UI de instalação |
-| Capability discovery | Consumidores assumem THR, BPJS etc. (`audit.tsx`, dashboard, calendar) | Falta `pack.supports("thr")`; UI condicional |
-| Metadata Registry | Só packs | Falta registry de providers/validators/reports/obligations/calculators |
-| DI | `getPack()` importado direto pelos consumers; `id-pack` importa `ID_PARAMS` | Falta container/injeção via interface |
-| Event Bus | `events/bus.ts` in-process, 4 tipos, sem emissão real (DEBT-001) | Falta catálogo oficial de eventos + emissão nas mutations |
-| Governance | Só `docs/tech-debt.md` | Faltam ADRs, Country Pack Spec, Contribution/Release/Security/Version/Migration policies |
+Consenso: 1–4 entram nesta sprint porque compõem o Validator; 5 vira Sprint H7 dedicada.
 
-Diagnóstico: a fundação de H1–H4 é sólida, mas o `CountryPack` é monolítico e o Core ainda "conhece" a Indonésia por caminho de import. Antes de escrever MY/SG/PH, a plataforma precisa virar SDK.
+---
 
-## Escopo desta sprint (H5 — SDK & Governance)
+## Escopo H6 (o que entra)
 
-Sem novos módulos de negócio. Só refactor de plataforma + docs.
+### 1. DI completa — remover `@/lib/engines/*` dos callers
+Auditoria confirmou 12 arquivos com import direto de `@/lib/engines/{indonesia,contracts,compliance,registry}`. Callers passam a resolver via Runtime:
 
-### 1. `@uboard/compliance-sdk` (pasta `src/sdk/`)
-Novo pacote lógico com contratos puros — zero dependência de Supabase, React ou libs de país:
-- `sdk/providers/` — um arquivo por provider:
-  - `PayrollProvider`, `TaxProvider`, `BenefitsProvider`, `CalendarProvider` (retorna templates de obrigação), `ContractProvider` (regras PKWT/PKWTT-like), `RuleProvider` (compliance rules), `AuditProvider` (heurísticas de auditoria/IA).
-- `sdk/CountryPack.ts` — interface do pack = manifest + mapa opcional `providers: Partial<Record<Capability, Provider>>`.
-- `sdk/Capability.ts` — enum: `payroll | tax | benefits | thirteenth | overtime | leave | calendar | contracts | audit`.
-- `sdk/manifest.ts` — tipo `CountryManifest { country, version (semver), engines[], supportedLanguages[], requiresCore }`.
-- `sdk/events.ts` — catálogo oficial versionado: `PayrollCalculated@1`, `TaxCalculated@1`, `ContractExpired@1`, `EmployeeCreated@1`, `RuleFailed@1`, `ComplianceUpdated@1`, `AuditCompleted@1` (+ manter os `@1` já existentes).
-- `sdk/errors.ts` — `PackNotFound`, `IncompatibleCoreVersion`, `CapabilityUnsupported`.
-- `sdk/version.ts` — `CORE_VERSION = "2.0.0"` + `satisfies(range, version)` mínimo (sem dep externa).
-
-### 2. Country Runtime (`src/sdk/runtime.ts`)
-Substitui o `Map` bruto do `registry.ts`:
-- `CountryRuntime.install(pack)` — valida manifest, checa `requiresCore` contra `CORE_VERSION`, resolve providers, popula cache.
-- `CountryRuntime.get(code)` — lookup com erro tipado.
-- `CountryRuntime.supports(code, capability)` — capability discovery.
-- `CountryRuntime.list()` — inclui `status: installed|incompatible`.
-- Emite `CountryPackInstalled@1` / `CountryPackFailed@1` no bus.
-
-### 3. Reescrever Indonesia como pack SDK
-- Novo `src/packs/indonesia/` com:
-  - `manifest.ts` (`version: "1.7.0"`, `engines: ["payroll","tax","benefits","thirteenth","overtime","calendar","contracts","audit"]`, `requiresCore: ">=2.0.0"`).
-  - `providers/tax.ts`, `providers/benefits.ts` (BPJS), `providers/thirteenth.ts` (THR), `providers/payroll.ts` (compõe os anteriores), `providers/calendar.ts` (move `obligations.catalog.ts`), `providers/contracts.ts` (move `engines/contracts.ts`), `providers/rules.ts` (move compliance rules), `providers/audit.ts` (move heurísticas de `audit.functions.ts`).
-  - `params.ts` (ex-`ID_PARAMS`).
-  - `index.ts` — exporta `indonesiaPack: CountryPack`.
-- `src/lib/engines/*` vira thin shim que re-exporta do SDK+pack, para não quebrar imports enquanto migra callers. Marcado `@deprecated`.
-
-### 4. Dependency Injection nos consumers
-Substituir imports diretos em:
-- `src/lib/data.functions.ts` — usa `runtime.get(company.country).providers.payroll`.
-- `src/lib/audit.functions.ts` — usa `providers.audit` (elimina DEBT-005).
-- `src/lib/calendar.functions.ts` — usa `providers.calendar` para templates de obligation.
-- `src/lib/contracts.functions.ts` — usa `providers.contracts`.
-- `src/routes/_authenticated/dashboard.tsx` + `audit.tsx` + `calendar.tsx` — chamam `runtime.supports(...)` antes de renderizar cards de THR/BPJS/etc.
-
-### 5. Event Bus oficial
-- Estender `src/lib/events/bus.ts` para importar o catálogo do SDK (`sdk/events.ts`).
-- Emitir eventos nas mutations que hoje não emitem (fecha DEBT-001):
-  - `finalizePayrollRun` → `PayrollCalculated@1` + `PayrollFinalized@1`.
-  - `upsertEmployee` → `EmployeeCreated@1` / `EmployeeUpserted@1`.
-  - `updateObligationStatus` → `ObligationStatusChanged@1`.
-  - `upsertContract` → `ContractChanged@1`; scheduler detector emite `ContractExpired@1`.
-  - `runComplianceAudit` → `AuditCompleted@1` + `RuleFailed@1` por finding crítico.
-- Handler default assina `ComplianceUpdated@1` para invalidar `companies.score_cache` (fecha DEBT-007).
-
-### 6. "Marketplace" interno (UI mínima)
-- Nova rota `/settings/country-packs` (só leitura + toggle install/uninstall no runtime em memória — persistência real fica para depois).
-- Lista packs disponíveis com badge de versão, capabilities suportadas, status de compatibilidade.
-- Stub `malaysiaPack` (manifest `0.1.0`, sem providers) só para provar multi-pack (fecha DEBT-004).
-
-### 7. Governance (`docs/governance/`)
-Documentos novos, curtos e opinativos:
-- `ADR-0001-compliance-sdk.md` — decisão desta sprint.
-- `ADR-0002-event-catalog.md` — versionamento `@N` de eventos.
-- `country-pack-spec.md` — contrato que cada pack deve implementar.
-- `contribution-guide.md` — como abrir novo pack (MY/SG/PH).
-- `release-process.md` — semver de Core vs. Pack.
-- `security-policy.md` — RLS, hashing, service-role rules (referencia o que já existe).
-- `api-version-policy.md` — regras de `/api/public/v1` + sunset.
-- `migration-policy.md` — como migrar params sem deploy (referencia DEBT-009).
-- Atualizar `docs/tech-debt.md` marcando DEBT-001/004/005/007 fechados.
-
-## Fora de escopo
-- Persistência real de instalação de packs (marketplace real).
-- Escrever regras de MY/SG/PH (só stub vazio).
-- Loader de `country.yaml` do disco — o manifest fica em TS por enquanto (spec documentada em YAML no `country-pack-spec.md`).
-- Qualquer mudança em auth, UI theming, i18n, ou motores de cálculo em si.
-
-## Notas técnicas
-
-```text
-src/
-├── sdk/                         # contratos puros, sem I/O
-│   ├── Capability.ts
-│   ├── CountryPack.ts
-│   ├── manifest.ts
-│   ├── version.ts
-│   ├── errors.ts
-│   ├── events.ts
-│   ├── runtime.ts
-│   └── providers/
-│       ├── PayrollProvider.ts
-│       ├── TaxProvider.ts
-│       ├── BenefitsProvider.ts
-│       ├── CalendarProvider.ts
-│       ├── ContractProvider.ts
-│       ├── RuleProvider.ts
-│       └── AuditProvider.ts
-├── packs/
-│   ├── indonesia/…              # reimplementa ID via SDK
-│   └── malaysia/manifest.ts     # stub
-├── lib/engines/*                # shims @deprecated → SDK
-└── docs/governance/*.md
+```ts
+const tax = CountryRuntime.require(company.country, "tax", "tax");
+tax.calculate({ monthlyGross, maritalStatus, hasNpwp });
 ```
 
-Compatibilidade: `engines/registry.ts::getPack` mantém API pública durante a migração — internamente delega ao `CountryRuntime`. Nenhuma tabela nova, nenhuma migração SQL nesta sprint.
+Afetados:
+- **Server:** `src/lib/data.functions.ts`, `audit.functions.ts`, `calendar.functions.ts`, `contracts.functions.ts`
+- **UI:** `src/routes/_authenticated/{dashboard,payroll,contracts,employees}.tsx`, `src/components/PayrollCalculator.tsx`
+- **APIs:** `src/routes/api/public/{,v1/}calculate-{tax,bpjs}.ts`, `v1/health.ts` (usam `CountryRuntime.list()` no lugar de `listPacks`)
 
-Ordem de execução: SDK → Runtime → pack ID reescrito → shims → DI nos consumers → eventos → UI de packs → governance/docs → typecheck.
+`src/lib/engines/*` é rebaixado a implementação interna do pack ID (movido para `src/packs/indonesia/internal/`); nada fora de `src/packs/indonesia/` importa dali. `src/lib/engines/registry.ts` deletado (Runtime é a fonte). Rotas legadas `/api/public/calculate-{tax,bpjs}` continuam funcionando via Runtime até o sunset já agendado (2026-10-15).
+
+### 2. Isolamento entre providers (`ProviderContext`)
+Runtime injeta `ctx` com sibling providers no `resolve()`:
+
+```ts
+PayrollProvider.buildPayslip(input, ctx: { tax, benefits, thirteenth })
+```
+
+Providers em `src/packs/**/providers/*` **não podem importar outro provider por caminho** — apenas via `ctx`. Regra aplicada no ESLint (regra `no-restricted-imports` local) e verificada no Test Kit.
+
+### 3. Capability Versioning (sua sugestão #1)
+Cada interface de provider ganha `interfaceVersion: "1.0"`. Cada provider declara `readonly version: string`. SDK exporta a matriz `EXPECTED_INTERFACES = { tax: "1.0", benefits: "1.0", ... }`. Validator rejeita pack cuja versão não satisfaz o range esperado.
+
+### 4. Manifesto expandido (sua sugestão #2)
+Adiciona ao `CountryManifest`:
+```ts
+provides: Capability[]      // = engines (renomeado semanticamente, engines mantém alias)
+requires: Capability[]      // ex.: audit requires calendar
+events: { emits?: SdkEventType[]; consumes?: SdkEventType[] }
+permissions?: string[]      // declarativo agora, enforcement fica p/ H7
+features?: string[]         // flags opcionais ("multi-currency", "expat-visa")
+dependencies?: { pack: string; range: string }[]  // country pack → country pack
+signature?: { publisher: string; checksum: string; algo: "sha256" }  // opcional (sua #4)
+lifecycleHooks?: { onInstall?: string; onEnable?: string }  // placeholder p/ H7
+```
+Validator checa: todo `requires` tem provider correspondente (próprio ou de outro pack instalado); todo evento em `emits/consumes` existe no `SdkEvent` catalog; `signature.checksum` bate com hash do bundle serializado (se presente).
+
+### 5. Compatibility Validator (`src/sdk/validator.ts`)
+Executado dentro de `CountryRuntime.install()`. Retorna `ValidationReport { ok, errors[], warnings[] }`. Checa:
+- `requiresCore` satisfaz `CORE_VERSION`
+- Cada capability em `provides` tem provider e a versão do provider satisfaz `EXPECTED_INTERFACES[cap]`
+- `requires` resolvido
+- Eventos declarados existem
+- `rulesetVersion` no formato `<CC>-YYYY.N`
+- `signature` (se presente): formato válido; `checksum` reservado para verificação futura, mas se `algo` presente exige `checksum` presente
+- `manifest.engines`/`provides` coerente com `Object.keys(providers)`
+
+`errors` bloqueiam install; `warnings` deixam instalar com status `degraded`. Emite `CountryPackValidated@1` no bus.
+
+### 6. Health Check (sua sugestão #3)
+`CountryPack.health?(): Promise<HealthReport>` opcional. `HealthReport = { status: "ok"|"warn"|"error"; checks: { name: string; ok: boolean; message?: string }[] }`. Runtime executa `health()` on demand (via `CountryRuntime.health(code)`) e periodicamente no boot. UI `/country-packs` mostra badge por pack. Indonesia implementa checks básicos: params carregados, ruleset presente, obligations não-vazias, sample `tax.calculate` não-throw.
+
+### 7. Test Kit — MVP (`src/sdk/testkit/`)
+Suites parametrizadas exportadas:
+- `runManifestSuite(pack)` — usa o Validator
+- `runTaxProviderSuite(pack, fixtures)` — 6 casos por país
+- `runBenefitsProviderSuite(pack, fixtures)` — 4 casos
+- `runIsolationSuite(pack)` — verifica que arquivos do pack não importam outro pack nem `@/lib/engines/*`
+- Fixtures em `src/sdk/testkit/fixtures/<CC>.ts`; ID obrigatório, MY marcado `.skip` até ter providers
+
+Uso: `src/packs/indonesia/__tests__/conformance.test.ts` chama todas as suites. Comando único `bun test src/packs/` valida todos os packs.
+
+### 8. Governança
+- `ADR-0003` — Provider Isolation & Context Injection
+- `ADR-0004` — Country Pack Conformance Testing
+- `ADR-0005` — Capability Versioning & Expanded Manifest
+- Atualiza `country-pack-spec.md` (novos campos + seção Conformance)
+- `docs/tech-debt.md`: fecha DEBT-001, DEBT-005; abre DEBT-014 (Test Kit para Calendar/Contract/Payroll), DEBT-015 (enforcement de `permissions`), DEBT-016 (verificação real de `signature.checksum`)
+
+---
+
+## Fora de escopo H6 (explícito)
+- **Country Pack Lifecycle state machine** → **Sprint H7** dedicada
+- Enforcement real de `permissions` e verificação de `signature` → tracked como debt
+- Nenhum módulo de negócio novo, nenhuma mudança de schema/RLS/auth
+- Malaysia continua stub; só ganha manifesto no formato novo
+
+---
+
+## Diagrama final
+
+```text
+Caller (route / server-fn / UI)
+  └─ CountryRuntime.resolve(code, capability)
+       ├─ Validator (install-time, com capability versioning + manifesto expandido)
+       ├─ health()  (runtime, sob demanda)
+       └─ Provider  ← ctx { sibling providers }
+              └─ pack-internal engines (src/packs/<cc>/internal/*)
+```
+
+Nada fora de `src/packs/<cc>/` importa engines desse país. Nenhum provider importa outro provider por caminho. Runtime é o único ponto de acoplamento — e agora ele sabe quais capacidades, versões, eventos e permissões cada pack traz.
+
+---
+
+## Preview Sprint H7 (não implementar agora)
+Country Pack Lifecycle: state machine (`Installing → Validating → Initializing → Ready → Deprecated → Disabled → Failed`), hooks (`onInstall`/`onEnable`/`onDisable`), persistência do estado, UI de rollback, integração com Health Check para transição `Ready → Degraded` automática.
