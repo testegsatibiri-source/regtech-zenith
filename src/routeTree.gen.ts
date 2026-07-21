@@ -18,6 +18,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
+import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
 import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
 import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
@@ -32,6 +33,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
 import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
+import { Route as ApiPublicV1ReadinessRouteImport } from './routes/api/public/v1/readiness'
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
 import { Route as ApiPublicV1CalculateTaxRouteImport } from './routes/api/public/v1/calculate-tax'
@@ -79,6 +81,11 @@ const PlatformIndexRoute = PlatformIndexRouteImport.update({
 const PlatformReleasesRoute = PlatformReleasesRouteImport.update({
   id: '/releases',
   path: '/releases',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformReadinessRoute = PlatformReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformParametersRoute = PlatformParametersRouteImport.update({
@@ -152,6 +159,11 @@ const ApiPublicCalculateBpjsRoute = ApiPublicCalculateBpjsRouteImport.update({
   path: '/api/public/calculate-bpjs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1ReadinessRoute = ApiPublicV1ReadinessRouteImport.update({
+  id: '/api/public/v1/readiness',
+  path: '/api/public/v1/readiness',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1OpenapiDotjsonRoute =
   ApiPublicV1OpenapiDotjsonRouteImport.update({
     id: '/api/public/v1/openapi.json',
@@ -193,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
@@ -202,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
+  '/api/public/v1/readiness': typeof ApiPublicV1ReadinessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -220,6 +234,7 @@ export interface FileRoutesByTo {
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
@@ -229,6 +244,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
+  '/api/public/v1/readiness': typeof ApiPublicV1ReadinessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -250,6 +266,7 @@ export interface FileRoutesById {
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
@@ -259,6 +276,7 @@ export interface FileRoutesById {
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
   '/api/public/v1/openapi.json': typeof ApiPublicV1OpenapiDotjsonRoute
+  '/api/public/v1/readiness': typeof ApiPublicV1ReadinessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -280,6 +298,7 @@ export interface FileRouteTypes {
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
+    | '/platform/readiness'
     | '/platform/releases'
     | '/platform/'
     | '/api/public/calculate-bpjs'
@@ -289,6 +308,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/calculate-tax'
     | '/api/public/v1/health'
     | '/api/public/v1/openapi.json'
+    | '/api/public/v1/readiness'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -307,6 +327,7 @@ export interface FileRouteTypes {
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
+    | '/platform/readiness'
     | '/platform/releases'
     | '/platform'
     | '/api/public/calculate-bpjs'
@@ -316,6 +337,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/calculate-tax'
     | '/api/public/v1/health'
     | '/api/public/v1/openapi.json'
+    | '/api/public/v1/readiness'
   id:
     | '__root__'
     | '/'
@@ -336,6 +358,7 @@ export interface FileRouteTypes {
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
+    | '/platform/readiness'
     | '/platform/releases'
     | '/platform/'
     | '/api/public/calculate-bpjs'
@@ -345,6 +368,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/calculate-tax'
     | '/api/public/v1/health'
     | '/api/public/v1/openapi.json'
+    | '/api/public/v1/readiness'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -362,6 +386,7 @@ export interface RootRouteChildren {
   ApiPublicV1CalculateTaxRoute: typeof ApiPublicV1CalculateTaxRoute
   ApiPublicV1HealthRoute: typeof ApiPublicV1HealthRoute
   ApiPublicV1OpenapiDotjsonRoute: typeof ApiPublicV1OpenapiDotjsonRoute
+  ApiPublicV1ReadinessRoute: typeof ApiPublicV1ReadinessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -427,6 +452,13 @@ declare module '@tanstack/react-router' {
       path: '/releases'
       fullPath: '/platform/releases'
       preLoaderRoute: typeof PlatformReleasesRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/readiness': {
+      id: '/platform/readiness'
+      path: '/readiness'
+      fullPath: '/platform/readiness'
+      preLoaderRoute: typeof PlatformReadinessRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/parameters': {
@@ -527,6 +559,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCalculateBpjsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/readiness': {
+      id: '/api/public/v1/readiness'
+      path: '/api/public/v1/readiness'
+      fullPath: '/api/public/v1/readiness'
+      preLoaderRoute: typeof ApiPublicV1ReadinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/openapi.json': {
       id: '/api/public/v1/openapi.json'
       path: '/api/public/v1/openapi.json'
@@ -586,6 +625,7 @@ interface PlatformRouteRouteChildren {
   PlatformFlagsRoute: typeof PlatformFlagsRoute
   PlatformPacksRoute: typeof PlatformPacksRoute
   PlatformParametersRoute: typeof PlatformParametersRoute
+  PlatformReadinessRoute: typeof PlatformReadinessRoute
   PlatformReleasesRoute: typeof PlatformReleasesRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
 }
@@ -595,6 +635,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformFlagsRoute: PlatformFlagsRoute,
   PlatformPacksRoute: PlatformPacksRoute,
   PlatformParametersRoute: PlatformParametersRoute,
+  PlatformReadinessRoute: PlatformReadinessRoute,
   PlatformReleasesRoute: PlatformReleasesRoute,
   PlatformIndexRoute: PlatformIndexRoute,
 }
@@ -618,17 +659,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1CalculateTaxRoute: ApiPublicV1CalculateTaxRoute,
   ApiPublicV1HealthRoute: ApiPublicV1HealthRoute,
   ApiPublicV1OpenapiDotjsonRoute: ApiPublicV1OpenapiDotjsonRoute,
+  ApiPublicV1ReadinessRoute: ApiPublicV1ReadinessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,6 +1,26 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-07-21 (Sprint H10 — Observability, IAM, Marketplace, Signing)._
+_Last audit: 2026-07-21 (Sprint H11 — Consolidation Checkpoint)._
+
+## H11 delivered
+
+| Area | Item | Status |
+|------|------|--------|
+| Boot | `src/sdk/boot.ts` — Boot Health Gate (gates → registry → matrix → signatures → health) + Readiness Report | ✅ |
+| Boot | `runtime_boot_reports` history table + `/api/public/v1/readiness` + `/platform/readiness` UI | ✅ |
+| Gates | `platform_feature_gates` table + `src/sdk/feature-gates.ts` (5 gates seeded per-env) | ✅ |
+| Matrix | `src/sdk/compatibility-matrix.ts` — Compatibility Matrix v1.0 + `checkMatrix()` | ✅ |
+| Compat | `CompatibilityService` v1.0.0 engine — engineVersion + matrixVersion in every report | ✅ |
+| Compat | `compatibility_reports` history table | ✅ |
+| Sig | `src/sdk/signature-rejection.ts` — 8 structured rejection codes wired through CompatibilityService | ✅ |
+| Freeze | `PACK_INTERFACE_VERSION = "1.0.0"` + validator enforcement (warn today, error in H12) | ✅ |
+| Freeze | `docs/governance/country-pack-interface-v1.md` — frozen contract doc | ✅ |
+| Events | `RuntimeBootCompleted@1`, `PackRegistryDivergence@1`, `BootstrapRemoved@1` added to catalog | ✅ |
+| Docs | ADR-0016 (Boot Gate) · ADR-0017 (Compat versioning) · ADR-0018 (Interface v1) · ADR-0019 (Feature Gates) | ✅ |
+
+**H11.2 preview (next sprint):** flip `registry_enabled=on` in production after 14 days of 0 divergences; enable `PACK_SIG_ENFORCE=enforce` in production; remove `bootstrap.ts` once `scripts/verify-h11-ready.ts` confirms all preconditions.
+
+
 
 ## H10 delivered
 

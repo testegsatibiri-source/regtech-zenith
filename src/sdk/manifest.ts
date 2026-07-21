@@ -58,4 +58,11 @@ export interface CountryManifest {
   supportedLanguages: string[];
   /** Semver range the pack requires from Core. */
   requiresCore: string;
+
+  /**
+   * H11-Freeze — Country Pack Interface contract this pack was built against.
+   * Optional today; enforced by the validator when present. Once
+   * PACK_INTERFACE_ENFORCE is on, packs without a compatible value are rejected.
+   */
+  interfaceVersion?: string;
 }

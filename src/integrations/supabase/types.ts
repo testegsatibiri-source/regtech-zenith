@@ -334,6 +334,42 @@ export type Database = {
         }
         Relationships: []
       }
+      compatibility_reports: {
+        Row: {
+          checks: Json
+          created_at: string
+          engine_version: string
+          environment: string | null
+          id: string
+          matrix_version: string
+          ok: boolean
+          pack_country: string
+          pack_version: string
+        }
+        Insert: {
+          checks?: Json
+          created_at?: string
+          engine_version: string
+          environment?: string | null
+          id?: string
+          matrix_version: string
+          ok: boolean
+          pack_country: string
+          pack_version: string
+        }
+        Update: {
+          checks?: Json
+          created_at?: string
+          engine_version?: string
+          environment?: string | null
+          id?: string
+          matrix_version?: string
+          ok?: boolean
+          pack_country?: string
+          pack_version?: string
+        }
+        Relationships: []
+      }
       compliance_findings: {
         Row: {
           company_id: string
@@ -1138,6 +1174,39 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_feature_gates: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          environment: string
+          gate: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          environment: string
+          gate: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          environment?: string
+          gate?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       platform_invitations: {
         Row: {
           accepted_at: string | null
@@ -1332,6 +1401,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           scope?: string
+        }
+        Relationships: []
+      }
+      runtime_boot_reports: {
+        Row: {
+          environment: string | null
+          id: string
+          ready: boolean
+          report: Json
+          runtime_version: string
+          sdk_version: string
+          ts: string
+        }
+        Insert: {
+          environment?: string | null
+          id?: string
+          ready: boolean
+          report?: Json
+          runtime_version: string
+          sdk_version: string
+          ts?: string
+        }
+        Update: {
+          environment?: string | null
+          id?: string
+          ready?: boolean
+          report?: Json
+          runtime_version?: string
+          sdk_version?: string
+          ts?: string
         }
         Relationships: []
       }

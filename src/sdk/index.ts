@@ -35,6 +35,16 @@ export { MemoryTrustStore } from "./trust-store";
 export type { PackSignatureRecord, VerificationResult } from "./signing";
 export { verifyEd25519 } from "./signing";
 export type { CompatibilityReport, CompatCheck, CompatibilityInput } from "./compatibility";
-export { CompatibilityService, compatibilityService } from "./compatibility";
+export { CompatibilityService, compatibilityService, COMPATIBILITY_ENGINE_VERSION } from "./compatibility";
 export type { PackState, TransitionGuard } from "./lifecycle";
 export { canTransition, guardsFor, GUARDS } from "./lifecycle";
+// H11 additions
+export { PACK_INTERFACE_VERSION, SUPPORTED_PACK_INTERFACE_RANGE } from "./INTERFACE_VERSION";
+export type { FeatureGate, GateEnv, GateState } from "./feature-gates";
+export { FeatureGates, currentEnv } from "./feature-gates";
+export type { CompatibilityMatrix, MatrixCheck, MatrixReport } from "./compatibility-matrix";
+export { COMPATIBILITY_MATRIX_V1, checkMatrix, checkPackAgainstMatrix } from "./compatibility-matrix";
+export type { SignatureRejectionCode, SignatureRejection } from "./signature-rejection";
+export { SIGNATURE_REJECTION_LABELS } from "./signature-rejection";
+export type { ReadinessReport, ReadinessStatus, ReadinessStep } from "./boot";
+export { runBootGate, getReadinessReport, Readiness } from "./boot";
