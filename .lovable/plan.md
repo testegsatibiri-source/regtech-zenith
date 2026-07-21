@@ -1,119 +1,112 @@
-# Sprint H6 — SDK Hardening: DI, Validator, Test Kit
-### + adoção das suas 4 sugestões / H7 reservado para Lifecycle
 
-## Análise das suas propostas (relevância × viabilidade × timing)
+# Philippines Country Pack — Validação Arquitetural (v2)
 
-| # | Proposta | Relevância | Viabilidade | Onde entra |
-|---|---|---|---|---|
-| 1 | **Capability Versioning** (`interfaceVersion` por provider) | Alta — hoje `requiresCore` é grosso demais; um bump em `TaxProvider` força bump do Core inteiro. Desacopla evolução por capacidade. | Alta — 1 campo por interface + checagem no Validator. | **H6, agora** |
-| 2 | **Manifesto expandido** (`provides`/`requires`/`events`/`permissions`/`dependencies`/`features`) | Alta — habilita o Runtime a resolver dependências entre packs e a autorizar acesso a APIs sensíveis (ex.: `permissions: ["storage.read"]`). | Alta para `provides/requires/events/features`; média para `permissions` (precisa enforcement no runtime — só declaração agora). | **H6, agora** (declarativo + validação) |
-| 3 | **Health Check por pack** (`pack.health()` → ok/warnings/errors) | Alta — detecta pack "meio instalado" (ex.: `calendar` declarado mas `templates()` vazio, params faltando). Diferente do Validator: roda em runtime, não só em install. | Alta — método opcional na interface `CountryPack`; UI `/country-packs` mostra status. | **H6, agora** |
-| 4 | **Signature reservada** (`signature/publisher/checksum` no manifesto) | Média/estratégica — sem uso imediato, mas travar o contrato agora evita breaking change quando publishers externos entrarem. | Trivial — só campos opcionais tipados; Validator ignora se ausente, valida formato se presente. | **H6, agora** (só contrato + tipos) |
-| 5 | **Country Pack Lifecycle** (`Installing → Validating → Initializing → Ready → Deprecated → Disabled → Failed`) | Alta para operação (rollback, hot-swap, troubleshooting). | Média — exige state machine + persistência + hooks (`onInstall`, `onEnable`, `onDisable`). Escopo próprio. | **H7 (sprint seguinte)** — reservo espaço no manifesto (`lifecycleHooks?`) mas não implemento. |
+**Objetivo:** provar isolamento total do Core construindo o PH pack **sem tocar em nada fora de `src/packs/philippines/`**.
 
-Consenso: 1–4 entram nesta sprint porque compõem o Validator; 5 vira Sprint H7 dedicada.
+## Regra dura de Core-freeze
 
----
+**Zero edits** em qualquer arquivo fora de `src/packs/philippines/` e `src/sdk/testkit/fixtures/PH.ts`. Explicitamente proibido tocar:
 
-## Escopo H6 (o que entra)
+- `src/sdk/**` — contratos, runtime, validator, testkit (exceto fixtures novas)
+- `src/lib/**` — engines, bridges, functions, i18n, obligations
+- `src/routes/**` — rotas, APIs, UI
+- `src/integrations/**`, `src/components/**`, `src/hooks/**`
 
-### 1. DI completa — remover `@/lib/engines/*` dos callers
-Auditoria confirmou 12 arquivos com import direto de `@/lib/engines/{indonesia,contracts,compliance,registry}`. Callers passam a resolver via Runtime:
-
+**Única exceção permitida:** uma linha em `src/sdk/bootstrap.ts`:
 ```ts
-const tax = CountryRuntime.require(company.country, "tax", "tax");
-tax.calculate({ monthlyGross, maritalStatus, hasNpwp });
+CountryRuntime.tryInstall(philippinesPack);
 ```
+(mecanismo de registro já previsto pela arquitetura — não conta como mudança de Core).
 
-Afetados:
-- **Server:** `src/lib/data.functions.ts`, `audit.functions.ts`, `calendar.functions.ts`, `contracts.functions.ts`
-- **UI:** `src/routes/_authenticated/{dashboard,payroll,contracts,employees}.tsx`, `src/components/PayrollCalculator.tsx`
-- **APIs:** `src/routes/api/public/{,v1/}calculate-{tax,bpjs}.ts`, `v1/health.ts` (usam `CountryRuntime.list()` no lugar de `listPacks`)
+Se durante a implementação surgir necessidade de editar qualquer outro arquivo → **PARO, registro em `docs/tech-debt.md` como DEBT-018+, e reporto**. Não corrijo no mesmo sprint.
 
-`src/lib/engines/*` é rebaixado a implementação interna do pack ID (movido para `src/packs/indonesia/internal/`); nada fora de `src/packs/indonesia/` importa dali. `src/lib/engines/registry.ts` deletado (Runtime é a fonte). Rotas legadas `/api/public/calculate-{tax,bpjs}` continuam funcionando via Runtime até o sunset já agendado (2026-10-15).
+## Escopo do pack (PH v0.1.0, ruleset `PH-2024.1`)
 
-### 2. Isolamento entre providers (`ProviderContext`)
-Runtime injeta `ctx` com sibling providers no `resolve()`:
+| Capability | Regra |
+|---|---|
+| `tax` | BIR Withholding (TRAIN Law, tabela mensal 2023+) |
+| `benefits` | SSS (MSC 2024, 14% total), PhilHealth (5%, split 50/50), Pag-IBIG (2%/2%, cap ₱200) |
+| `thirteenth` | PD 851 — 13th month pay pro-rata |
+| `payroll` | Compõe tax+benefits+13th **via `ctx.siblings`** (prova ADR-0003) |
+| `calendar` | BIR 1601-C mensal, SSS/PhilHealth/Pag-IBIG mensal, BIR 2316 e Alphalist anuais |
+| `contracts` | Labor Code Art. 296: probation ≤ 6 meses, regularização automática |
+| `rules` | Salário mínimo NCR (₱610/dia default via params), 13th obrigatório |
+| `audit` | Heurística OT Art. 87 |
 
-```ts
-PayrollProvider.buildPayslip(input, ctx: { tax, benefits, thirteenth })
-```
-
-Providers em `src/packs/**/providers/*` **não podem importar outro provider por caminho** — apenas via `ctx`. Regra aplicada no ESLint (regra `no-restricted-imports` local) e verificada no Test Kit.
-
-### 3. Capability Versioning (sua sugestão #1)
-Cada interface de provider ganha `interfaceVersion: "1.0"`. Cada provider declara `readonly version: string`. SDK exporta a matriz `EXPECTED_INTERFACES = { tax: "1.0", benefits: "1.0", ... }`. Validator rejeita pack cuja versão não satisfaz o range esperado.
-
-### 4. Manifesto expandido (sua sugestão #2)
-Adiciona ao `CountryManifest`:
-```ts
-provides: Capability[]      // = engines (renomeado semanticamente, engines mantém alias)
-requires: Capability[]      // ex.: audit requires calendar
-events: { emits?: SdkEventType[]; consumes?: SdkEventType[] }
-permissions?: string[]      // declarativo agora, enforcement fica p/ H7
-features?: string[]         // flags opcionais ("multi-currency", "expat-visa")
-dependencies?: { pack: string; range: string }[]  // country pack → country pack
-signature?: { publisher: string; checksum: string; algo: "sha256" }  // opcional (sua #4)
-lifecycleHooks?: { onInstall?: string; onEnable?: string }  // placeholder p/ H7
-```
-Validator checa: todo `requires` tem provider correspondente (próprio ou de outro pack instalado); todo evento em `emits/consumes` existe no `SdkEvent` catalog; `signature.checksum` bate com hash do bundle serializado (se presente).
-
-### 5. Compatibility Validator (`src/sdk/validator.ts`)
-Executado dentro de `CountryRuntime.install()`. Retorna `ValidationReport { ok, errors[], warnings[] }`. Checa:
-- `requiresCore` satisfaz `CORE_VERSION`
-- Cada capability em `provides` tem provider e a versão do provider satisfaz `EXPECTED_INTERFACES[cap]`
-- `requires` resolvido
-- Eventos declarados existem
-- `rulesetVersion` no formato `<CC>-YYYY.N`
-- `signature` (se presente): formato válido; `checksum` reservado para verificação futura, mas se `algo` presente exige `checksum` presente
-- `manifest.engines`/`provides` coerente com `Object.keys(providers)`
-
-`errors` bloqueiam install; `warnings` deixam instalar com status `degraded`. Emite `CountryPackValidated@1` no bus.
-
-### 6. Health Check (sua sugestão #3)
-`CountryPack.health?(): Promise<HealthReport>` opcional. `HealthReport = { status: "ok"|"warn"|"error"; checks: { name: string; ok: boolean; message?: string }[] }`. Runtime executa `health()` on demand (via `CountryRuntime.health(code)`) e periodicamente no boot. UI `/country-packs` mostra badge por pack. Indonesia implementa checks básicos: params carregados, ruleset presente, obligations não-vazias, sample `tax.calculate` não-throw.
-
-### 7. Test Kit — MVP (`src/sdk/testkit/`)
-Suites parametrizadas exportadas:
-- `runManifestSuite(pack)` — usa o Validator
-- `runTaxProviderSuite(pack, fixtures)` — 6 casos por país
-- `runBenefitsProviderSuite(pack, fixtures)` — 4 casos
-- `runIsolationSuite(pack)` — verifica que arquivos do pack não importam outro pack nem `@/lib/engines/*`
-- Fixtures em `src/sdk/testkit/fixtures/<CC>.ts`; ID obrigatório, MY marcado `.skip` até ter providers
-
-Uso: `src/packs/indonesia/__tests__/conformance.test.ts` chama todas as suites. Comando único `bun test src/packs/` valida todos os packs.
-
-### 8. Governança
-- `ADR-0003` — Provider Isolation & Context Injection
-- `ADR-0004` — Country Pack Conformance Testing
-- `ADR-0005` — Capability Versioning & Expanded Manifest
-- Atualiza `country-pack-spec.md` (novos campos + seção Conformance)
-- `docs/tech-debt.md`: fecha DEBT-001, DEBT-005; abre DEBT-014 (Test Kit para Calendar/Contract/Payroll), DEBT-015 (enforcement de `permissions`), DEBT-016 (verificação real de `signature.checksum`)
-
----
-
-## Fora de escopo H6 (explícito)
-- **Country Pack Lifecycle state machine** → **Sprint H7** dedicada
-- Enforcement real de `permissions` e verificação de `signature` → tracked como debt
-- Nenhum módulo de negócio novo, nenhuma mudança de schema/RLS/auth
-- Malaysia continua stub; só ganha manifesto no formato novo
-
----
-
-## Diagrama final
+## Estrutura (só sob `src/packs/philippines/`)
 
 ```text
-Caller (route / server-fn / UI)
-  └─ CountryRuntime.resolve(code, capability)
-       ├─ Validator (install-time, com capability versioning + manifesto expandido)
-       ├─ health()  (runtime, sob demanda)
-       └─ Provider  ← ctx { sibling providers }
-              └─ pack-internal engines (src/packs/<cc>/internal/*)
+src/packs/philippines/
+├── index.ts                    # CountryPack export + manifest + health()
+├── params.ts                   # PH_PARAMS: BIR brackets, tabela SSS, tetos
+├── engines/
+│   ├── tax.ts
+│   ├── benefits.ts
+│   ├── thirteenth.ts
+│   ├── payroll.ts              # usa ctx.siblings
+│   ├── contracts.ts
+│   └── calendar.ts
+└── __tests__/
+    ├── conformance.test.ts     # 4 suites do testkit + fixtures PH
+    └── coexistence.test.ts     # ver abaixo
 ```
 
-Nada fora de `src/packs/<cc>/` importa engines desse país. Nenhum provider importa outro provider por caminho. Runtime é o único ponto de acoplamento — e agora ele sabe quais capacidades, versões, eventos e permissões cada pack traz.
+Fixtures PH em novo arquivo `src/sdk/testkit/fixtures/PH.ts` (não edita `ID.ts` nem `index.ts` do testkit — importadas diretamente por path no teste).
 
----
+## Teste de coexistência (novo)
 
-## Preview Sprint H7 (não implementar agora)
-Country Pack Lifecycle: state machine (`Installing → Validating → Initializing → Ready → Deprecated → Disabled → Failed`), hooks (`onInstall`/`onEnable`/`onDisable`), persistência do estado, UI de rollback, integração com Health Check para transição `Ready → Degraded` automática.
+`src/packs/philippines/__tests__/coexistence.test.ts` prova **ausência de estado global compartilhado**:
+
+1. `bootstrapPacks()` — ID + MY + PH instalados na mesma instância.
+2. Runtime lista os 3; nenhum degrada os outros.
+3. **Interleave sequence:**
+   ```
+   ID.tax → PH.tax → ID.tax (mesmo input → mesmo output)
+   ID.payroll → PH.payroll → ID.payroll (idem)
+   MY.health() (stub warn) sem afetar ID/PH
+   ```
+4. Assert: outputs de ID são bit-idênticos entre a 1ª e 3ª chamada, mesmo intercalados com PH.
+5. Assert: `CountryRuntime.contextFor("PH").siblings` não vaza providers de ID.
+
+## Métricas do relatório final
+
+Tabela obrigatória no fim:
+
+| Métrica | Resultado |
+|---|---|
+| Arquivos do Core alterados | 0 (meta) |
+| Arquivos do SDK alterados | 0 (meta; fixture PH conta como pack) |
+| Arquivos Runtime alterados | 0 (meta) |
+| Arquivos do Country Pack criados | N |
+| Linha única em bootstrap.ts | 1 (exceção prevista) |
+| Débitos registrados | X |
+| Bloqueadores | X |
+| Conformance PH | pass/fail |
+| Coexistence test | pass/fail |
+
+Contagem via `git diff --stat` reportada literalmente.
+
+## Débitos pré-registrados (não corrigidos nessa sprint)
+
+- **DEBT-018 — Public API multi-country.** Endpoints `/api/public/v1/calculate-*` seguem ID-only. Correto adiar até haver cliente PH real de API.
+- **DEBT-019+** — qualquer atrito descoberto durante PH (ex.: `getLegacyPack` hardcoded, campos ID-only em contexto compartilhado, i18n sem `en-PH`).
+
+## Detalhes técnicos-chave
+
+- **BIR TRAIN monthly:** 0 / ₱20,833 / ₱33,333 / ₱66,667 / ₱166,667 / ₱666,667 → 0/15/20/25/30/35% sobre excedente + fixo por faixa.
+- **SSS 2024:** MSC ₱4k–₱30k, 14% total (EE 4.5% / ER 9.5% + EC ₱10–30).
+- **PhilHealth 2024:** 5%, split 2.5%/2.5%, floor ₱10k / cap ₱100k.
+- **Pag-IBIG:** 2%/2% cap ₱200 cada lado.
+- **13th:** `basicSalaryYTD / 12`, pro-rata, deadline 24/dez.
+- **Payroll compõe via `ctx.siblings`** — chamada sem `ctx` deve funcionar (fallback), com `ctx` prova o DI.
+
+## Critérios de sucesso
+
+1. `bunx tsgo --noEmit` verde.
+2. `bun test src/packs/` — ID (13) + PH conformance + PH coexistence todos verdes.
+3. `/country-packs` mostra 3 packs (ID installed, MY degraded, PH installed).
+4. `git diff --stat` fora de `src/packs/philippines/` e `src/sdk/testkit/fixtures/PH.ts` = **apenas 1 linha em `src/sdk/bootstrap.ts`**.
+5. Relatório final com tabela de métricas + lista de débitos.
+
+## Fora de escopo
+- UI dedicada PH, endpoints PH, feriados móveis, marketplace/lifecycle H7, i18n PH.
