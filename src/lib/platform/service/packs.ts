@@ -26,7 +26,8 @@ export interface PackSummaryDTO {
 }
 
 export interface PackDetailDTO extends PackSummaryDTO {
-  manifest: Record<string, unknown> | null;
+  /** JSON-serialized manifest snapshot. The UI parses on demand. */
+  manifest: string | null;
   validation: { errors: string[]; warnings: string[] } | null;
   installations: Array<{
     id: string;
@@ -88,7 +89,7 @@ export const packsService = {
 
     return {
       ...packToSummary(rec),
-      manifest: JSON.parse(JSON.stringify(rec.pack.manifest)) as Record<string, unknown>,
+      manifest: JSON.stringify(rec.pack.manifest),
       validation: rec.validation
         ? { errors: [...rec.validation.errors], warnings: [...(rec.validation.warnings ?? [])] }
         : null,
