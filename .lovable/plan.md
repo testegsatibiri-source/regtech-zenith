@@ -1,112 +1,53 @@
+## DEBT-019 — Remove the ID-hardcoded `legacy-bridge`
 
-# Philippines Country Pack — Validação Arquitetural (v2)
+### Current state (verified)
 
-**Objetivo:** provar isolamento total do Core construindo o PH pack **sem tocar em nada fora de `src/packs/philippines/`**.
+- `src/lib/engines/legacy-bridge.ts` wires `taxEngine`/`socialEngine`/`thirteenthEngine` from `@/lib/engines/indonesia` regardless of the requested country code. Only `complianceRules` are country-correct (they flow through `RuleProvider`).
+- The only real consumer of the bridge is `src/lib/engines/compliance.ts` (`evaluateEmployee` / `evaluateCompany`), and it uses **only** `pack.complianceRules` + `pack.params` + `pack.rulesetVersion`. It never touches `taxEngine`/`socialEngine`/`thirteenthEngine`.
+- Callers of `evaluateCompany`/`evaluateEmployee` (`audit.functions.ts`, `dashboard.tsx`, `payroll.tsx`, `employees.tsx`) all default to Indonesia — so today the bug is latent, not visible, but it will corrupt PH/MY the moment anyone passes another code.
+- `listLegacyPacks` and the full `CountryPack` legacy shape (`taxEngine`, `socialEngine`, `thirteenthEngine`) have zero remaining callers.
 
-## Regra dura de Core-freeze
+Conclusion: the bridge's engine wiring is dead code that also lies about correctness. The right fix is to delete the bridge and have compliance read directly from `CountryRuntime`.
 
-**Zero edits** em qualquer arquivo fora de `src/packs/philippines/` e `src/sdk/testkit/fixtures/PH.ts`. Explicitamente proibido tocar:
+### Goal
 
-- `src/sdk/**` — contratos, runtime, validator, testkit (exceto fixtures novas)
-- `src/lib/**` — engines, bridges, functions, i18n, obligations
-- `src/routes/**` — rotas, APIs, UI
-- `src/integrations/**`, `src/components/**`, `src/hooks/**`
+Kill DEBT-019 with zero behavior change for ID and correct multi-country behavior for PH/MY going forward. Keep Core edits minimal and additive.
 
-**Única exceção permitida:** uma linha em `src/sdk/bootstrap.ts`:
-```ts
-CountryRuntime.tryInstall(philippinesPack);
-```
-(mecanismo de registro já previsto pela arquitetura — não conta como mudança de Core).
+### Plan
 
-Se durante a implementação surgir necessidade de editar qualquer outro arquivo → **PARO, registro em `docs/tech-debt.md` como DEBT-018+, e reporto**. Não corrijo no mesmo sprint.
+1. **Rewrite `src/lib/engines/compliance.ts` to consume `CountryRuntime` directly.**
+   - Replace `getPack` with a small helper that returns `{ rules, params, rulesetVersion }` sourced from `CountryRuntime.get(code)` + its `RuleProvider` (`providers.rules?.rules() ?? []`).
+   - Change `evaluateEmployee` / `evaluateCompany` signatures from `pack: CountryPack` to `code: CountryCode = "ID"` (keep the default so existing ID callers are untouched). Public return types (`Finding`, `ComplianceReport`) stay identical.
+   - Ensure `import "@/sdk/bootstrap"` so packs are registered before first call (same pattern the bridge uses today).
 
-## Escopo do pack (PH v0.1.0, ruleset `PH-2024.1`)
+2. **Delete `src/lib/engines/legacy-bridge.ts`** and remove its imports.
 
-| Capability | Regra |
-|---|---|
-| `tax` | BIR Withholding (TRAIN Law, tabela mensal 2023+) |
-| `benefits` | SSS (MSC 2024, 14% total), PhilHealth (5%, split 50/50), Pag-IBIG (2%/2%, cap ₱200) |
-| `thirteenth` | PD 851 — 13th month pay pro-rata |
-| `payroll` | Compõe tax+benefits+13th **via `ctx.siblings`** (prova ADR-0003) |
-| `calendar` | BIR 1601-C mensal, SSS/PhilHealth/Pag-IBIG mensal, BIR 2316 e Alphalist anuais |
-| `contracts` | Labor Code Art. 296: probation ≤ 6 meses, regularização automática |
-| `rules` | Salário mínimo NCR (₱610/dia default via params), 13th obrigatório |
-| `audit` | Heurística OT Art. 87 |
+3. **Shrink `src/lib/engines/types.ts`** to the surface still in use:
+   - Keep: `CountryCode`, `EmployeeLike`, `Severity`, `ComplianceRule`, `Ctx`, and any input/output types still referenced by `id-pack.ts` and callers.
+   - Remove the dead legacy `CountryPack` interface fields `taxEngine`, `socialEngine`, `thirteenthEngine` (nothing imports them outside `id-pack.ts` and the bridge). `id-pack.ts` can keep exporting its concrete engines directly (used only by the PH-safe SDK path and by the bridge that we're removing).
 
-## Estrutura (só sob `src/packs/philippines/`)
+4. **Verify no other imports break.** Grep for `legacy-bridge`, `getLegacyPack`, `listLegacyPacks`, `taxEngine`, `socialEngine`, `thirteenthEngine` after the edit — should be zero hits outside `id-pack.ts` internals.
 
-```text
-src/packs/philippines/
-├── index.ts                    # CountryPack export + manifest + health()
-├── params.ts                   # PH_PARAMS: BIR brackets, tabela SSS, tetos
-├── engines/
-│   ├── tax.ts
-│   ├── benefits.ts
-│   ├── thirteenth.ts
-│   ├── payroll.ts              # usa ctx.siblings
-│   ├── contracts.ts
-│   └── calendar.ts
-└── __tests__/
-    ├── conformance.test.ts     # 4 suites do testkit + fixtures PH
-    └── coexistence.test.ts     # ver abaixo
-```
+5. **Tests.**
+   - Existing `bun test src/packs/` (13 ID + 16 PH + 6 coexistence) must stay green.
+   - Add a focused test: `evaluateCompany([...], "PH")` returns `rulesetVersion` matching the PH pack (proves the country parameter is honored, which the bridge silently broke).
 
-Fixtures PH em novo arquivo `src/sdk/testkit/fixtures/PH.ts` (não edita `ID.ts` nem `index.ts` do testkit — importadas diretamente por path no teste).
+6. **Docs.** In `docs/tech-debt.md`, move DEBT-019 to a "Closed" entry under the PH validation section and note the compliance-engine migration.
 
-## Teste de coexistência (novo)
+### Non-goals
 
-`src/packs/philippines/__tests__/coexistence.test.ts` prova **ausência de estado global compartilhado**:
+- No API endpoint changes (DEBT-018 stays open).
+- No changes to `id-pack.ts` engine internals.
+- No UI/route changes; call sites keep their current default-ID behavior.
 
-1. `bootstrapPacks()` — ID + MY + PH instalados na mesma instância.
-2. Runtime lista os 3; nenhum degrada os outros.
-3. **Interleave sequence:**
-   ```
-   ID.tax → PH.tax → ID.tax (mesmo input → mesmo output)
-   ID.payroll → PH.payroll → ID.payroll (idem)
-   MY.health() (stub warn) sem afetar ID/PH
-   ```
-4. Assert: outputs de ID são bit-idênticos entre a 1ª e 3ª chamada, mesmo intercalados com PH.
-5. Assert: `CountryRuntime.contextFor("PH").siblings` não vaza providers de ID.
+### Files touched
 
-## Métricas do relatório final
+- Edit: `src/lib/engines/compliance.ts`, `src/lib/engines/types.ts`, `docs/tech-debt.md`
+- Delete: `src/lib/engines/legacy-bridge.ts`
+- Add: one test (location TBD — likely `src/packs/philippines/__tests__/compliance-runtime.test.ts`)
 
-Tabela obrigatória no fim:
+### Success metrics
 
-| Métrica | Resultado |
-|---|---|
-| Arquivos do Core alterados | 0 (meta) |
-| Arquivos do SDK alterados | 0 (meta; fixture PH conta como pack) |
-| Arquivos Runtime alterados | 0 (meta) |
-| Arquivos do Country Pack criados | N |
-| Linha única em bootstrap.ts | 1 (exceção prevista) |
-| Débitos registrados | X |
-| Bloqueadores | X |
-| Conformance PH | pass/fail |
-| Coexistence test | pass/fail |
-
-Contagem via `git diff --stat` reportada literalmente.
-
-## Débitos pré-registrados (não corrigidos nessa sprint)
-
-- **DEBT-018 — Public API multi-country.** Endpoints `/api/public/v1/calculate-*` seguem ID-only. Correto adiar até haver cliente PH real de API.
-- **DEBT-019+** — qualquer atrito descoberto durante PH (ex.: `getLegacyPack` hardcoded, campos ID-only em contexto compartilhado, i18n sem `en-PH`).
-
-## Detalhes técnicos-chave
-
-- **BIR TRAIN monthly:** 0 / ₱20,833 / ₱33,333 / ₱66,667 / ₱166,667 / ₱666,667 → 0/15/20/25/30/35% sobre excedente + fixo por faixa.
-- **SSS 2024:** MSC ₱4k–₱30k, 14% total (EE 4.5% / ER 9.5% + EC ₱10–30).
-- **PhilHealth 2024:** 5%, split 2.5%/2.5%, floor ₱10k / cap ₱100k.
-- **Pag-IBIG:** 2%/2% cap ₱200 cada lado.
-- **13th:** `basicSalaryYTD / 12`, pro-rata, deadline 24/dez.
-- **Payroll compõe via `ctx.siblings`** — chamada sem `ctx` deve funcionar (fallback), com `ctx` prova o DI.
-
-## Critérios de sucesso
-
-1. `bunx tsgo --noEmit` verde.
-2. `bun test src/packs/` — ID (13) + PH conformance + PH coexistence todos verdes.
-3. `/country-packs` mostra 3 packs (ID installed, MY degraded, PH installed).
-4. `git diff --stat` fora de `src/packs/philippines/` e `src/sdk/testkit/fixtures/PH.ts` = **apenas 1 linha em `src/sdk/bootstrap.ts`**.
-5. Relatório final com tabela de métricas + lista de débitos.
-
-## Fora de escopo
-- UI dedicada PH, endpoints PH, feriados móveis, marketplace/lifecycle H7, i18n PH.
+- `rg "legacy-bridge|getLegacyPack|listLegacyPacks"` → 0 hits.
+- `evaluateCompany(emps, "PH").rulesetVersion` equals PH pack's `rulesetVersion` (not ID's).
+- All existing tests green; new test green.
