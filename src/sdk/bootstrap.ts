@@ -2,6 +2,7 @@
 import { CountryRuntime } from "@/sdk";
 import { indonesiaPack } from "@/packs/indonesia";
 import { malaysiaPack } from "@/packs/malaysia";
+import { philippinesPack } from "@/packs/philippines";
 
 let bootstrapped = false;
 
@@ -10,6 +11,7 @@ export function bootstrapPacks(): void {
   bootstrapped = true;
   CountryRuntime.tryInstall(indonesiaPack);
   CountryRuntime.tryInstall(malaysiaPack);
+  CountryRuntime.tryInstall(philippinesPack);
 }
 
 bootstrapPacks();
