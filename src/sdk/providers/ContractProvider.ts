@@ -1,3 +1,5 @@
+import type { ProviderContext } from "../context";
+
 export interface ContractLike {
   id?: string;
   contract_type: string;
@@ -17,6 +19,7 @@ export interface ContractFinding {
 }
 
 export interface ContractProvider {
-  validate(contract: ContractLike): ContractFinding[];
-  coverage(activeEmployees: number, activeContracts: number): number;
+  readonly version: string;
+  validate(contract: ContractLike, ctx?: ProviderContext): ContractFinding[];
+  coverage(activeEmployees: number, activeContracts: number, ctx?: ProviderContext): number;
 }

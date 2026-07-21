@@ -1,9 +1,11 @@
-// H2/H3 — Versioned public endpoint: POST /api/public/v1/calculate-bpjs
+// H2/H3/H6 — Versioned public endpoint: POST /api/public/v1/calculate-bpjs.
+// Uses CountryRuntime for pack + provider discovery.
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { API_CORS_HEADERS, corsHeadersFor, jsonResponse } from "@/lib/apiCors";
 import { authenticateRequest, recordApiUsage } from "@/lib/apiAuth";
-import { getPack } from "@/lib/engines/registry";
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
 import { timed } from "@/lib/observability/metrics";
 import { traceIdFromRequest } from "@/lib/observability/traceId";
 
@@ -40,23 +42,26 @@ export const Route = createFileRoute("/api/public/v1/calculate-bpjs")({
           return finish(jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422), 422);
         }
 
-        const pack = getPack(parsed.data.country);
-        if (!pack.socialEngine) {
-          return finish(jsonResponse({ error: `No social-security engine for ${pack.code}` }, 501), 501);
+        const pack = CountryRuntime.get(parsed.data.country);
+        const benefits = pack.providers.benefits;
+        if (!benefits) {
+          return finish(jsonResponse({ error: `No benefits provider for ${pack.manifest.country}` }, 501), 501);
         }
-        const result = await timed("engine.bpjs", () => pack.socialEngine!({ salary: parsed.data.salary }), {
-          country: pack.code,
+
+        const result = await timed("engine.bpjs", () => benefits.calculate({ salary: parsed.data.salary }), {
+          country: pack.manifest.country,
           trace_id: traceId,
         });
 
         const response = jsonResponse({
           schemaVersion: "1",
           engine: "BPJS",
-          country: pack.code,
-          rulesetVersion: pack.rulesetVersion,
+          country: pack.manifest.country,
+          rulesetVersion: pack.manifest.rulesetVersion,
+          providerVersion: benefits.version,
           input: parsed.data,
-          result: { ...result, currency: pack.currency },
-        }, 200, { "x-request-id": traceId, "x-ruleset-version": pack.rulesetVersion });
+          result: { ...result, currency: pack.manifest.currency },
+        }, 200, { "x-request-id": traceId, "x-ruleset-version": pack.manifest.rulesetVersion });
         return finish(response, 200);
 
         async function finish(res: Response, status: number): Promise<Response> {

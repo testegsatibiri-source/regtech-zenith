@@ -1,6 +1,10 @@
-// H2 — Compliance Engine now driven by CountryPack rules (no ID_PARAMS import).
+// H2/H6 — Compliance Engine driven by CountryPack rules.
+// Legacy `CountryPack` shape is produced on demand by `legacy-bridge`, which
+// reads from the SDK Runtime — no direct pack imports here.
 import type { CountryPack, EmployeeLike, Severity } from "./types";
-import { getPack } from "./registry";
+import { getLegacyPack } from "./legacy-bridge";
+
+const getPack = (code: "ID" | "MY" | "SG" | "PH" | "VN" | "TH" = "ID") => getLegacyPack(code);
 
 export type { EmployeeLike, Severity } from "./types";
 

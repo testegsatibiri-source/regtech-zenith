@@ -1,25 +1,33 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-07-20 (Sprint H5 — Compliance SDK & Governance)._
+_Last audit: 2026-07-20 (Sprint H6 — SDK Hardening: DI, Validator, Test Kit)._
 
-## H5 delivered
+## H6 delivered
 
 | Area | Item | Status |
 |------|------|--------|
-| SDK | `src/sdk/` with `Capability`, `CountryPack`, `CountryManifest`, `CountryRuntime`, versioned event catalog, typed errors, semver helper | ✅ |
-| SDK | Provider contracts split: `TaxProvider`, `BenefitsProvider`, `PayrollProvider`, `ThirteenthProvider`, `CalendarProvider`, `ContractProvider`, `RuleProvider`, `AuditProvider` | ✅ |
-| Packs | `src/packs/indonesia/` wraps existing engines behind the SDK (manifest v1.7.0, ruleset ID-2024.1) | ✅ |
-| Packs | `src/packs/malaysia/` stub proves multi-country boot (closes DEBT-004) | ✅ |
-| Runtime | `CountryRuntime.install/get/list/supports` with `requiresCore` check + `CountryPackInstalled@1`/`CountryPackFailed@1` events | ✅ |
-| UI | `/country-packs` marketplace view (installed packs, capabilities, compatibility badge) | ✅ |
-| Bus | `src/lib/events/bus.ts` delegates types to `sdk/events.ts` (single source of truth) | ✅ |
-| Governance | `docs/governance/`: ADR-0001, ADR-0002, Country Pack Spec, Contribution Guide, Release Process, Security Policy, API Version Policy, Migration Policy | ✅ |
+| DI | `src/lib/engines/registry.ts` removed; all API routes + audit + compliance resolve packs via `CountryRuntime` (`src/lib/engines/legacy-bridge.ts` wraps the Runtime for legacy helpers) | ✅ |
+| SDK | Capability versioning: every provider carries `readonly version`; `EXPECTED_INTERFACES` + `capabilitySatisfies()` enforce same-major + minor floor | ✅ |
+| SDK | Manifest expanded: `provides` / `requires` / `events{emits,consumes}` / `permissions` / `features` / `dependencies` / `signature` / `lifecycleHooks` (declarative only for perms and signature) | ✅ |
+| SDK | `ProviderContext` (`src/sdk/context.ts`) — siblings + foreign lookup injected by Runtime; providers no longer import siblings by path | ✅ |
+| SDK | Compatibility Validator (`src/sdk/validator.ts`) — plugged into `CountryRuntime.install()`; errors block install, warnings mark pack `degraded`; emits `CountryPackValidated@1` | ✅ |
+| SDK | `CountryPack.health?()` optional runtime self-check; Indonesia ships 6 checks incl. live smoke tests; Runtime exposes `health(code)` + emits `CountryPackHealthChecked@1` | ✅ |
+| Test Kit | `src/sdk/testkit/` — `runManifestSuite`, `runTaxProviderSuite`, `runBenefitsProviderSuite`, `runIsolationSuite` + Indonesia fixtures; `bun test src/packs/` → 13 tests green | ✅ |
+| Packs | Indonesia pack updated (v1.8.0) with all new manifest fields, provider versions, and health check; Malaysia stub adopts new shape | ✅ |
+| UI | `/country-packs` now shows validator report (errors / warnings), health checks (with re-check), provider versions, events, permissions, features, signature status | ✅ |
+| Ops | `CORE_VERSION` bumped 2.0.0 → 2.1.0 (backward-compat additions) | ✅ |
+| Governance | ADR-0003 (provider isolation) · ADR-0004 (conformance testing) · ADR-0005 (capability versioning) · `country-pack-spec.md` rewritten | ✅ |
 
-## Explicit non-goals for H5
+## Closed by H6
+- **DEBT-001 · Wire callers to DI.** API routes, audit fn, compliance/contracts helpers all read from `CountryRuntime` — no direct `import from @/packs/*` or dead `registry.ts` remains. UI callers still consume legacy engine helpers, which internally read from the Runtime via `legacy-bridge`.
+- **DEBT-005 · AI audit params via Runtime.** `audit.functions.ts` now reads `params` from `CountryRuntime.get("ID").params`.
+
+## Explicit non-goals for H6
 - No new business modules.
 - No DB migrations.
-- Emission of `PayrollCalculated@1` / `EmployeeCreated@1` / `AuditCompleted@1` on mutations — contracts defined, wiring tracked as DEBT-001 (unchanged).
-- Persistence of pack install state — runtime is in-memory bootstrap only.
+- No Sprint H7 lifecycle state machine (`Installing → Ready → Deprecated → …`) — reserved as its own sprint. `lifecycleHooks` fields exist on the manifest but the Runtime does not read them yet.
+- Permission enforcement and signature verification are still declarative (DEBT-015, DEBT-016).
+
 
 
 
@@ -62,8 +70,8 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 - **DEBT-003 · API key management UI.** `api_keys` table is live but there is no admin surface to mint/revoke keys. Ship `/settings/api-keys` route with server-fn `createApiKey` returning the raw key exactly once. Without it, keyed callers can't onboard.
 
 ### P1 — Before adding the 2nd country pack
-- **DEBT-004 · Malaysia scaffold to prove the contract.** Add stub `my-pack.ts` (empty rules, EPF placeholder) and register it — this exercises `registerPack` and confirms no ID-specific import leaked.
-- **DEBT-005 · AI audit still imports `ID_PARAMS` directly.** Refactor `audit.functions.ts` to pull params from `getPack(company.country).params` so audit works for MY/SG without code change.
+- **DEBT-004 · [CLOSED in H5] Malaysia scaffold.**
+- **DEBT-005 · [CLOSED in H6] AI audit reads params from Runtime.**
 - **DEBT-006 · N+1 in `runComplianceAudit` and `listObligations`.** Both fetch employees, then loop over related rows client-side. Rewrite as a single join / RPC or batch with `.in('employee_id', ids)` to keep latency < 300ms at 500 employees.
 - **DEBT-007 · Score cache invalidation.** `companies.score_cache` exists but nothing reads or writes it. Subscribe to `PayrollFinalized@1` + `ObligationStatusChanged@1` + `ContractChanged@1` and recompute; dashboard reads from cache first, falls back to compute.
 - **DEBT-008 · CORS refinement for keyed callers.** `apiCors.corsHeadersFor` supports per-key `allowed_origins` but v1 routes still return `*`. Switch to `corsHeadersFor(origin, authed.key?.allowedOrigins ?? ["*"])` once keys are in production.
@@ -71,9 +79,15 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 ### P2 — Post-GA polish
 - **DEBT-009 · Move ID params to Edge Config / config table.** `ID_PARAMS` is a TS constant — every legislative change requires a deploy. Migrate to `regulatory_parameters` table keyed by `(country, version, effective_from)` so `Regulatory Update Service` can hot-swap without deploy.
 - **DEBT-010 · Persist metrics to `metrics_events`.** Currently only structured logs; add async batched writer for durable analytics.
-- **DEBT-011 · Linter WARN 0029 on `has_role`.** Function is intentionally executable by `authenticated` because RLS policies elsewhere call it inline. Accepted risk — documented here so future scans don't re-flag it.
+- **DEBT-011 · Linter WARN 0029 on `has_role`.** Function is intentionally executable by `authenticated` because RLS policies elsewhere call it inline. Accepted risk.
 - **DEBT-012 · Legacy alias sunset.** Remove `/api/public/calculate-tax` and `/api/public/calculate-bpjs` on 2026-10-15 per the `Sunset` header contract.
 - **DEBT-013 · SSR bearer for admin-scoped calls.** `apiAuth` uses `supabaseAdmin` for key lookup — correct, but consider a read replica once traffic > 100 rps.
+
+### Opened by H6
+- **DEBT-014 · Test Kit coverage for Calendar / Contract / Payroll providers.** Only Manifest / Tax / Benefits / Isolation ship in H6. Add parametric suites + country fixtures.
+- **DEBT-015 · Enforce `manifest.permissions`.** Field is declarative today. Runtime should gate provider methods that need e.g. `storage.write` via a capability broker at `contextFor()` time.
+- **DEBT-016 · Verify `manifest.signature.checksum`.** Structural check only in H6. Compute a canonical hash of the pack bundle and reject on mismatch; establish publisher key store.
+- **DEBT-017 · Country Pack Lifecycle (Sprint H7).** Implement the state machine `Installing → Validating → Initializing → Ready → Deprecated → Disabled → Failed`, wire `lifecycleHooks`, persist state across restarts, expose rollback in `/country-packs`.
 
 ---
 
@@ -85,6 +99,7 @@ Classification: **P0** = blocks production launch · **P1** = fix before scaling
 ---
 
 ## Fast follow-ups (< 1 hour each)
-1. Emit `PayrollFinalized@1` inside `finalizePayrollRun` (DEBT-001, DEBT-002 together).
+1. Emit `PayrollFinalized@1` inside `finalizePayrollRun` (still DEBT-001-adjacent — mutation-side wiring).
 2. Build `/settings/api-keys` route (DEBT-003).
-3. Register empty `malaysiaPack` to prove multi-country boot (DEBT-004).
+3. Expand Test Kit with `runCalendarProviderSuite` (DEBT-014).
+

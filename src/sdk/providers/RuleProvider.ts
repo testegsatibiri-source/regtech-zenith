@@ -1,6 +1,8 @@
 import type { ComplianceRule, EmployeeLike } from "@/lib/engines/types";
+import type { ProviderContext } from "../context";
 export type { ComplianceRule, EmployeeLike };
 
 export interface RuleProvider {
-  rules(): ComplianceRule[];
+  readonly version: string;
+  rules(ctx?: ProviderContext): ComplianceRule[];
 }

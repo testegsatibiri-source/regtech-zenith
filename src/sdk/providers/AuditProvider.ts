@@ -1,3 +1,5 @@
+import type { ProviderContext } from "../context";
+
 export interface AuditContext {
   employees: Array<Record<string, unknown>>;
   params: Record<string, unknown>;
@@ -9,5 +11,6 @@ export interface AuditHeuristic {
   evaluate(ctx: AuditContext): { passed: boolean; message: string; impact?: number };
 }
 export interface AuditProvider {
-  heuristics(): AuditHeuristic[];
+  readonly version: string;
+  heuristics(ctx?: ProviderContext): AuditHeuristic[];
 }

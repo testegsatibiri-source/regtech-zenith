@@ -1,3 +1,5 @@
+import type { ProviderContext } from "../context";
+
 export interface ObligationTemplate {
   code: string;
   title: string;
@@ -10,5 +12,6 @@ export interface ObligationTemplate {
 }
 
 export interface CalendarProvider {
-  templates(): ObligationTemplate[];
+  readonly version: string;
+  templates(ctx?: ProviderContext): ObligationTemplate[];
 }

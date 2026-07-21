@@ -1,4 +1,4 @@
-// H5 — Official versioned event catalog. Every event ends in "@N".
+// H5/H6 — Official versioned event catalog. Every event ends in "@N".
 export type SdkEvent =
   // Payroll lifecycle
   | { type: "PayrollCalculated@1"; companyId: string; runId: string; rulesetVersion: string; ts: string }
@@ -18,6 +18,26 @@ export type SdkEvent =
   | { type: "TaxCalculated@1"; companyId: string; amount: number; ts: string }
   // Pack lifecycle
   | { type: "CountryPackInstalled@1"; country: string; version: string; ts: string }
-  | { type: "CountryPackFailed@1"; country: string; reason: string; ts: string };
+  | { type: "CountryPackValidated@1"; country: string; ok: boolean; errors: number; warnings: number; ts: string }
+  | { type: "CountryPackFailed@1"; country: string; reason: string; ts: string }
+  | { type: "CountryPackHealthChecked@1"; country: string; status: "ok" | "warn" | "error"; ts: string };
 
 export type SdkEventType = SdkEvent["type"];
+
+export const SDK_EVENT_TYPES: readonly SdkEventType[] = [
+  "PayrollCalculated@1",
+  "PayrollFinalized@1",
+  "EmployeeCreated@1",
+  "EmployeeUpserted@1",
+  "ContractChanged@1",
+  "ContractExpired@1",
+  "ObligationStatusChanged@1",
+  "RuleFailed@1",
+  "ComplianceUpdated@1",
+  "AuditCompleted@1",
+  "TaxCalculated@1",
+  "CountryPackInstalled@1",
+  "CountryPackValidated@1",
+  "CountryPackFailed@1",
+  "CountryPackHealthChecked@1",
+] as const;

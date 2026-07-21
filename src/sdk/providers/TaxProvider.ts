@@ -1,3 +1,5 @@
+import type { ProviderContext } from "../context";
+
 export interface TaxCalcInput {
   monthlyGross: number;
   maritalStatus: string;
@@ -10,5 +12,7 @@ export interface TaxCalcOutput {
   surcharge: number;
 }
 export interface TaxProvider {
-  calculate(input: TaxCalcInput): TaxCalcOutput;
+  /** Semver of the provider implementation. Checked against EXPECTED_INTERFACES.tax. */
+  readonly version: string;
+  calculate(input: TaxCalcInput, ctx?: ProviderContext): TaxCalcOutput;
 }
