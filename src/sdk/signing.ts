@@ -1,13 +1,12 @@
-// H10-Sig — Signature verification helpers.
-// Runtime verification is delegated to a Web Crypto Ed25519 verifier when the
-// environment supports it. When it does not (older Workers preview), the
-// verifier returns "unverified" and the CompatibilityService decides how to
-// treat it per environment (see TrustPolicy).
+// H10-Sig / H11.1a — Signature verification helpers.
+// PackSignatureRecord now carries a `keyId` used by the TrustStore for
+// rotation-friendly lookup. `signer` (publisher) remains as metadata.
 import type { SigningCapability } from "./trust-policy";
 
 export interface PackSignatureRecord {
-  signer: string;         // publisher identifier
-  publicKey: string;      // base64
+  signer: string;         // publisher metadata (audit / display)
+  keyId: string;          // primary lookup id
+  publicKey: string;      // base64 (kept for fallback verification)
   algo: "ed25519";
   signature: string;      // base64 signature
   capability: SigningCapability;

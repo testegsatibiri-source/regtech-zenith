@@ -2,10 +2,27 @@
 import type { Capability } from "./Capability";
 import type { SdkEventType } from "./events";
 
+/**
+ * H10 legacy shape — kept for structural validation of the checksum field.
+ * H11.1a introduces `SignatureBlock` with `keyId`/`algorithm`/`signature`.
+ */
 export interface PackSignature {
   publisher: string;
   checksum: string;
   algo: "sha256";
+}
+
+/** H11.1a — Rotation-friendly signature envelope stored on the manifest. */
+export interface SignatureEnvelope {
+  keyId: string;
+  algorithm: "Ed25519";
+  signature: string;   // base64
+  publisher?: string;  // metadata only; lookup is by keyId
+  ts?: string;
+}
+export interface SignatureBlock {
+  author: SignatureEnvelope;
+  countersign?: SignatureEnvelope;
 }
 
 export interface PackDependency {
@@ -48,8 +65,11 @@ export interface CountryManifest {
   /** Cross-pack dependencies. */
   dependencies?: PackDependency[];
 
-  /** Optional publisher signature (reserved; verification is planned — DEBT-016). */
+  /** @deprecated — use `signatureBlock`. Structural checks still run when present. */
   signature?: PackSignature;
+
+  /** H11.1a — rotation-friendly signature envelope with keyId. */
+  signatureBlock?: SignatureBlock;
 
   /** Placeholder for the Sprint H7 lifecycle. Names of exported hooks in the pack module. */
   lifecycleHooks?: { onInstall?: string; onEnable?: string; onDisable?: string };

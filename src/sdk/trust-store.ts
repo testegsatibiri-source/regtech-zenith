@@ -1,11 +1,13 @@
-// H10-Sig — TrustStore abstraction. DbTrustStore ships in H10; future
-// adapters (AwsKmsTrustStore, GoogleKmsTrustStore, HsmTrustStore) implement
-// the same interface without changes to Runtime or CompatibilityService.
+// H10-Sig / H11.1a — TrustStore abstraction.
+// H11.1a adds keyId as the primary identifier so publishers can rotate keys
+// without changing manifests. `find(publisher, publicKey)` remains available
+// for legacy callers.
 import type { SigningCapability } from "./trust-policy";
 
 export interface TrustedKey {
+  keyId: string;
   publisher: string;
-  publicKey: string;      // base64 Ed25519
+  publicKey: string;      // base64 Ed25519 raw (32B)
   algo: string;           // "ed25519"
   capabilities: SigningCapability[];
   provider: "db" | "kms" | "hsm";
@@ -15,17 +17,11 @@ export interface TrustedKey {
 
 export interface TrustStore {
   name: string;
-  /** List all currently active trusted keys. */
   listActive(): Promise<TrustedKey[]>;
-  /** Fetch a specific key by publisher + public key. */
   find(publisher: string, publicKey: string): Promise<TrustedKey | undefined>;
+  findByKeyId?(keyId: string): Promise<TrustedKey | undefined>;
 }
 
-/**
- * In-memory store useful for tests and preview seeding. Production uses
- * DbTrustStore (see src/lib/platform/service/signing.ts) which reads from
- * public.pack_signing_keys.
- */
 export class MemoryTrustStore implements TrustStore {
   name = "memory";
   constructor(private readonly keys: TrustedKey[]) {}
@@ -34,5 +30,8 @@ export class MemoryTrustStore implements TrustStore {
   }
   async find(publisher: string, publicKey: string): Promise<TrustedKey | undefined> {
     return this.keys.find((k) => k.publisher === publisher && k.publicKey === publicKey);
+  }
+  async findByKeyId(keyId: string): Promise<TrustedKey | undefined> {
+    return this.keys.find((k) => k.keyId === keyId && k.active && !k.revokedAt);
   }
 }
