@@ -32,3 +32,5 @@
 
 # --- CI / workflows / repo config ---
 /.github/                               @cto-global
+/.github/environments/                  @cto-global @ceo
+/infra/                                 @cto-global @ceo
