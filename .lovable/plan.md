@@ -1,139 +1,231 @@
-# Sprint H9-DevOps — Production Pipeline
+# Sprint H10 — Observability, IAM, Marketplace & Signing (v2)
 
-Objetivo: transformar o repositório num pipeline production-grade com GitFlow protegido, três ambientes isolados (preview/staging/production), Supabase dual-project, secrets centralizados no GitHub e rollback controlado. **Zero mudanças em código de negócio** — apenas governança, CI/CD, infra e documentação.
+Todos os 5 ajustes são adotados. Adiciono item para H11. Nada removido — apenas granularizado.
 
-## Entregáveis
+## Análise dos ajustes
 
-### 1. GitFlow e Branch Protection
-- Formalizar 3 branches perenes: `main` (prod), `release` (homologação), `develop` (integração).
-- Prefixos padronizados: `feature/{iso2}/*`, `fix/*`, `chore/*`, `docs/*`, `hotfix/*`.
-- Regras de proteção (documentadas em `docs/governance/branch-protection.md`, aplicadas via GitHub UI/Terraform):
-  - PR obrigatório, 1+ review, CODEOWNERS enforcement, status checks verdes, linear history, no force-push, no direct commit.
-  - `main` e `release`: aprovação extra do `@cto-global`.
-- Estender `.github/CODEOWNERS` com novos paths (`.github/environments/**`, `infra/**`).
+| # | Ajuste | Veredicto | Impacto |
+|---|--------|-----------|---------|
+| 1 | ConfigProviders desde já (Static + interface) | ✅ Adotado | H10-Cfg entrega `ConfigProvider` interface + `StaticProvider`; H12 só adiciona novos providers |
+| 2 | `Compatibility Service` entre Registry e Runtime | ✅ Adotado | Nova camada em H10-MKT, isola Runtime de decisões de compat |
+| 3 | `Trust Policy` configurável por ambiente | ✅ Adotado | Preview: 1 assinatura; Production: 2 assinaturas |
+| 4 | Métricas hot/cold (Postgres + Object Storage / Axiom) | ✅ Adotado — fundação | H10 grava em ambos via `MetricSink`; sink externo é adapter (config futura) |
+| 5 | Adicionar `Experimental` antes de `Draft` no lifecycle | ✅ Adotado | Lifecycle vira 8 estados |
+| — | **Version Compatibility Matrix** | ✅ Movido para H11 | Item de saída da migração completa (bootstrap → registry) |
 
-### 2. GitHub Environments
-Criar 3 environments com secrets e reviewers próprios:
-- `preview` — auto-deploy em cada PR, sem gate.
-- `staging` — deploy automático ao mergear em `release`.
-- `production` — deploy manual após merge em `main`, com **required reviewers** (`@cto-global` + `@ceo`) e wait timer opcional.
+---
 
-### 3. Pipelines GitHub Actions (novos + refactor dos existentes)
-Reusar `ci-shared.yml`. Criar:
+## 1. H10-Cfg — Configuration Service (fundação com Providers)
 
-| Workflow | Trigger | Jobs |
-|---|---|---|
-| `ci-feature.yml` | PR para `develop` | typecheck, eslint, `bun test`, conformance packs, SDK validator, health-check dry-run, build |
-| `ci-develop.yml` | push `develop` | full CI + deploy Preview (Vercel) + smoke test |
-| `release-validation.yml` | PR `develop→release` e push `release` | full CI + migration dry-run (staging Supabase) + deploy Staging + e2e básico |
-| `production-deploy.yml` | push `main` (manual approve via env `production`) | build + apply Supabase migrations (prod) + deploy Vercel prod + post-deploy health check + tag semver |
-| `rollback.yml` | `workflow_dispatch` | inputs: `target` (app/edge/pack), `version/sha`; executa rollback correspondente |
+Substitui `StaticConfigService` monolítico por orquestrador de providers:
 
-Todos os jobs herdam gates de release do `docs/governance/release-process.md` (Conformance Suite, Validator, Health Check).
+```ts
+// src/sdk/config.ts
+export interface ConfigProvider {
+  name: string;               // "static" | "database" | "env" | "flags"
+  priority: number;           // lower = checked first
+  get(key: string, ctx: ConfigContext): Promise<ConfigValue | undefined>;
+}
 
-### 4. Vercel (3 ambientes)
-- Configurar projeto Vercel com env mapping: Preview (branch = PR), Staging (branch = `release`), Production (branch = `main`).
-- Env vars por ambiente apontando para Supabase correspondente.
-- Documentar em `docs/governance/deploy-vercel.md` (setup, promoção manual, aliases).
-
-### 5. Supabase (dual project)
-- Dois projetos: `uboard-staging` e `uboard-prod`. Nunca compartilhar DB.
-- Migrations versionadas em `supabase/migrations/` já existentes; pipeline aplica via `supabase db push` com service role do ambiente.
-- Política: toda migration passa por staging antes de prod; rollback via migration reversa ou snapshot (documentada em `docs/governance/migration-policy.md` — estender).
-
-### 6. Secrets centralizados no GitHub
-Migrar/definir como GitHub Environment Secrets (nada em código, nada na Lovable Cloud fora do runtime necessário):
-- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
-- `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF_STAGING`, `SUPABASE_PROJECT_REF_PROD`
-- `SUPABASE_SERVICE_ROLE_STAGING`, `SUPABASE_SERVICE_ROLE_PROD`
-- `SUPABASE_DB_URL_STAGING`, `SUPABASE_DB_URL_PROD`
-- `JWT_SECRET_STAGING`, `JWT_SECRET_PROD`
-- `PACK_SIGNING_KEY_*` (chaves futuras dos Country Packs)
-- Convenção: sufixo `_STAGING`/`_PROD`; nunca prefixo cruzado entre envs.
-- Documentar em `docs/governance/secrets-inventory.md` com owner, rotação (90d), escopo.
-
-### 7. Rollback controlado
-Runbook `docs/governance/rollback-playbook.md` cobrindo:
-- **App (Vercel):** promover deploy anterior via `vercel rollback` (workflow `rollback.yml` target=app).
-- **Edge Functions:** redeploy da tag anterior (`supabase functions deploy --project-ref ... --version <sha>`).
-- **Country Pack:** revert do commit do pack + bump `manifest.version` patch + re-release; runtime marca pack `incompatible` se health falhar (mecânica já existe).
-- **DB migration:** migration reversa dedicada; snapshot restore como último recurso.
-- **Auto-block:** qualquer job falho em `release-validation` ou `production-deploy` bloqueia progression (já default do Actions); adicionar `if: failure()` step que abre issue automática.
-
-### 8. Documentação de governança (H9)
-Novos docs em `docs/governance/`:
-- `branch-protection.md` — regras GitFlow.
-- `environments.md` — matriz env × secrets × reviewers.
-- `deploy-vercel.md`
-- `secrets-inventory.md`
-- `rollback-playbook.md`
-- Estender `release-process.md` para referenciar novos workflows.
-- ADR-0009 `production-pipeline.md` — decisão arquitetural do modelo GitFlow + dual-Supabase.
-
-## Fora de escopo (não neste sprint)
-- Terraform/IaC para provisionar GitHub/Vercel/Supabase (proposta futura H10-IaC).
-- Testes E2E completos (apenas smoke). Suite E2E fica para sprint dedicada.
-- Observability stack externa (Datadog/Sentry) — separada.
-- Multi-region Supabase / read replicas.
-
-## Métricas de sucesso
-- 0 commits diretos em `main`/`release`/`develop` após rollout.
-- 100% deploys prod passam por staging.
-- Rollback app < 5 min; rollback pack < 15 min.
-- 0 secrets em código ou em Lovable runtime fora do necessário à app.
-- Todos os 4 pipelines verdes num PR de referência.
-
-## Detalhes técnicos
-
-**Estrutura de arquivos criados:**
-```text
-.github/
-  workflows/
-    ci-feature.yml
-    ci-develop.yml
-    release-validation.yml
-    production-deploy.yml
-    rollback.yml
-    (mantém: ci-shared.yml, ci-core.yml, ci-sdk.yml, ci-packs.yml, ci-docs.yml)
-  environments/
-    preview.md
-    staging.md
-    production.md
-docs/
-  governance/
-    branch-protection.md
-    environments.md
-    deploy-vercel.md
-    secrets-inventory.md
-    rollback-playbook.md
-    ADR-0009-production-pipeline.md
+export class ConfigService {
+  constructor(private providers: ConfigProvider[]) {}
+  async resolve(key: string, ctx: ConfigContext): Promise<ConfigValue> {
+    for (const p of [...this.providers].sort((a,b) => a.priority - b.priority)) {
+      const v = await p.get(key, ctx);
+      if (v !== undefined) return v;
+    }
+    throw new ConfigMissing(key);
+  }
+}
 ```
 
-**Fluxo alvo (long-term, multi-CTO):**
-```text
-feature/{id,ph,my}/* --PR--> develop --auto--> Preview+Staging validation
-                                  │
-                                  ▼
-                              release  --homologação--> Staging deploy
-                                  │
-                                  ▼
-                                main  --approval--> Production deploy
-                                  │
-                              (rollback.yml disponível a qualquer momento)
+**H10 entrega:** interface + `StaticProvider` (lê `pack.params`) + registro no `ProviderContext` (`ctx.config`).
+**H12 adiciona:** `DatabaseProvider` (overrides por customer), `EnvironmentProvider`, `FeatureFlagProvider`. Zero mudanças no `ConfigService` ou nos providers de pack.
+
+ADR-0014 documenta ordem de precedência canônica: `DB Override → Feature Flags → Environment → Static Defaults`.
+
+---
+
+## 2. H10-MKT — Marketplace com Compatibility Service
+
+### Nova pipeline
+```
+Registry ──► CompatibilityService ──► Runtime
+              │
+              ├─ interfaceVersion match (SDK vs pack)
+              ├─ requiresCore semver satisfies CORE_VERSION
+              ├─ dependencies[] resolvem (packs instalados)
+              ├─ breaking changes vs versão anterior instalada
+              └─ signature(s) válidas conforme Trust Policy
 ```
 
-**Ordem de execução do sprint:**
-1. Docs de governança + ADR-0009 (base contratual).
-2. `secrets-inventory.md` + configuração manual dos secrets no GitHub (ação do usuário).
-3. Workflows `ci-feature` e `ci-develop`.
-4. Vercel setup + `deploy-vercel.md`.
-5. `release-validation` + Supabase staging wiring.
-6. `production-deploy` + environment `production` com reviewers.
-7. `rollback.yml` + playbook.
-8. Ativação das branch protection rules (ação do usuário no GitHub UI).
+`src/sdk/compatibility.ts`:
+```ts
+export interface CompatibilityReport {
+  ok: boolean;
+  checks: { name: string; ok: boolean; severity: "error"|"warning"; message?: string }[];
+}
+export class CompatibilityService {
+  check(pack: CountryPack, trust: TrustPolicy, installed: InstalledPack[]): CompatibilityReport
+}
+```
 
-**Ações manuais requeridas do usuário (fora do repo):**
-- Criar projeto Supabase staging separado; fornecer refs/keys.
-- Conectar repo à Vercel e criar tokens.
-- Configurar branch protection e environments no GitHub UI conforme docs.
-- Preencher secrets nos GitHub Environments.
+`CountryRuntime.install()` passa a delegar essas checagens ao `CompatibilityService` — hoje elas estão embutidas em `runtime.ts` + `validator.ts`. Refactor sem breaking change externo: `install()` continua com mesma assinatura.
+
+### Lifecycle estendido (8 estados)
+```
+Experimental → Draft → Review → Approved → Published → Deprecated → Yanked → Archived
+```
+
+- **Experimental**: só visível para autor + `platform_admin`; não aparece em listagens de marketplace. Sem assinatura obrigatória. Permite desenvolvimento iterativo.
+- **Draft**: submetido ao processo; assinatura do autor exigida.
+- **Review → Approved → Published**: como antes.
+
+State machine em `service/packs.ts` valida transições permitidas; `Experimental → Draft` requer assinatura do autor.
+
+### Fase 1 (H10)
+`bootstrap.ts` + `pack_registry` coexistem; `CompatibilityService` roda em ambos os caminhos e emite `PackCompatibilityDivergence@1` quando resultados divergem. Zero risco de brick.
+
+---
+
+## 3. H10-Sig — Dupla assinatura + Trust Policy
+
+### Trust Policy (novo)
+```ts
+// src/sdk/trust-policy.ts
+export interface TrustPolicy {
+  environment: "preview" | "staging" | "production";
+  requiredSignatures: number;                    // 1 (preview) | 2 (prod)
+  requiredCapabilities: SigningCapability[];     // ["sign_pack"] | ["sign_pack","countersign_pack"]
+  distinctSigners: boolean;                      // true em prod
+  allowExperimental: boolean;                    // true em preview
+}
+```
+
+Perfis pré-definidos:
+- `preview`: 1 assinatura (`sign_pack`), permite Experimental sem assinatura.
+- `staging`: 1 assinatura obrigatória.
+- `production`: 2 assinaturas distintas (`sign_pack` + `countersign_pack`).
+
+`CompatibilityService` recebe `TrustPolicy` do ambiente atual (`process.env.LOVABLE_ENV`) e aplica. UI `/platform/packs` mostra a policy vigente.
+
+### TrustStore abstrato (mantido)
+Interface `TrustStore` + `DbTrustStore` (H10). Adapters KMS/HSM em sprints futuras sem tocar em Runtime/Signature.
+
+---
+
+## 4. H10-IAM — Capabilities-first (sem alterações vs plano anterior)
+
+Mantido como aprovado: `Capability → Permission → Role`, `role_capabilities` table, `PermissionService` refatorado para resolver via caps. Convites em `platform_invitations`, UI `/platform/users`, guardrail "último admin".
+
+---
+
+## 5. H10-Obs — Observabilidade em camadas + MetricSink hot/cold
+
+### Taxonomia (mantida)
+`runtime | api | database | packs | business` — coluna `layer` obrigatória.
+
+### MetricSink (novo)
+```ts
+// src/lib/observability/sink.ts
+export interface MetricSink {
+  name: string;
+  ingest(events: MetricEvent[]): Promise<void>;
+}
+
+// H10 registra:
+//   PostgresSink   → tabela metrics_events (hot, últimos 30 dias, view materializada)
+//   FileSink       → JSON lines em Storage bucket "metrics/YYYY-MM-DD/" (cold, 365 dias)
+// Futuro (H12+): AxiomSink, BetterStackSink — adapters, sem tocar em logger/metrics.
+```
+
+- Cron diário: `metrics_events` > 30 dias → export para Storage → truncate hot.
+- Query API `/platform/observability/query` decide fonte pela janela pedida.
+- Documentado em ADR-0015 (Hot/Cold Metrics Tiering).
+
+### Incidents + Postmortems (mantido)
+Tabelas `incidents` + `postmortems`, UI, ligação com `alert_incidents`.
+
+### Alertas (mantido)
+`alert_rules / notifications / escalations / incidents` + adapters `Slack`, `Email`, `Webhook` funcionais; SMS/WhatsApp/PagerDuty stubs.
+
+### Backups (mantido)
+`pg_cron` diário → `/api/public/hooks/backup-run` → Storage `backups/YYYY-MM-DD/`. Retenção 30/90/365.
+
+---
+
+## Migrações (uma por bloco)
+
+```
+h10_iam    platform_invitations, role_capabilities (+ seed), triggers
+h10_mkt    pack_registry, pack_installations ext, pack_state enum (8),
+           pack_lifecycle_events, trust_policies (config por env)
+h10_sig    pack_signing_keys (+ capabilities[], provider)
+h10_obs    metrics_events.layer, MVs por layer,
+           incidents, postmortems,
+           alert_rules, alert_notifications,
+           alert_escalations, alert_incidents,
+           metrics_export_log (para tracking hot→cold)
+```
+
+---
+
+## ADRs
+
+- **ADR-0010** — Observability layers + Hot/Cold tiering + Incidents/Postmortems
+- **ADR-0011** — Capabilities-first IAM
+- **ADR-0012** — Pack Marketplace Lifecycle (8 estados) + Compatibility Service + 2-phase migration
+- **ADR-0013** — Dupla assinatura Ed25519 + TrustStore + Trust Policy
+- **ADR-0014** — Configuration Service (ConfigProvider pattern, precedência)
+- **ADR-0015** — Metrics Hot/Cold Sinks
+
+---
+
+## Ordem de execução
+
+1. **H10-Sig** — TrustStore + Trust Policy + dupla assinatura
+2. **H10-IAM** — Capabilities + convites (habilita `PACK_COUNTERSIGN`)
+3. **H10-MKT Fase 1** — Registry + CompatibilityService + lifecycle 8-estados (coexistindo com bootstrap)
+4. **H10-Cfg** — ConfigService + ConfigProvider interface + StaticProvider
+5. **H10-Obs** — Layers + MetricSink hot/cold + incidents + alertas + backups
+
+---
+
+## H11 (preview — não implementar nesta sprint)
+
+Escopo da próxima sprint, para contexto:
+
+1. **Remoção do `bootstrap.ts`** — Runtime hidrata exclusivamente de `pack_registry`. Pré-requisito: 2+ semanas sem `PackCompatibilityDivergence@1`.
+2. **Version Compatibility Matrix** (novo, sugestão adotada):
+   ```
+   src/sdk/compatibility-matrix.ts
+   ```
+   Tabela declarativa validada no boot e antes de qualquer install:
+   ```
+   Component      Required
+   ─────────────  ────────
+   Runtime        3.0.x
+   SDK            3.0.x
+   Pack ID        ≥2.1.0
+   Pack PH        ≥2.0.0
+   Pack MY        ≥1.8.0
+   ```
+   `CompatibilityService.checkMatrix()` valida a matriz global antes de qualquer transição de lifecycle. Publicada em `/platform/packs/matrix`.
+3. Enforcement de assinatura em `production` (flag `PACK_SIG_ENFORCE=enforce`).
+4. Roles & Capabilities editor (matriz `role × capability` editável para parceiros externos).
+
+---
+
+## Métricas de conclusão H10
+
+- 0 arquivos alterados em `src/packs/**` e `src/lib/engines/**`.
+- `bootstrap.ts` intacto.
+- Conformance atual (35/35) preservada + novos testes:
+  - `CompatibilityService` (matriz + assinatura + deps)
+  - `TrustPolicy` por ambiente
+  - State machine 8-estados (incluindo Experimental invisível para não-autor)
+  - `PermissionService` capability-based
+  - `ConfigService` com múltiplos providers
+  - `MetricSink` hot→cold roundtrip
+  - Alert evaluation + escalation
+- Demo E2E: pack "Vietnam Experimental" criado, promovido para Draft (assinado), Review, countersignado, Published em preview (1 sig) e falha em production (exige 2 sigs) — confirmando Trust Policy funcionando.
