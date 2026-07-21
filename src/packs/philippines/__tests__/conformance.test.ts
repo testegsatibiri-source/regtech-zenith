@@ -45,8 +45,8 @@ describe("[PH] pack-specific", () => {
     expect(cap?.passed).toBe(false);
   });
 
-  it("Health check returns ok", () => {
-    const h = philippinesPack.health!();
+  it("Health check returns ok", async () => {
+    const h = await Promise.resolve(philippinesPack.health!());
     expect(h.status === "ok" || h.status === "warn").toBe(true);
   });
 });
