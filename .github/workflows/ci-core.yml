@@ -29,6 +29,9 @@ concurrency:
   group: ci-core-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   core:
     uses: ./.github/workflows/ci-shared.yml

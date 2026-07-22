@@ -8,6 +8,9 @@ concurrency:
   group: ci-develop-${{ github.ref }}
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     uses: ./.github/workflows/ci-shared.yml
@@ -41,7 +44,7 @@ jobs:
       - name: Deploy
         id: deploy
         run: |
-          URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} | tail -n1)
           echo "url=$URL" >> "$GITHUB_OUTPUT"
       - name: Smoke test
         run: curl -fsSL "${{ steps.deploy.outputs.url }}" > /dev/null
