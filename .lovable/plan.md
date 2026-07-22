@@ -1,115 +1,92 @@
-# Sprint H11.1a — Indonesia Production Readiness (revisado)
+# Auditoria de Workflows — Plano de Correção (v3, com pinning e verificação)
 
-Sprint curta e focada: destravar operação comercial do Indonesia Pack e fechar as lacunas Crítico/Alto da auditoria. Incorpora os 4 refinamentos: dados legais fora do código, compatibility report em publicação **e** boot, `keyId` no manifest, e teste ponta-a-ponta de payroll oficial como portão de saída.
+Escopo: 10 workflows em `.github/workflows/*.yml` + `package.json`. Zero mudanças em código de aplicação, SDK, packs, banco ou docs.
 
-## Objetivos de saída (Definition of Done)
+## Refinamentos incorporados nesta versão
 
-1. PPh 21 correto para TER A, B e C — com tabelas vindo de parâmetros, não de constantes no engine.
-2. UMP correta para qualquer província (não apenas Jakarta).
-3. Calendário de THR válido para qualquer ano em uma janela pré-carregada.
-4. Registry como fonte assinada: `pack_registry` populado, `pack_signing_keys` com autor + countersign, manifest do ID com `signature { keyId, algorithm, signature }`.
-5. Divergência bootstrap↔registry detectada e emitida em `PackRegistryDivergence@1`.
-6. `compatibility_reports` gravado **tanto na publicação quanto a cada boot**; `runtime_boot_reports` populado a cada boot.
-7. Cobertura de testes: TER B/C, THR, contratos PKWT/PKWTT.
-8. **Novo portão:** payroll oficial ponta a ponta (fixture reproduzível a partir de exemplo oficial DJP/PP 58/2023) bate com cálculo de referência centavo a centavo.
+1. **Versão fixada** de `@typescript/native-preview` (não `latest`) — o pacote publica pré-releases diários (`7.0.0-dev.YYYYMMDD.N`); `latest` deixaria o CI dependente do último build.
+2. **Guarda extra do `bunfig.toml`:** `minimumReleaseAge = 86400` já bloquearia versões publicadas nas últimas 24h. Isso reforça que a versão pinada precisa ter pelo menos 1 dia; escolhemos uma versão publicada há mais de 24h no momento do commit.
+3. **Verificação local antes de abrir PR:** `bun install && bunx tsgo --version && bunx tsgo --noEmit` executados na sandbox para confirmar que o binário resolve pela dependência local (não tenta buscar `tsgo` no npm).
+4. **Ordem canônica dos steps em cada workflow:** `checkout → setup-bun → cache → bun install --frozen-lockfile → bunx tsgo --noEmit`. Todos os workflows já seguem essa ordem — nenhuma reordenação necessária, apenas conferido durante a edição.
 
-## Escopo — 9 workstreams
+## Validação prévia (A1) — já feita
 
-### WS1 — Corrigir TER B/C sem dados no engine (Crítico, legal)
-- Criar `src/packs/indonesia/params/ter-tables.ts` com `TER_A`, `TER_B`, `TER_C` como dados puros, versionados por `paramsVersion = "2026.1"` e legalBasis (`PP 58/2023`).
-- Registrar essas tabelas como valores no `ConfigService` via um `StaticConfigProvider` dedicado (chaves `id.tax.terTable.A|B|C` e `id.tax.terZero`).
-- `src/lib/engines/indonesia.ts` deixa de embutir tabelas: `terRate(gross, category, tables)` recebe as tabelas. O provider `tax` resolve as tabelas por `ctx.config` no `install()` e injeta no engine.
-- Prepara caminho para DEBT-022 sem mover as tabelas para `regulatory_parameters` ainda (a promoção para register vem depois; nesta sprint, provider estático já basta).
-- Bumps: `ID_PARAMS.version` → `"2026.1"`; manifest `version` → `1.9.0`; `rulesetVersion` → `ID-2026.1`.
+- `tsgo` aparece em 7 lugares (3 workflows + template de PR + 2 docs de governance + description do reusable). Convenção documentada.
+- Nenhuma referência a `@typescript/native-preview` — o pacote nunca foi instalado.
+- `bunx tsgo` retorna 404 porque não existe pacote chamado `tsgo` no npm; o binário `tsgo` vem de `@typescript/native-preview`.
+- **Decisão:** instalar `@typescript/native-preview` com versão pinada. Não trocar por `tsc`.
 
-### WS2 — UMP paramétrica por província (Alto, legal)
-- Semear as 34 províncias em `src/packs/indonesia/params/ump-2026.ts` (fonte oficial 2026; onde faltar, usar valor 2024 com flag `stale: true` e DEBT registrado).
-- Expor via `StaticConfigProvider` sob a chave `id.wages.ump.<province>`.
-- `evaluateContract` / `ID-UMR-01` (`src/lib/engines/id-pack.ts:12-22`) resolve UMP pela província do empregado. Sem província → fallback `Other` + finding informativo (não crítico).
+## Correções
 
-### WS3 — Calendário de THR (Alto, legal)
-- Substituir data hardcoded em `src/lib/obligations.catalog.ts:106-112` por resolução via tabela `src/packs/indonesia/params/eid-al-fitr.ts` (2025–2030), exposta em `id.calendar.eidAlFitr.<year>`.
-- Sem entrada para o ano → obrigação marcada `needs_review` em vez de data errada.
+### 🔴 P0 — Bloqueantes
 
-### WS4 — Primeiro pack no Registry, com relatório em duas dimensões (Crítico, plataforma)
-- Popular `pack_registry` com Indonesia v1.9.0: `country_code=ID`, `interface_version=1.0.0`, `checksum`, `state=ready`.
-- Persistir **compatibility report da publicação** em coluna dedicada (`pack_registry.compatibility_report`) — snapshot imutável do momento em que o pack foi publicado.
-- Persistir **compatibility report do boot** em `compatibility_reports` a cada `runBootGate()` (ver WS7) — reflete estado atual (Runtime/SDK/gates da execução). Auditor compara publicação × boot para detectar drift.
-- `pack_installations` recebe histórico (`installed_from=registry`).
-
-### WS5 — Assinatura com `keyId` (Crítico, segurança)
-- Manifest do ID recebe `interfaceVersion: "1.0.0"` e o bloco:
+**A1 — Instalar tsgo com versão fixada**
+- `package.json → devDependencies`: adicionar `"@typescript/native-preview": "7.0.0-dev.20260707.2"` (última versão estável na data, > 24h e portanto compatível com `minimumReleaseAge`).
+- Executar `bun install` para regenerar `bun.lock`.
+- Verificação obrigatória no sandbox antes de considerar o passo concluído:
   ```
-  signature: {
-    keyId: "<hash público estável, ex. sha256(publicKey)[:16]>",
-    algorithm: "Ed25519",
-    signature: "<base64>",
-    countersign?: { keyId, algorithm, signature }
-  }
+  bunx tsgo --version   # deve imprimir a versão pinada, sem acesso à rede
+  bunx tsgo --noEmit    # deve rodar o typecheck localmente
   ```
-- `pack_signing_keys` ganha coluna `key_id` (não ainda no schema — migração dedicada com GRANTs) para lookup por id, independente de `publisher`. Isso destrava rotação futura sem alterar manifest schema.
-- CLI mínima `scripts/sign-pack.ts`: gera Ed25519, calcula `keyId`, grava chave (`publisher=uboard-id`, capability `pack.sign`), assina manifest.
-- Countersign de plataforma (`pack.countersign`) satisfaz trust policy de produção (2 assinaturas).
-- `verifyEd25519` / `TrustStore.findByKeyId(keyId)` passa a resolver por `keyId`; `publisher` vira metadado, não chave de busca.
-- **Não** ativar `signature_enforce=true` nesta sprint — apenas garantir que ligar em preview passa boot.
+- Nenhuma alteração nos workflows: `bunx tsgo --noEmit` passa a resolver via `node_modules/.bin/tsgo`.
 
-### WS6 — `PackRegistryDivergence@1` (Alto, observabilidade)
-- Ampliar o step "registry" em `src/sdk/boot.ts` para: se `registry_enabled=true`, comparar packs em memória (bootstrap) com `pack_registry` por `(country_code, version, checksum)`.
-- Emitir `PackRegistryDivergence@1` no bus com `reason` categorizado: `missing_in_registry`, `version_mismatch`, `checksum_mismatch`.
-- Enquanto Registry só tiver ID, MY/PH divergem — emitir com severidade `info` para não gerar alerta ruidoso até H11.2.
+**A2 — `production-deploy.yml`: adicionar `contents: write` no job `deploy-production`**
+- Step `Tag release` faz `git tag` + `git push origin`. Sem essa permissão, o push falha e dispara `auto-issue-on-failure` em todo deploy bem-sucedido.
 
-### WS7 — Persistência de relatórios de boot (Alto, observabilidade)
-- `runBootGate()` grava `runtime_boot_reports` a cada execução (via `boot.server.ts`, já com scaffold).
-- `CompatibilityService.checkAll()` grava uma linha por pack em `compatibility_reports` (matrixVersion, sig status, rejeições, refs para o `pack_registry.compatibility_report` da publicação, para diff).
-- Retenção default, sem TTL nesta sprint.
+**A3 — Jobs `auto-issue-on-failure` sem `issues: write`**
+- Em `production-deploy.yml`, `release-validation.yml` e `rollback.yml` os steps chamam `github.rest.issues.create`. Adicionar `permissions: { issues: write, contents: read }` em cada job de auto-issue.
+- Em `rollback.yml`, mover o step `Audit issue` para `if: always()`, para preservar rastro quando os targets `pack`/`migration` fazem `exit 1` por design.
 
-### WS8 — Cobertura de testes (Médio, qualidade)
-- `src/sdk/testkit/fixtures/ID.ts`: casos TER B (K/2, TK/2, TK/3) e TER C (K/3) que só passam com tabelas próprias existindo.
-- `runThirteenthProviderSuite` com fixtures ID (`<1 mês`, `6 meses`, `=12 meses`, `>12 meses`).
-- `runContractProviderSuite` com PKWT (probation proibida, limite de renovação Omnibus) e PKWTT.
-- Ampliar `health()` do pack para smoke-testar `contracts.validate`, `calendar.templates()`, `thirteenth.calculate`.
+**A4 — Remover target `edge` do `rollback.yml`**
+- Não existe `supabase/functions/` (arquitetura TanStack, endpoints em `src/routes/api/*`). O choice `edge` está permanentemente quebrado.
+- Ajustes no `rollback.yml`:
+  - Remover `edge` de `type: choice options`.
+  - Remover o step `Redeploy previous Edge Function`.
+  - Ajustar condicional do `Setup Supabase CLI` para `if: github.event.inputs.target == 'migration'`.
 
-### WS9 — Payroll oficial ponta a ponta (novo portão, Crítico)
-- Adicionar `src/packs/indonesia/__tests__/payroll-golden.test.ts` com uma fixture oficial: um funcionário TK/0 e um K/2, cada um em ≥3 faixas salariais representativas, cobrindo BPJS abaixo/acima do cap e PPh 21 TER A/B.
-- Cada caso traz `expected` derivado de exemplo oficial (DJP / cartilha PP 58/2023) ou cálculo manual documentado no fixture (referência legal citada por caso).
-- Teste executa `payroll.buildPayslip()` do pack e compara `gross`, `tax.tax`, `bpjs.employee.total`, `bpjs.employer.total`, `net`, `employerCost` — tolerância 0 (arredondamento é parte da regra).
-- Se algum valor oficial estiver indisponível, marcar o caso como `.skip` com TODO explícito em vez de aceitar valor aproximado.
+**A5 — `codeowners-validator` sem token**
+- Check `files` faz chamadas à API do GitHub — sem token, é rate-limited/proibido.
+- Em `ci-docs.yml`: adicionar `permissions: { contents: read }` no job `docs` e passar `github_access_token: ${{ secrets.GITHUB_TOKEN }}` para `mszostok/codeowners-validator@v0.7.4`.
 
-### Fora de escopo (deferido, explícito)
-- Ativar `signature_enforce=true` em produção — depende dos 14 dias de observação (H11.1b).
-- Remover `bootstrap.ts` — H11.2.
-- Promover parâmetros do ID para `regulatory_parameters` como Source of Truth — depende do ConfigurationService bridge (DEBT-023).
-- Versionamento data-efetiva de caps BPJS — DEBT, não bloqueia go-live.
+### 🟠 P1 — Higiene
 
-## Portões de saída
+**B1** — `ci-packs.yml` roda `bunx tsgo --noEmit` 3× (uma vez por shard). Remover o step `Typecheck` deste workflow — `ci-core.yml`, `ci-feature.yml` e `ci-shared.yml` já cobrem typecheck global.
 
-Todos verdes antes de fechar a sprint:
+**B2** — Chaves de cache referenciam `bun.lockb` (formato binário) além de `bun.lock`. Projeto usa apenas `bun.lock` (confirmado em `bunfig.toml → saveTextLockfile = true`). Remover `'bun.lockb'` de `hashFiles(...)` em `ci-shared.yml`, `ci-feature.yml`, `ci-packs.yml`.
 
-- `bun test src/packs/indonesia/` verde, incluindo TER B/C, THR, contratos e **payroll-golden**.
-- `select count(*) from pack_registry where country_code='ID'` = 1, com `compatibility_report` não-nulo.
-- `select count(*) from pack_signing_keys where active` ≥ 2 (author + countersign), ambas com `key_id` preenchido.
-- `select count(*) from runtime_boot_reports` cresce a cada boot em preview.
-- `select count(*) from compatibility_reports where pack_country='ID'` cresce a cada boot.
-- Em preview com `signature_enforce=true` temporário, boot do ID resulta em `status=ready`.
-- Em preview com `registry_enabled=true` e ID ausente do registry, `PackRegistryDivergence@1` aparece em `metrics_events` com `reason=missing_in_registry`.
+**B3** — `URL=$(vercel deploy ...)` em `ci-develop.yml` e `production-deploy.yml`: usar `| tail -n1` para tolerar linhas extras no stdout do Vercel CLI.
 
-## Riscos e mitigações
+### 🟡 P2 — Endurecimento padrão
 
-- **Dados TER B/C oficiais.** Se faltar bracket, marcar `needs_review` no fixture e não chutar. Payroll-golden trava sprint até termos números oficiais.
-- **UMP 34 províncias.** Onde faltar 2026, semear 2024 + `stale: true` + DEBT dedicado.
-- **Assinatura em Worker.** `verifyEd25519` já usa Web Crypto; validar em preview.
-- **Ruído de divergência.** MY/PH divergem enquanto registry só tiver ID — severidade `info` até H11.2.
+**C1** — Adicionar `permissions: contents: read` no topo de cada workflow (default read-only, princípio do menor privilégio). Jobs que precisam de mais escopo (A2, A3, A5) escalam localmente. Aplicar em: `ci-core.yml`, `ci-develop.yml`, `ci-docs.yml`, `ci-feature.yml`, `ci-packs.yml`, `ci-sdk.yml`, `ci-shared.yml`, `production-deploy.yml`, `release-validation.yml`, `rollback.yml`.
 
-## Detalhes técnicos (para engenharia)
+## Fora de escopo (registrado, não alterado agora)
 
-- Arquivos alvo principais: `src/packs/indonesia/params/*` (novos), `src/lib/engines/indonesia.ts`, `src/lib/countryPacks.ts`, `src/lib/engines/id-pack.ts`, `src/lib/obligations.catalog.ts`, `src/packs/indonesia/index.ts`, `src/sdk/boot.ts`, `src/sdk/compatibility.ts`, `src/sdk/trust-store.ts` (`findByKeyId`), `src/lib/platform/service/signing.ts`, `src/lib/platform/boot.server.ts`, `src/sdk/testkit/index.ts`, `src/sdk/testkit/fixtures/ID.ts`, `scripts/sign-pack.ts`.
-- Migrações novas nesta sprint:
-  - `pack_signing_keys` + coluna `key_id text` (com índice único parcial `where active`), GRANTs preservados.
-  - `pack_registry` + coluna `compatibility_report jsonb` (nullable).
-  - `compatibility_reports` + coluna `published_report_ref uuid` (fk opcional para `pack_registry.id`) para permitir diff publicação×boot.
-- Nada em `src/packs/malaysia/**` ou `src/packs/philippines/**` é alterado.
+- **B4** — `release-validation.yml` usa `--environment=preview` como alias de staging: depende de Vercel Environments customizados (config org). Anotar como pendência em `docs/governance/deploy-vercel.md` **só se sobrar tempo**; senão, próxima sprint.
+- **B5** — Deployment Protection em previews devolvendo 401 no smoke test: config Vercel.
+- **C3** — `production-deploy.yml` sem `workflow_dispatch`: decisão de política.
 
-## Entregáveis de documentação
+## Arquivos alterados
 
-- `docs/tech-debt.md`: mover DEBT (TER B/C, UMP, THR calendar, registry vazio, signing keys vazias) para "delivered H11.1a".
-- Novo ADR: `docs/governance/adr-0020-registry-as-source.md` — corte para registry-first no boot gate, com dois relatórios (publicação vs boot) e assinatura por `keyId`.
+- `package.json` (+1 devDependency pinada)
+- `bun.lock` (regenerado por `bun install`)
+- `.github/workflows/ci-shared.yml`
+- `.github/workflows/ci-feature.yml`
+- `.github/workflows/ci-packs.yml`
+- `.github/workflows/ci-core.yml`
+- `.github/workflows/ci-sdk.yml`
+- `.github/workflows/ci-develop.yml`
+- `.github/workflows/ci-docs.yml`
+- `.github/workflows/release-validation.yml`
+- `.github/workflows/production-deploy.yml`
+- `.github/workflows/rollback.yml`
+
+Nenhum arquivo em `src/`, `docs/`, `supabase/` alterado.
+
+## Validação pós-mudança
+
+1. Sandbox: `bun install --frozen-lockfile && bunx tsgo --version && bunx tsgo --noEmit` — deve passar sem erros de rede.
+2. `bun test` — 37/37 continuam verdes (não mexemos em código de teste).
+3. Abrir PR de teste contra `develop` → `ci-feature.yml` verde ponta a ponta.
+4. Simular falha de step em `production-deploy.yml` (branch de teste) → issue de auditoria criada com labels corretos (valida A2 + A3).
+5. `workflow_dispatch` de `rollback.yml` com `target=pack` em staging → `exit 1` esperado, mas issue de auditoria criada (valida A3 + A4 + `if: always()`).
