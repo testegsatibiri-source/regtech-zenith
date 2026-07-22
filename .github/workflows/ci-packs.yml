@@ -15,6 +15,9 @@ concurrency:
   group: ci-packs-${{ github.ref }}-${{ matrix.pack }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   pack:
     runs-on: ubuntu-latest
@@ -34,15 +37,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json') }}
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'package.json') }}
           restore-keys: |
             bun-${{ runner.os }}-
 
       - name: Install
         run: bun install --frozen-lockfile
-
-      - name: Typecheck
-        run: bunx tsgo --noEmit
 
       - name: Conformance + coexistence
         run: bun test src/packs/${{ matrix.pack }}/

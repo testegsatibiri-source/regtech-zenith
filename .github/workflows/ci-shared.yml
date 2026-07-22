@@ -13,6 +13,9 @@ on:
         default: true
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -28,7 +31,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json') }}
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'package.json') }}
           restore-keys: |
             bun-${{ runner.os }}-
 
