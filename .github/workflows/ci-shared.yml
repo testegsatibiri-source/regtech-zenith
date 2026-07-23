@@ -38,6 +38,17 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
+      - name: Verify tsgo version matches package.json
+        if: ${{ inputs.typecheck }}
+        run: |
+          PINNED=$(node -p "require('./package.json').devDependencies['@typescript/native-preview']")
+          INSTALLED=$(bunx tsgo --version | awk '{print $NF}')
+          echo "pinned=$PINNED installed=$INSTALLED"
+          if [ "$PINNED" != "$INSTALLED" ]; then
+            echo "::error::tsgo version mismatch: package.json=$PINNED bunx=$INSTALLED"
+            exit 1
+          fi
+
       - name: Typecheck
         if: ${{ inputs.typecheck }}
         run: bunx tsgo --noEmit
