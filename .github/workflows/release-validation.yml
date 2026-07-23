@@ -5,6 +5,12 @@ on:
     branches: [release]
   push:
     branches: [release]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Ignore missing secrets and try to deploy anyway"
+        type: boolean
+        default: false
 
 concurrency:
   group: release-validation-${{ github.ref }}
@@ -20,9 +26,62 @@ jobs:
       test-command: "bun test"
       typecheck: true
 
+  preflight-supabase:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF_STAGING: ${{ secrets.SUPABASE_PROJECT_REF_STAGING }}
+          SUPABASE_DB_PASSWORD_STAGING: ${{ secrets.SUPABASE_DB_PASSWORD_STAGING }}
+        run: |
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_PROJECT_REF_STAGING" ] && [ -n "$SUPABASE_DB_PASSWORD_STAGING" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Supabase staging secrets configured."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ⏭️ Migration dry-run skipped"
+              echo ""
+              echo "Skipped because staging infrastructure is not configured yet (missing Supabase GitHub Secrets). CI completed successfully."
+              echo ""
+              echo "**Missing:** \`SUPABASE_ACCESS_TOKEN\`, \`SUPABASE_PROJECT_REF_STAGING\`, and/or \`SUPABASE_DB_PASSWORD_STAGING\`."
+              echo "**To enable:** configure the secrets in the \`staging\` environment or trigger with \`force_deploy: true\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Migration skipped::Staging Supabase not configured. CI completed successfully."
+          fi
+
+  preflight-vercel:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Vercel secrets configured."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ⏭️ Staging deploy skipped"
+              echo ""
+              echo "Skipped because staging infrastructure is not configured yet (missing Vercel GitHub Secrets). CI completed successfully."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Deploy skipped::Vercel not configured. CI completed successfully."
+          fi
+
   migration-dry-run:
-    needs: full-ci
-    if: github.event_name == 'push'
+    needs: [full-ci, preflight-supabase]
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (needs.preflight-supabase.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true')
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -43,8 +102,8 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD_STAGING }}
 
   deploy-staging:
-    needs: migration-dry-run
-    if: github.event_name == 'push'
+    needs: [migration-dry-run, preflight-vercel]
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (needs.preflight-vercel.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true')
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -74,8 +133,8 @@ jobs:
         run: curl -fsSL "${{ steps.deploy.outputs.url }}" > /dev/null
 
   auto-issue-on-failure:
-    needs: [full-ci, migration-dry-run, deploy-staging]
-    if: failure()
+    needs: [full-ci, preflight-supabase, preflight-vercel, migration-dry-run, deploy-staging]
+    if: failure() && (needs.preflight-supabase.outputs.ready == 'true' || needs.preflight-vercel.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
