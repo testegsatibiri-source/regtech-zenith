@@ -3,6 +3,16 @@ name: Production Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Ignore missing secrets and try to deploy anyway"
+        type: boolean
+        default: false
+      confirm_production:
+        description: 'Type "PRODUCTION" to confirm — required for manual dispatch'
+        type: string
+        default: ""
 
 concurrency:
   group: production-deploy
@@ -18,8 +28,49 @@ jobs:
       test-command: "bun test"
       typecheck: true
 
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+      dispatch_ok: ${{ steps.dispatch.outputs.ok }}
+    steps:
+      - id: dispatch
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.confirm_production }}" != "PRODUCTION" ]; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::error title=Confirmation required::Manual production dispatch requires confirm_production = \"PRODUCTION\"."
+            exit 1
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+      - id: check
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF_PROD: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+          SUPABASE_DB_PASSWORD_PROD: ${{ secrets.SUPABASE_DB_PASSWORD_PROD }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ] \
+             && [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_PROJECT_REF_PROD" ] && [ -n "$SUPABASE_DB_PASSWORD_PROD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Production secrets configured — deployment will proceed."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ⏭️ Production deploy skipped"
+              echo ""
+              echo "Deployment skipped because production infrastructure is not configured yet (missing GitHub Secrets). CI completed successfully."
+              echo ""
+              echo "**Required secrets (production environment):** \`VERCEL_TOKEN\`, \`VERCEL_ORG_ID\`, \`VERCEL_PROJECT_ID\`, \`SUPABASE_ACCESS_TOKEN\`, \`SUPABASE_PROJECT_REF_PROD\`, \`SUPABASE_DB_PASSWORD_PROD\`."
+              echo "**To enable:** configure them in the \`production\` environment (Settings → Environments) or trigger this workflow manually with \`force_deploy: true\` + \`confirm_production: PRODUCTION\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Deploy skipped::Production infrastructure not configured (missing GitHub Secrets). CI completed successfully."
+          fi
+
   deploy-production:
-    needs: full-ci
+    needs: [full-ci, preflight]
+    if: needs.preflight.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -79,8 +130,8 @@ jobs:
           git push origin "$TAG"
 
   auto-issue-on-failure:
-    needs: [full-ci, deploy-production]
-    if: failure()
+    needs: [full-ci, preflight, deploy-production]
+    if: failure() && (needs.preflight.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read

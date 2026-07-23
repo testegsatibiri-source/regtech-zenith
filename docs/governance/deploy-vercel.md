@@ -62,3 +62,26 @@ Initial setup requires:
    Actions to gate on migrations + health check).
 3. Add `staging.uboard.app` and `app.uboard.app` custom domains.
 4. Populate env vars per table above.
+
+## Deployment gating (Sprint H12.1)
+
+While the project runs on Lovable-managed infrastructure, GitHub Secrets for
+Vercel/Supabase are intentionally not populated. To avoid noisy red CI runs,
+`ci-develop.yml`, `release-validation.yml`, and `production-deploy.yml` each
+run a `preflight` job that inspects the required secrets and emits
+`outputs.ready`:
+
+- **Secrets present** → deploy jobs run normally.
+- **Secrets missing** → deploy jobs are skipped (grey, not red). The workflow
+  summary explains: _"Deployment skipped because production infrastructure is
+  not configured yet (missing GitHub Secrets). CI completed successfully."_
+  No auto-issue is opened.
+- **Manual override** → `workflow_dispatch` also honours the preflight by
+  default. To force a deploy attempt without secrets (debug only), trigger
+  the workflow with `force_deploy: true`. `production-deploy.yml`
+  additionally requires `confirm_production: PRODUCTION`.
+
+To re-enable automatic deploys later: populate the secrets listed in
+`docs/governance/secrets-inventory.md` inside the matching GitHub Environment
+(`preview` / `staging` / `production`). No YAML changes needed.
+

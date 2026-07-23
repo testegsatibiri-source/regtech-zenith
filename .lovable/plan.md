@@ -1,92 +1,95 @@
-# Auditoria de Workflows — Plano de Correção (v3, com pinning e verificação)
+## Plano — H12.1: Deploy Gating por Secrets (v2, com refinamentos)
 
-Escopo: 10 workflows em `.github/workflows/*.yml` + `package.json`. Zero mudanças em código de aplicação, SDK, packs, banco ou docs.
+Ambos refinamentos aprovados. Mudanças vs. plano anterior:
 
-## Refinamentos incorporados nesta versão
+1. **`workflow_dispatch` também passa pelo preflight por padrão.** Só é ignorado quando um input explícito `force_deploy: true` é marcado. Elimina risco de execução acidental sem credenciais.
+2. **Mensagem de skip explícita e humana** — além do `::notice::`, o job downstream (via `if: false`) fica com nome descritivo no summary do GitHub Actions.
 
-1. **Versão fixada** de `@typescript/native-preview` (não `latest`) — o pacote publica pré-releases diários (`7.0.0-dev.YYYYMMDD.N`); `latest` deixaria o CI dependente do último build.
-2. **Guarda extra do `bunfig.toml`:** `minimumReleaseAge = 86400` já bloquearia versões publicadas nas últimas 24h. Isso reforça que a versão pinada precisa ter pelo menos 1 dia; escolhemos uma versão publicada há mais de 24h no momento do commit.
-3. **Verificação local antes de abrir PR:** `bun install && bunx tsgo --version && bunx tsgo --noEmit` executados na sandbox para confirmar que o binário resolve pela dependência local (não tenta buscar `tsgo` no npm).
-4. **Ordem canônica dos steps em cada workflow:** `checkout → setup-bun → cache → bun install --frozen-lockfile → bunx tsgo --noEmit`. Todos os workflows já seguem essa ordem — nenhuma reordenação necessária, apenas conferido durante a edição.
+### Estratégia consolidada
 
-## Validação prévia (A1) — já feita
+Cada workflow de deploy ganha:
+- `on.workflow_dispatch.inputs.force_deploy` (boolean, default `false`).
+- Job `preflight` que checa presença dos secrets e emite `outputs.ready`.
+- Jobs de deploy: `needs: [<ci>, preflight]` + `if: needs.preflight.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true'`.
+- `auto-issue-on-failure`: `if: failure() && (needs.preflight.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true')` — não abre issue quando o skip é intencional.
 
-- `tsgo` aparece em 7 lugares (3 workflows + template de PR + 2 docs de governance + description do reusable). Convenção documentada.
-- Nenhuma referência a `@typescript/native-preview` — o pacote nunca foi instalado.
-- `bunx tsgo` retorna 404 porque não existe pacote chamado `tsgo` no npm; o binário `tsgo` vem de `@typescript/native-preview`.
-- **Decisão:** instalar `@typescript/native-preview` com versão pinada. Não trocar por `tsc`.
+### Padrão de preflight
 
-## Correções
+```yaml
+on:
+  push: { branches: [develop] }
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Ignore missing secrets and try to deploy anyway"
+        type: boolean
+        default: false
 
-### 🔴 P0 — Bloqueantes
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Vercel secrets configured — deployment will proceed."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ⏭️ Deployment skipped"
+              echo ""
+              echo "Deployment skipped because production infrastructure is not configured yet (missing GitHub Secrets). CI completed successfully."
+              echo ""
+              echo "**Missing secrets:** \`VERCEL_TOKEN\`, \`VERCEL_ORG_ID\`, and/or \`VERCEL_PROJECT_ID\`."
+              echo "**To enable:** configure the secrets in the target environment (Settings → Environments) or trigger this workflow manually with \`force_deploy: true\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Deploy skipped::Production infrastructure not configured (missing GitHub Secrets). CI completed successfully."
+          fi
+```
 
-**A1 — Instalar tsgo com versão fixada**
-- `package.json → devDependencies`: adicionar `"@typescript/native-preview": "7.0.0-dev.20260707.2"` (última versão estável na data, > 24h e portanto compatível com `minimumReleaseAge`).
-- Executar `bun install` para regenerar `bun.lock`.
-- Verificação obrigatória no sandbox antes de considerar o passo concluído:
-  ```
-  bunx tsgo --version   # deve imprimir a versão pinada, sem acesso à rede
-  bunx tsgo --noEmit    # deve rodar o typecheck localmente
-  ```
-- Nenhuma alteração nos workflows: `bunx tsgo --noEmit` passa a resolver via `node_modules/.bin/tsgo`.
+### Mudanças por arquivo
 
-**A2 — `production-deploy.yml`: adicionar `contents: write` no job `deploy-production`**
-- Step `Tag release` faz `git tag` + `git push origin`. Sem essa permissão, o push falha e dispara `auto-issue-on-failure` em todo deploy bem-sucedido.
+**`.github/workflows/ci-develop.yml`**
+- `on.workflow_dispatch` com input `force_deploy`.
+- Job `preflight` (checa Vercel trio).
+- `deploy-preview`: `needs: [validate, preflight]` + gate.
 
-**A3 — Jobs `auto-issue-on-failure` sem `issues: write`**
-- Em `production-deploy.yml`, `release-validation.yml` e `rollback.yml` os steps chamam `github.rest.issues.create`. Adicionar `permissions: { issues: write, contents: read }` em cada job de auto-issue.
-- Em `rollback.yml`, mover o step `Audit issue` para `if: always()`, para preservar rastro quando os targets `pack`/`migration` fazem `exit 1` por design.
+**`.github/workflows/release-validation.yml`**
+- `on.workflow_dispatch` com input `force_deploy` (mantém `pull_request` e `push` em `release`).
+- Dois preflights: `preflight-supabase` (SUPABASE_ACCESS_TOKEN + SUPABASE_PROJECT_REF_STAGING + SUPABASE_DB_PASSWORD_STAGING) e `preflight-vercel` (Vercel trio).
+- `migration-dry-run`: gate no preflight-supabase; `deploy-staging`: gate em ambos.
+- `auto-issue-on-failure`: só cria issue quando pelo menos um preflight passou (ou `force_deploy`).
 
-**A4 — Remover target `edge` do `rollback.yml`**
-- Não existe `supabase/functions/` (arquitetura TanStack, endpoints em `src/routes/api/*`). O choice `edge` está permanentemente quebrado.
-- Ajustes no `rollback.yml`:
-  - Remover `edge` de `type: choice options`.
-  - Remover o step `Redeploy previous Edge Function`.
-  - Ajustar condicional do `Setup Supabase CLI` para `if: github.event.inputs.target == 'migration'`.
+**`.github/workflows/production-deploy.yml`**
+- `on.workflow_dispatch` com dois inputs: `force_deploy` (bool) e `confirm_production` (string, deve ser `"PRODUCTION"`) — dupla trava para não disparar por engano.
+- Preflight combinado (Supabase prod + Vercel).
+- `deploy-production`: gate; `auto-issue-on-failure` também.
 
-**A5 — `codeowners-validator` sem token**
-- Check `files` faz chamadas à API do GitHub — sem token, é rate-limited/proibido.
-- Em `ci-docs.yml`: adicionar `permissions: { contents: read }` no job `docs` e passar `github_access_token: ${{ secrets.GITHUB_TOKEN }}` para `mszostok/codeowners-validator@v0.7.4`.
+### Fora de escopo (sem mudança)
 
-### 🟠 P1 — Higiene
+- `rollback.yml` — já é `workflow_dispatch`-only, tem seus próprios inputs.
+- `ci-core.yml`, `ci-sdk.yml`, `ci-feature.yml`, `ci-packs.yml`, `ci-docs.yml`, `ci-shared.yml` — CI puro, sem secrets externos.
+- Nada em `src/`, `supabase/`, `package.json`.
+- **Nenhum secret novo criado.**
 
-**B1** — `ci-packs.yml` roda `bunx tsgo --noEmit` 3× (uma vez por shard). Remover o step `Typecheck` deste workflow — `ci-core.yml`, `ci-feature.yml` e `ci-shared.yml` já cobrem typecheck global.
+### Documentação
 
-**B2** — Chaves de cache referenciam `bun.lockb` (formato binário) além de `bun.lock`. Projeto usa apenas `bun.lock` (confirmado em `bunfig.toml → saveTextLockfile = true`). Remover `'bun.lockb'` de `hashFiles(...)` em `ci-shared.yml`, `ci-feature.yml`, `ci-packs.yml`.
+Adicionar seção "Deployment gating" em `docs/governance/deploy-vercel.md` (~15 linhas) explicando:
+- Comportamento padrão (skip quando secrets ausentes).
+- Como reativar (popular secrets em GitHub Environments).
+- Override manual via `workflow_dispatch` + `force_deploy: true` (com aviso de que falhará se secrets ainda estiverem ausentes).
 
-**B3** — `URL=$(vercel deploy ...)` em `ci-develop.yml` e `production-deploy.yml`: usar `| tail -n1` para tolerar linhas extras no stdout do Vercel CLI.
+### Validação pós-mudança
 
-### 🟡 P2 — Endurecimento padrão
-
-**C1** — Adicionar `permissions: contents: read` no topo de cada workflow (default read-only, princípio do menor privilégio). Jobs que precisam de mais escopo (A2, A3, A5) escalam localmente. Aplicar em: `ci-core.yml`, `ci-develop.yml`, `ci-docs.yml`, `ci-feature.yml`, `ci-packs.yml`, `ci-sdk.yml`, `ci-shared.yml`, `production-deploy.yml`, `release-validation.yml`, `rollback.yml`.
-
-## Fora de escopo (registrado, não alterado agora)
-
-- **B4** — `release-validation.yml` usa `--environment=preview` como alias de staging: depende de Vercel Environments customizados (config org). Anotar como pendência em `docs/governance/deploy-vercel.md` **só se sobrar tempo**; senão, próxima sprint.
-- **B5** — Deployment Protection em previews devolvendo 401 no smoke test: config Vercel.
-- **C3** — `production-deploy.yml` sem `workflow_dispatch`: decisão de política.
-
-## Arquivos alterados
-
-- `package.json` (+1 devDependency pinada)
-- `bun.lock` (regenerado por `bun install`)
-- `.github/workflows/ci-shared.yml`
-- `.github/workflows/ci-feature.yml`
-- `.github/workflows/ci-packs.yml`
-- `.github/workflows/ci-core.yml`
-- `.github/workflows/ci-sdk.yml`
-- `.github/workflows/ci-develop.yml`
-- `.github/workflows/ci-docs.yml`
-- `.github/workflows/release-validation.yml`
-- `.github/workflows/production-deploy.yml`
-- `.github/workflows/rollback.yml`
-
-Nenhum arquivo em `src/`, `docs/`, `supabase/` alterado.
-
-## Validação pós-mudança
-
-1. Sandbox: `bun install --frozen-lockfile && bunx tsgo --version && bunx tsgo --noEmit` — deve passar sem erros de rede.
-2. `bun test` — 37/37 continuam verdes (não mexemos em código de teste).
-3. Abrir PR de teste contra `develop` → `ci-feature.yml` verde ponta a ponta.
-4. Simular falha de step em `production-deploy.yml` (branch de teste) → issue de auditoria criada com labels corretos (valida A2 + A3).
-5. `workflow_dispatch` de `rollback.yml` com `target=pack` em staging → `exit 1` esperado, mas issue de auditoria criada (valida A3 + A4 + `if: always()`).
+1. Push em `develop` sem secrets → `validate` verde, `preflight` verde com `ready=false`, `deploy-preview` **skipped**, summary mostra mensagem humana. Nenhuma issue aberta.
+2. Push em `main` sem secrets → mesmo padrão em produção.
+3. `workflow_dispatch` em `ci-develop` sem marcar `force_deploy` → mesmo skip (validação do refinamento 1).
+4. `workflow_dispatch` com `force_deploy: true` sem secrets → deploy tenta, falha esperada, issue de auditoria criada (comportamento intencional de debug).
+5. Quando secrets forem adicionados a uma Environment: próximo push executa deploy normalmente, zero edições de YAML.
