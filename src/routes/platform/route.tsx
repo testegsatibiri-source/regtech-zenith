@@ -3,7 +3,7 @@
 // operators/auditors/CTOs — not a customer app view.
 import { createFileRoute, Outlet, Link, redirect, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Package, Rocket, Sliders, Flag, ClipboardList, ShieldAlert, LogOut, Activity } from "lucide-react";
+import { LayoutDashboard, Package, Rocket, Sliders, Flag, ClipboardList, ShieldAlert, LogOut, Activity, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -41,6 +41,7 @@ function PlatformLayout() {
     { to: "/platform/parameters", label: "Parameters", icon: Sliders },
     { to: "/platform/flags", label: "Feature Flags", icon: Flag },
     { to: "/platform/audit", label: "Audit Log", icon: ClipboardList },
+    { to: "/platform/uada", label: "UADA", icon: Brain },
   ] as const;
 
   async function signOut() {
