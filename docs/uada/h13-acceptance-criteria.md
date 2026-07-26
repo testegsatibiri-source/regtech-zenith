@@ -74,3 +74,10 @@ Dentro deste escopo:
 - `reindex()` server function (full + incremental).
 - UI mínima em `/platform/uada` (status snapshot + botão reindex, protegida por
   feature gate).
+
+## Recovery (H13 refinement)
+
+- [ ] Falha durante reindex não altera o snapshot ativo.
+- [ ] Snapshot `building`/`failed` descartável sem intervenção manual.
+- [ ] Nenhum estado parcial permanece após erro — orquestrador marca `failed`
+      e persiste o erro em `uada_index_runs`; nada é promovido.

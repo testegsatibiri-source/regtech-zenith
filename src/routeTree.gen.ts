@@ -17,6 +17,7 @@ import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
 import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
 import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
@@ -76,6 +77,11 @@ const IndexRoute = IndexRouteImport.update({
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformUadaRoute = PlatformUadaRouteImport.update({
+  id: '/uada',
+  path: '/uada',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformReleasesRoute = PlatformReleasesRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/platform/parameters': typeof PlatformParametersRoute
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
+  '/platform/uada': typeof PlatformUadaRoute
   '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/platform/parameters': typeof PlatformParametersRoute
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
+  '/platform/uada': typeof PlatformUadaRoute
   '/platform': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/platform/parameters': typeof PlatformParametersRoute
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
+  '/platform/uada': typeof PlatformUadaRoute
   '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/platform/parameters'
     | '/platform/readiness'
     | '/platform/releases'
+    | '/platform/uada'
     | '/platform/'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/platform/parameters'
     | '/platform/readiness'
     | '/platform/releases'
+    | '/platform/uada'
     | '/platform'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/platform/parameters'
     | '/platform/readiness'
     | '/platform/releases'
+    | '/platform/uada'
     | '/platform/'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
@@ -445,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/platform/'
       preLoaderRoute: typeof PlatformIndexRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/uada': {
+      id: '/platform/uada'
+      path: '/uada'
+      fullPath: '/platform/uada'
+      preLoaderRoute: typeof PlatformUadaRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/releases': {
@@ -627,6 +646,7 @@ interface PlatformRouteRouteChildren {
   PlatformParametersRoute: typeof PlatformParametersRoute
   PlatformReadinessRoute: typeof PlatformReadinessRoute
   PlatformReleasesRoute: typeof PlatformReleasesRoute
+  PlatformUadaRoute: typeof PlatformUadaRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
 }
 
@@ -637,6 +657,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformParametersRoute: PlatformParametersRoute,
   PlatformReadinessRoute: PlatformReadinessRoute,
   PlatformReleasesRoute: PlatformReleasesRoute,
+  PlatformUadaRoute: PlatformUadaRoute,
   PlatformIndexRoute: PlatformIndexRoute,
 }
 
@@ -664,13 +685,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
