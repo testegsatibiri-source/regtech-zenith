@@ -70,7 +70,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
         kind: d.kind === "code" ? "code" : d.kind,
         sha256: sha256(d.sha256Input),
         summary: d.summary,
-        metadata: d.metadata as unknown as object,
+        metadata: d.metadata as never,
         content: null as string | null,
         content_truncated: false,
       })),
@@ -80,7 +80,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
         kind: d.kind,
         sha256: sha256(d.sha256Input),
         summary: d.summary,
-        metadata: {} as object,
+        metadata: {} as never,
         content: d.content.length > 20000 ? d.content.slice(0, 20000) : d.content,
         content_truncated: d.content.length > 20000,
       })),
@@ -92,7 +92,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
           kind: "schema",
           sha256: sha256(d.sha256Input),
           summary: d.summary,
-          metadata: d.metadata as unknown as object,
+          metadata: d.metadata as never,
           content: null as string | null,
           content_truncated: false,
         };
@@ -129,7 +129,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
         key: n.key,
         label: n.label,
         path: n.path ?? null,
-        metadata: n.metadata as unknown as object,
+        metadata: n.metadata as never,
       }));
       const { data, error } = await c.from("uada_graph_nodes").insert(chunk).select("id, key");
       if (error) throw error;
@@ -147,7 +147,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
           from_node: from,
           to_node: to,
           kind: e.kind,
-          metadata: (e.metadata ?? {}) as unknown as object,
+          metadata: (e.metadata ?? {}) as never,
         };
       })
       .filter((r): r is NonNullable<typeof r> => r !== null);
