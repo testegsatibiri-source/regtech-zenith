@@ -1484,6 +1484,355 @@ export type Database = {
         }
         Relationships: []
       }
+      uada_documents: {
+        Row: {
+          content: string | null
+          content_truncated: boolean
+          id: string
+          kind: string
+          metadata: Json
+          path: string
+          sha256: string
+          snapshot_id: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          content_truncated?: boolean
+          id?: string
+          kind: string
+          metadata?: Json
+          path: string
+          sha256: string
+          snapshot_id: string
+          summary?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          content_truncated?: boolean
+          id?: string
+          kind?: string
+          metadata?: Json
+          path?: string
+          sha256?: string
+          snapshot_id?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_documents_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uada_embeddings: {
+        Row: {
+          created_at: string
+          document_id: string
+          embedding: string | null
+          embedding_dimensions: number
+          embedding_model: string
+          error_message: string | null
+          id: string
+          last_embedded_at: string | null
+          retry_count: number
+          snapshot_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          embedding_dimensions: number
+          embedding_model: string
+          error_message?: string | null
+          id?: string
+          last_embedded_at?: string | null
+          retry_count?: number
+          snapshot_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          embedding_dimensions?: number
+          embedding_model?: string
+          error_message?: string | null
+          id?: string
+          last_embedded_at?: string | null
+          retry_count?: number
+          snapshot_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_embeddings_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "uada_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uada_embeddings_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uada_graph_edges: {
+        Row: {
+          from_node: string
+          id: string
+          kind: string
+          metadata: Json
+          snapshot_id: string
+          to_node: string
+          weight: number
+        }
+        Insert: {
+          from_node: string
+          id?: string
+          kind: string
+          metadata?: Json
+          snapshot_id: string
+          to_node: string
+          weight?: number
+        }
+        Update: {
+          from_node?: string
+          id?: string
+          kind?: string
+          metadata?: Json
+          snapshot_id?: string
+          to_node?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_graph_edges_from_node_fkey"
+            columns: ["from_node"]
+            isOneToOne: false
+            referencedRelation: "uada_graph_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uada_graph_edges_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uada_graph_edges_to_node_fkey"
+            columns: ["to_node"]
+            isOneToOne: false
+            referencedRelation: "uada_graph_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uada_graph_nodes: {
+        Row: {
+          id: string
+          key: string
+          kind: string
+          label: string
+          metadata: Json
+          path: string | null
+          snapshot_id: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          kind: string
+          label: string
+          metadata?: Json
+          path?: string | null
+          snapshot_id: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          kind?: string
+          label?: string
+          metadata?: Json
+          path?: string | null
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_graph_nodes_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uada_index_runs: {
+        Row: {
+          coverage: Json
+          docs_denied: number
+          docs_skipped: number
+          docs_upserted: number
+          duration_ms: number | null
+          embedding_batches: number
+          embedding_cost: number
+          embedding_tokens: number
+          error: string | null
+          files_changed: number
+          files_scanned: number
+          finished_at: string | null
+          graph_edges: number
+          graph_nodes: number
+          id: string
+          mode: string
+          ok: boolean
+          reason: string
+          snapshot_id: string | null
+          started_at: string
+        }
+        Insert: {
+          coverage?: Json
+          docs_denied?: number
+          docs_skipped?: number
+          docs_upserted?: number
+          duration_ms?: number | null
+          embedding_batches?: number
+          embedding_cost?: number
+          embedding_tokens?: number
+          error?: string | null
+          files_changed?: number
+          files_scanned?: number
+          finished_at?: string | null
+          graph_edges?: number
+          graph_nodes?: number
+          id?: string
+          mode: string
+          ok?: boolean
+          reason: string
+          snapshot_id?: string | null
+          started_at?: string
+        }
+        Update: {
+          coverage?: Json
+          docs_denied?: number
+          docs_skipped?: number
+          docs_upserted?: number
+          duration_ms?: number | null
+          embedding_batches?: number
+          embedding_cost?: number
+          embedding_tokens?: number
+          error?: string | null
+          files_changed?: number
+          files_scanned?: number
+          finished_at?: string | null
+          graph_edges?: number
+          graph_nodes?: number
+          id?: string
+          mode?: string
+          ok?: boolean
+          reason?: string
+          snapshot_id?: string | null
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_index_runs_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uada_memory: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          key: string
+          scope: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key: string
+          scope: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key?: string
+          scope?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      uada_snapshots: {
+        Row: {
+          activated_at: string | null
+          archived_at: string | null
+          commit_sha: string | null
+          created_at: string
+          embedding_dimensions: number
+          embedding_model: string
+          failed_at: string | null
+          failure_reason: string | null
+          id: string
+          promotion_state: string
+          schema_hash: string | null
+          state: string
+          stats: Json
+          version: number
+        }
+        Insert: {
+          activated_at?: string | null
+          archived_at?: string | null
+          commit_sha?: string | null
+          created_at?: string
+          embedding_dimensions: number
+          embedding_model: string
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          promotion_state?: string
+          schema_hash?: string | null
+          state: string
+          stats?: Json
+          version: number
+        }
+        Update: {
+          activated_at?: string | null
+          archived_at?: string | null
+          commit_sha?: string | null
+          created_at?: string
+          embedding_dimensions?: number
+          embedding_model?: string
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          promotion_state?: string
+          schema_hash?: string | null
+          state?: string
+          stats?: Json
+          version?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -1527,6 +1876,8 @@ export type Database = {
       is_platform_admin: { Args: never; Returns: boolean }
       is_platform_auditor: { Args: never; Returns: boolean }
       is_platform_operator: { Args: never; Returns: boolean }
+      is_uada_reader: { Args: never; Returns: boolean }
+      is_uada_writer: { Args: never; Returns: boolean }
       owns_company: { Args: { _company_id: string }; Returns: boolean }
     }
     Enums: {
