@@ -1984,6 +1984,22 @@ export type Database = {
       is_uada_reader: { Args: never; Returns: boolean }
       is_uada_writer: { Args: never; Returns: boolean }
       owns_company: { Args: { _company_id: string }; Returns: boolean }
+      uada_start_reindex: {
+        Args: {
+          _commit_sha: string
+          _dimensions: number
+          _graph_schema_version: string
+          _model: string
+          _namespace_id: number
+          _repo_id: number
+          _schema_hash: string
+        }
+        Returns: {
+          acquired: boolean
+          snapshot_id: string
+          version: number
+        }[]
+      }
     }
     Enums: {
       app_role:
