@@ -23,20 +23,44 @@ export interface ReindexInput {
 }
 
 export interface ReindexResult {
-  snapshotId: string;
+  snapshotId: string | null;
   promotionState: string;
   durationMs: number;
   coverage: Record<string, number>;
+  coverageDetail?: Record<string, { present: number; expected: number; ratio: number; threshold: number }>;
   ok: boolean;
   reasons?: string[];
+  acquired: boolean;
 }
+
+// H13.5 — per-category coverage thresholds. Missing category → 0 ratio.
+const COVERAGE_THRESHOLDS: Record<string, number> = {
+  code: 1,
+  docs: 1,
+  migrations: 1,
+  schema: 1,
+  routes: 1,
+  server_fns: 1,
+};
 
 export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
   const c = await db();
   const startedAt = Date.now();
 
-  // 1. Create snapshot
-  const snap = await SnapshotManager.createBuilding({});
+  // 1. Acquire composite advisory lock + create snapshot (single tx in SQL fn).
+  const start = await SnapshotManager.startBuilding({});
+  if (!start.acquired || !start.snapshotId) {
+    return {
+      snapshotId: null,
+      promotionState: "already_in_progress",
+      durationMs: Date.now() - startedAt,
+      coverage: {},
+      ok: false,
+      reasons: ["another reindex is already in progress"],
+      acquired: false,
+    };
+  }
+  const snap = { id: start.snapshotId, version: start.version! };
   const runInsert = await c
     .from("uada_index_runs")
     .insert({
