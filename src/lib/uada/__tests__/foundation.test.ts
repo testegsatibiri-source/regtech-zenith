@@ -160,7 +160,15 @@ describe("UADA H12.5 Foundation", () => {
         snapshotVersion: 1,
         filesUsed: ["src/lib/uada/index.ts"],
         model: "google/gemini-3.6-flash",
-        evidence: [{ source: "code", path: "src/lib/uada/index.ts", score: 1 }],
+        evidence: [
+          {
+            source: "code",
+            path: "src/lib/uada/index.ts",
+            score: 1,
+            snapshotVersion: 1,
+            evidenceHash: "0".repeat(64),
+          },
+        ],
       };
       expect(r.evidence).toHaveLength(1);
     });

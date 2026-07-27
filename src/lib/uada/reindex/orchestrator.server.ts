@@ -23,20 +23,44 @@ export interface ReindexInput {
 }
 
 export interface ReindexResult {
-  snapshotId: string;
+  snapshotId: string | null;
   promotionState: string;
   durationMs: number;
   coverage: Record<string, number>;
+  coverageDetail?: Record<string, { present: number; expected: number; ratio: number; threshold: number }>;
   ok: boolean;
   reasons?: string[];
+  acquired: boolean;
 }
+
+// H13.5 — per-category coverage thresholds. Missing category → 0 ratio.
+const COVERAGE_THRESHOLDS: Record<string, number> = {
+  code: 1,
+  docs: 1,
+  migrations: 1,
+  schema: 1,
+  routes: 1,
+  server_fns: 1,
+};
 
 export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
   const c = await db();
   const startedAt = Date.now();
 
-  // 1. Create snapshot
-  const snap = await SnapshotManager.createBuilding({});
+  // 1. Acquire composite advisory lock + create snapshot (single tx in SQL fn).
+  const start = await SnapshotManager.startBuilding({});
+  if (!start.acquired || !start.snapshotId) {
+    return {
+      snapshotId: null,
+      promotionState: "already_in_progress",
+      durationMs: Date.now() - startedAt,
+      coverage: {},
+      ok: false,
+      reasons: ["another reindex is already in progress"],
+      acquired: false,
+    };
+  }
+  const snap = { id: start.snapshotId, version: start.version! };
   const runInsert = await c
     .from("uada_index_runs")
     .insert({
@@ -222,15 +246,28 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
       }
     }
 
-    // 6. Coverage snapshot
-    const coverage: Record<string, number> = {
-      code: codeIdx.documents.length > 0 ? 1 : 0,
-      docs: docsIdx.filter((d) => d.kind === "doc" || d.kind === "adr").length > 0 ? 1 : 0,
-      migrations: docsIdx.filter((d) => d.kind === "migration").length > 0 ? 1 : 0,
-      schema: dbIdx.documents.length > 0 ? 1 : 0,
-      routes: codeIdx.documents.filter((d) => d.metadata.isRoute).length > 0 ? 1 : 0,
-      server_fns: codeIdx.documents.filter((d) => d.metadata.hasServerFn).length > 0 ? 1 : 0,
+    // 6. Coverage snapshot (legacy) + coverage_detail with thresholds (H13.5)
+    const buckets = {
+      code: codeIdx.documents.length,
+      docs: docsIdx.filter((d) => d.kind === "doc" || d.kind === "adr").length,
+      migrations: docsIdx.filter((d) => d.kind === "migration").length,
+      schema: dbIdx.documents.length,
+      routes: codeIdx.documents.filter((d) => d.metadata.isRoute).length,
+      server_fns: codeIdx.documents.filter((d) => d.metadata.hasServerFn).length,
     };
+    const coverage: Record<string, number> = Object.fromEntries(
+      Object.entries(buckets).map(([k, v]) => [k, v > 0 ? 1 : 0]),
+    );
+    const coverageDetail: Record<
+      string,
+      { present: number; expected: number; ratio: number; threshold: number }
+    > = Object.fromEntries(
+      Object.entries(buckets).map(([k, v]) => {
+        const expected = 1;
+        const ratio = v > 0 ? 1 : 0;
+        return [k, { present: v, expected, ratio, threshold: COVERAGE_THRESHOLDS[k] ?? 1 }];
+      }),
+    );
 
     // 7. Persist stats on snapshot + finalize run
     await c
@@ -247,7 +284,24 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
 
     // 8. Validate promotion
     await SnapshotManager.setPromotionState(snap.id, "validating");
-    // First, write the run row so validation can read coverage
+    if (await SnapshotManager.isCancelRequested(snap.id)) {
+      await SnapshotManager.setPromotionState(snap.id, "cancelled", "cancel requested");
+      await c
+        .from("uada_index_runs")
+        .update({ cancel_state: "cancelled", cancelled_at: new Date().toISOString(), ok: false })
+        .eq("id", runId);
+      return {
+        snapshotId: snap.id,
+        promotionState: "cancelled",
+        durationMs: Date.now() - startedAt,
+        coverage,
+        coverageDetail,
+        ok: false,
+        reasons: ["cancelled"],
+        acquired: true,
+      };
+    }
+
     await c
       .from("uada_index_runs")
       .update({
@@ -262,6 +316,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
         embedding_batches: embeddingBatches,
         embedding_tokens: embeddingTokens,
         coverage,
+        coverage_detail: coverageDetail as never,
         ok: true,
       })
       .eq("id", runId);
@@ -274,8 +329,10 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
         promotionState: "failed",
         durationMs: Date.now() - startedAt,
         coverage,
+        coverageDetail,
         ok: false,
         reasons: readiness.reasons,
+        acquired: true,
       };
     }
 
@@ -289,7 +346,9 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
       promotionState: "active",
       durationMs: Date.now() - startedAt,
       coverage,
+      coverageDetail,
       ok: true,
+      acquired: true,
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -310,6 +369,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
       coverage: {},
       ok: false,
       reasons: [msg],
+      acquired: true,
     };
   }
 }

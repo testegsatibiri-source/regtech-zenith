@@ -1484,6 +1484,60 @@ export type Database = {
         }
         Relationships: []
       }
+      uada_benchmark_results: {
+        Row: {
+          benchmark_id: string
+          benchmark_version: string
+          hit: boolean
+          id: string
+          latency_ms: number | null
+          precision_at_5: number | null
+          ran_at: string
+          recall_at_5: number | null
+          returned_paths: string[]
+          snapshot_id: string
+        }
+        Insert: {
+          benchmark_id: string
+          benchmark_version: string
+          hit?: boolean
+          id?: string
+          latency_ms?: number | null
+          precision_at_5?: number | null
+          ran_at?: string
+          recall_at_5?: number | null
+          returned_paths?: string[]
+          snapshot_id: string
+        }
+        Update: {
+          benchmark_id?: string
+          benchmark_version?: string
+          hit?: boolean
+          id?: string
+          latency_ms?: number | null
+          precision_at_5?: number | null
+          ran_at?: string
+          recall_at_5?: number | null
+          returned_paths?: string[]
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_benchmark_results_benchmark_id_fkey"
+            columns: ["benchmark_id"]
+            isOneToOne: false
+            referencedRelation: "uada_search_benchmarks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uada_benchmark_results_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       uada_documents: {
         Row: {
           content: string | null
@@ -1680,7 +1734,11 @@ export type Database = {
       }
       uada_index_runs: {
         Row: {
+          cancel_requested_at: string | null
+          cancel_state: string
+          cancelled_at: string | null
           coverage: Json
+          coverage_detail: Json
           docs_denied: number
           docs_skipped: number
           docs_upserted: number
@@ -1702,7 +1760,11 @@ export type Database = {
           started_at: string
         }
         Insert: {
+          cancel_requested_at?: string | null
+          cancel_state?: string
+          cancelled_at?: string | null
           coverage?: Json
+          coverage_detail?: Json
           docs_denied?: number
           docs_skipped?: number
           docs_upserted?: number
@@ -1724,7 +1786,11 @@ export type Database = {
           started_at?: string
         }
         Update: {
+          cancel_requested_at?: string | null
+          cancel_state?: string
+          cancelled_at?: string | null
           coverage?: Json
+          coverage_detail?: Json
           docs_denied?: number
           docs_skipped?: number
           docs_upserted?: number
@@ -1782,6 +1848,39 @@ export type Database = {
         }
         Relationships: []
       }
+      uada_search_benchmarks: {
+        Row: {
+          benchmark_version: string
+          category: string
+          created_at: string
+          expected_paths: string[]
+          id: string
+          query: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          benchmark_version?: string
+          category: string
+          created_at?: string
+          expected_paths?: string[]
+          id?: string
+          query: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          benchmark_version?: string
+          category?: string
+          created_at?: string
+          expected_paths?: string[]
+          id?: string
+          query?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       uada_snapshots: {
         Row: {
           activated_at: string | null
@@ -1792,7 +1891,9 @@ export type Database = {
           embedding_model: string
           failed_at: string | null
           failure_reason: string | null
+          graph_schema_version: string
           id: string
+          manifest: Json | null
           promotion_state: string
           schema_hash: string | null
           state: string
@@ -1808,7 +1909,9 @@ export type Database = {
           embedding_model: string
           failed_at?: string | null
           failure_reason?: string | null
+          graph_schema_version?: string
           id?: string
+          manifest?: Json | null
           promotion_state?: string
           schema_hash?: string | null
           state: string
@@ -1824,7 +1927,9 @@ export type Database = {
           embedding_model?: string
           failed_at?: string | null
           failure_reason?: string | null
+          graph_schema_version?: string
           id?: string
+          manifest?: Json | null
           promotion_state?: string
           schema_hash?: string | null
           state?: string
@@ -1879,6 +1984,22 @@ export type Database = {
       is_uada_reader: { Args: never; Returns: boolean }
       is_uada_writer: { Args: never; Returns: boolean }
       owns_company: { Args: { _company_id: string }; Returns: boolean }
+      uada_start_reindex: {
+        Args: {
+          _commit_sha: string
+          _dimensions: number
+          _graph_schema_version: string
+          _model: string
+          _namespace_id: number
+          _repo_id: number
+          _schema_hash: string
+        }
+        Returns: {
+          acquired: boolean
+          snapshot_id: string
+          version: number
+        }[]
+      }
     }
     Enums: {
       app_role:
