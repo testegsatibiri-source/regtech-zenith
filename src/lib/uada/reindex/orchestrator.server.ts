@@ -369,6 +369,7 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
       coverage: {},
       ok: false,
       reasons: [msg],
+      acquired: true,
     };
   }
 }
