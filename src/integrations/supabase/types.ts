@@ -1644,29 +1644,35 @@ export type Database = {
       }
       uada_graph_edges: {
         Row: {
+          confidence: number
           from_node: string
           id: string
           kind: string
           metadata: Json
           snapshot_id: string
+          source: string
           to_node: string
           weight: number
         }
         Insert: {
+          confidence?: number
           from_node: string
           id?: string
           kind: string
           metadata?: Json
           snapshot_id: string
+          source?: string
           to_node: string
           weight?: number
         }
         Update: {
+          confidence?: number
           from_node?: string
           id?: string
           kind?: string
           metadata?: Json
           snapshot_id?: string
+          source?: string
           to_node?: string
           weight?: number
         }
@@ -1958,7 +1964,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      uada_benchmark_regression: {
+        Row: {
+          benchmark_id: string | null
+          delta_precision: number | null
+          hit: boolean | null
+          latency_ms: number | null
+          precision_at_5: number | null
+          prev_precision_at_5: number | null
+          prev_snapshot_version: number | null
+          ran_at: string | null
+          snapshot_id: string | null
+          snapshot_version: number | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uada_benchmark_results_benchmark_id_fkey"
+            columns: ["benchmark_id"]
+            isOneToOne: false
+            referencedRelation: "uada_search_benchmarks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uada_benchmark_results_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "uada_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       check_api_quota: {
