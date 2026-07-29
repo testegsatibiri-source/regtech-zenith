@@ -66,7 +66,7 @@ async function callGateway(
         model: modelInstance,
         system,
         prompt,
-        ...(providerOptions ? { providerOptions } : {}),
+        ...(providerOptions ? { providerOptions: providerOptions as never } : {}),
       });
       return {
         text: result.text,
