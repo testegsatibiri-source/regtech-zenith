@@ -26,7 +26,7 @@ export const uadaSearch = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId);
     const { SearchEngine } = await import("@/lib/uada/engines/search.server");
-    return SearchEngine.search(data);
+    return (await SearchEngine.search(data)) as unknown as Record<string, unknown>;
   });
 
 const ImpactInput = z.object({
@@ -41,7 +41,7 @@ export const uadaImpactOf = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId);
     const { ImpactEngine } = await import("@/lib/uada/engines/impact.server");
-    return ImpactEngine.impactOf(data);
+    return (await ImpactEngine.impactOf(data)) as unknown as Record<string, unknown>;
   });
 
 const PlanInput = z.object({
@@ -57,7 +57,7 @@ export const uadaPlan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId);
     const { PlannerEngine } = await import("@/lib/uada/engines/plan.server");
-    return PlannerEngine.plan(data);
+    return (await PlannerEngine.plan(data)) as unknown as Record<string, unknown>;
   });
 
 const BenchmarkInput = z.object({
