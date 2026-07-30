@@ -7,6 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { UadaResponse } from "@/lib/uada/contracts/response";
+import type { SearchHitV2 } from "@/lib/uada/engines/search.server";
+import type { ImpactReportV2 } from "@/lib/uada/contracts/impact";
+import type { Plan } from "@/lib/uada/contracts/plan";
 import {
   uadaSearch,
   uadaImpactOf,
@@ -66,11 +70,13 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
     mutationFn: () =>
       searchFn({
         data: { query, k: 10, minimumScore: 0.1, expansionDepth: 0, reranker: "graph-proximity" as const },
-      }),
+      }) as Promise<UadaResponse<SearchHitV2[]>>,
   });
-  const impact = useMutation({ mutationFn: () => impactFn({ data: { nodeId, depth: 2 } }) });
+  const impact = useMutation({ mutationFn: () => impactFn({ data: { nodeId, depth: 2 } }) as Promise<UadaResponse<ImpactReportV2>>,
+  });
   const plan = useMutation({
-    mutationFn: () => planFn({ data: { objective, maxDocuments: 12, expansionDepth: 1 } }),
+    mutationFn: () =>
+      planFn({ data: { objective, maxDocuments: 12, expansionDepth: 1 } }) as Promise<UadaResponse<Plan>>,
   });
   const bench = useMutation({ mutationFn: () => benchFn({ data: {} }) });
 
