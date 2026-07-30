@@ -133,6 +133,8 @@ function UadaPage() {
         </CardContent>
       </Card>
 
+      <UadaConsole disabled={!!gateOff} />
+
       <Card>
         <CardHeader>
           <CardTitle>Recent runs</CardTitle>
