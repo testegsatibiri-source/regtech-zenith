@@ -11,6 +11,7 @@ import {
   listRecentRuns,
   getActiveSnapshotSummary,
 } from "@/lib/uada/reindex/reindex.functions";
+import { UadaConsole } from "@/components/uada/UadaConsole";
 
 export const Route = createFileRoute("/platform/uada")({
   ssr: false,
@@ -131,6 +132,8 @@ function UadaPage() {
           )}
         </CardContent>
       </Card>
+
+      <UadaConsole disabled={!!gateOff} />
 
       <Card>
         <CardHeader>
