@@ -5,6 +5,7 @@ import { generateText } from "ai";
 import type { ContextBundle } from "@/lib/uada/contracts/context";
 import type { Plan } from "@/lib/uada/contracts/plan";
 import type { Evidence, UadaResponse } from "@/lib/uada/contracts/response";
+import type { ReviewFinding } from "@/lib/uada/contracts/review";
 import { assertEvidenceComplete } from "@/lib/uada/contracts/response/hash";
 import { ModelRouter, type UadaTask } from "@/lib/uada/model/router";
 import { UADA_BASE_SYSTEM_PROMPT } from "@/lib/uada/prompts/base";
@@ -210,4 +211,78 @@ Rules:
     void latencyMs;
     return resp;
   },
+
+  /**
+   * H15 — Advisory review findings (ADR-0030). Additive only: deterministic
+   * rules always win. Every finding must cite a path present in the bundle.
+   */
+  async reviewAdvisory(
+    bundle: ContextBundle,
+    input: { filesChanged: string[]; diff: string; ruleFindings: ReviewFinding[] },
+  ): Promise<ReviewFinding[]> {
+    if (bundle.evidence.length === 0) return [];
+    const choice = ModelRouter.pick("review");
+    const known = new Set(bundle.documents.map((d) => d.path));
+    for (const p of input.filesChanged) known.add(p);
+
+    const system = `${UADA_BASE_SYSTEM_PROMPT}
+
+You are performing an ARCHITECTURE REVIEW of a diff. Reply with a single JSON object:
+{ "findings": [{ "severity": "info"|"warning"|"error", "title": string, "detail": string, "path": string, "references": string[], "suggestion": string }] }
+Rules:
+- "path" MUST be one of the changed files or a path cited in the Evidence section.
+- Do NOT repeat findings already listed under "Deterministic findings".
+- If you have nothing grounded to add, return {"findings": []}.`;
+
+    const alreadyFound = input.ruleFindings
+      .map((f) => `- ${f.id} ${f.path}: ${f.title}`)
+      .join("\n") || "(none)";
+    const truncatedDiff = input.diff.slice(0, 20000);
+    const prompt = [
+      "## Changed files",
+      input.filesChanged.join("\n") || "(none)",
+      "",
+      "## Deterministic findings",
+      alreadyFound,
+      "",
+      "## Diff",
+      truncatedDiff,
+      "",
+      "Return the advisory findings JSON now.",
+    ].join("\n");
+
+    const { text } = await callGateway(
+      choice.model,
+      choice.providerOptions,
+      system,
+      `${buildContextBlock(bundle)}\n\n---\n\n${prompt}`,
+      1,
+    );
+
+    type RawFinding = {
+      severity?: string;
+      title?: string;
+      detail?: string;
+      path?: string;
+      references?: string[];
+      suggestion?: string;
+    };
+    const parsed = safeJsonParse<{ findings?: RawFinding[] }>(text);
+    const severities = new Set(["info", "warning", "error"]);
+
+    return (parsed?.findings ?? [])
+      .filter((f) => !!f.path && known.has(f.path) && !!f.title)
+      .slice(0, 20)
+      .map((f, i): ReviewFinding => ({
+        id: `ADV-${i + 1}`,
+        origin: "advisory",
+        severity: (severities.has(String(f.severity)) ? f.severity : "info") as ReviewFinding["severity"],
+        title: String(f.title),
+        detail: String(f.detail ?? ""),
+        path: String(f.path),
+        references: Array.isArray(f.references) ? f.references.map(String) : [],
+        suggestion: f.suggestion ? String(f.suggestion) : undefined,
+      }));
+  },
 };
+
