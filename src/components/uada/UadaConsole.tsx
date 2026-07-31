@@ -11,12 +11,15 @@ import type { UadaResponse } from "@/lib/uada/contracts/response";
 import type { SearchHitV2 } from "@/lib/uada/engines/search.server";
 import type { ImpactReportV2 } from "@/lib/uada/contracts/impact";
 import type { Plan } from "@/lib/uada/contracts/plan";
+import type { ReviewReport } from "@/lib/uada/contracts/review";
 import {
   uadaSearch,
   uadaImpactOf,
   uadaPlan,
   uadaRunBenchmark,
+  uadaReview,
 } from "@/lib/uada/uada.functions";
+
 
 function ErrorLine({ error }: { error: unknown }) {
   if (!error) return null;
@@ -61,10 +64,18 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
   const impactFn = useServerFn(uadaImpactOf);
   const planFn = useServerFn(uadaPlan);
   const benchFn = useServerFn(uadaRunBenchmark);
+  const reviewFn = useServerFn(uadaReview);
 
   const [query, setQuery] = useState("");
   const [nodeId, setNodeId] = useState("");
   const [objective, setObjective] = useState("");
+  const [diff, setDiff] = useState("");
+
+  const review = useMutation({
+    mutationFn: () =>
+      reviewFn({ data: { diff, advisory: true, maxDocuments: 10 } }) as Promise<UadaResponse<ReviewReport>>,
+  });
+
 
   const search = useMutation({
     mutationFn: () =>
