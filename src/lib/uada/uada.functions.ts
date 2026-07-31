@@ -72,3 +72,21 @@ export const uadaRunBenchmark = createServerFn({ method: "POST" })
     const { runBenchmark } = await import("@/lib/uada/benchmark/runner.server");
     return runBenchmark(data);
   });
+
+// H15 — Architecture review of a unified diff.
+const ReviewInput = z.object({
+  diff: z.string().min(1).max(400_000),
+  snapshotVersion: z.number().int().positive().optional(),
+  advisory: z.boolean().default(true),
+  maxDocuments: z.number().int().min(1).max(30).default(10),
+});
+
+export const uadaReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => ReviewInput.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId);
+    const { ReviewEngine } = await import("@/lib/uada/engines/review.server");
+    return JSON.parse(JSON.stringify(await ReviewEngine.review(data)));
+  });
+
