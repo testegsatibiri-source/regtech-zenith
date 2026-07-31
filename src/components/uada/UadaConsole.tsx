@@ -11,12 +11,15 @@ import type { UadaResponse } from "@/lib/uada/contracts/response";
 import type { SearchHitV2 } from "@/lib/uada/engines/search.server";
 import type { ImpactReportV2 } from "@/lib/uada/contracts/impact";
 import type { Plan } from "@/lib/uada/contracts/plan";
+import type { ReviewReport } from "@/lib/uada/contracts/review";
 import {
   uadaSearch,
   uadaImpactOf,
   uadaPlan,
   uadaRunBenchmark,
+  uadaReview,
 } from "@/lib/uada/uada.functions";
+
 
 function ErrorLine({ error }: { error: unknown }) {
   if (!error) return null;
@@ -61,10 +64,18 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
   const impactFn = useServerFn(uadaImpactOf);
   const planFn = useServerFn(uadaPlan);
   const benchFn = useServerFn(uadaRunBenchmark);
+  const reviewFn = useServerFn(uadaReview);
 
   const [query, setQuery] = useState("");
   const [nodeId, setNodeId] = useState("");
   const [objective, setObjective] = useState("");
+  const [diff, setDiff] = useState("");
+
+  const review = useMutation({
+    mutationFn: () =>
+      reviewFn({ data: { diff, advisory: true, maxDocuments: 10 } }) as Promise<UadaResponse<ReviewReport>>,
+  });
+
 
   const search = useMutation({
     mutationFn: () =>
@@ -217,6 +228,85 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Architecture review</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={diff}
+            onChange={(e) => setDiff(e.target.value)}
+            placeholder="Paste a unified diff (git diff) to review against ADR rules"
+            rows={6}
+            className="font-mono text-xs"
+            disabled={disabled}
+          />
+          <Button onClick={() => review.mutate()} disabled={disabled || diff.length < 10 || review.isPending}>
+            {review.isPending ? "Reviewing…" : "Review diff"}
+          </Button>
+          <ErrorLine error={review.error} />
+          {review.data && (
+            <div className="space-y-2 text-xs">
+              <EvidenceBlock
+                confidence={review.data.confidence}
+                snapshotVersion={review.data.snapshotVersion}
+                filesUsed={review.data.filesUsed}
+              />
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  variant={
+                    review.data.data.verdict.decision === "block"
+                      ? "destructive"
+                      : review.data.data.verdict.decision === "comment"
+                        ? "secondary"
+                        : "default"
+                  }
+                >
+                  {review.data.data.verdict.decision}
+                </Badge>
+                <Badge variant="destructive">errors {review.data.data.verdict.errors}</Badge>
+                <Badge variant="secondary">warnings {review.data.data.verdict.warnings}</Badge>
+                <span className="text-muted-foreground">
+                  {review.data.data.filesChanged.length} files · +{review.data.data.additions} /
+                  −{review.data.data.deletions}
+                </span>
+              </div>
+              {review.data.data.findings.length === 0 ? (
+                <p className="text-muted-foreground">No findings — diff conforms to the current rule set.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {review.data.data.findings.map((f, i) => (
+                    <li key={`${f.id}-${i}`} className="rounded border p-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant={
+                            f.severity === "error" ? "destructive" : f.severity === "warning" ? "secondary" : "outline"
+                          }
+                        >
+                          {f.id}
+                        </Badge>
+                        <b>{f.title}</b>
+                        <span className="font-mono text-muted-foreground">
+                          {f.path}
+                          {f.line ? `:${f.line}` : ""}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground">{f.detail}</p>
+                      {f.suggestion && <p className="text-muted-foreground">→ {f.suggestion}</p>}
+                      {f.references.length > 0 && (
+                        <p className="text-muted-foreground">refs: {f.references.join(", ")}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
 
       <Card>
         <CardHeader>
