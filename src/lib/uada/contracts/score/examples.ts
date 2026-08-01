@@ -21,9 +21,9 @@ export const SCORE_REPORT_EXAMPLE: ScoreReport = {
     },
     {
       name: "documentation_coverage",
-      score: 84,
+      score: 83.5,
       weight: 0.2,
-      evidence: ["30 ADRs indexed", "84% of engines documented"],
+      evidence: ["30 ADRs indexed", "83.5% of engines documented"],
     },
     {
       name: "knowledge_freshness",
