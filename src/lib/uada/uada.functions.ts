@@ -90,3 +90,31 @@ export const uadaReview = createServerFn({ method: "POST" })
     return JSON.parse(JSON.stringify(await ReviewEngine.review(data)));
   });
 
+// H16 — Architecture Score for a snapshot (deterministic, persisted).
+const ScoreInput = z.object({
+  snapshotVersion: z.number().int().positive().optional(),
+  persist: z.boolean().default(true),
+});
+
+export const uadaScore = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => ScoreInput.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId);
+    const { ScoreEngine } = await import("@/lib/uada/engines/score.server");
+    return JSON.parse(JSON.stringify(await ScoreEngine.score(data)));
+  });
+
+// H16 — Tool bindings inventory (capability -> implementation).
+export const uadaTools = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertRole(context.supabase, context.userId);
+    const { bindTools } = await import("@/lib/uada/tools/bindings.server");
+    const { ToolRegistry } = await import("@/lib/uada/tools/ToolRegistry");
+    await bindTools();
+    return ToolRegistry.list().map((b) => ({
+      capabilityId: b.capabilityId,
+      implementation: b.implementation,
+    }));
+  });
