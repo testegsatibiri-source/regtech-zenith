@@ -12,12 +12,14 @@ import type { SearchHitV2 } from "@/lib/uada/engines/search.server";
 import type { ImpactReportV2 } from "@/lib/uada/contracts/impact";
 import type { Plan } from "@/lib/uada/contracts/plan";
 import type { ReviewReport } from "@/lib/uada/contracts/review";
+import type { ScoreReport } from "@/lib/uada/contracts/score";
 import {
   uadaSearch,
   uadaImpactOf,
   uadaPlan,
   uadaRunBenchmark,
   uadaReview,
+  uadaScore,
 } from "@/lib/uada/uada.functions";
 
 
@@ -65,11 +67,17 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
   const planFn = useServerFn(uadaPlan);
   const benchFn = useServerFn(uadaRunBenchmark);
   const reviewFn = useServerFn(uadaReview);
+  const scoreFn = useServerFn(uadaScore);
 
   const [query, setQuery] = useState("");
   const [nodeId, setNodeId] = useState("");
   const [objective, setObjective] = useState("");
   const [diff, setDiff] = useState("");
+
+  const score = useMutation({
+    mutationFn: () =>
+      scoreFn({ data: { persist: true } }) as Promise<UadaResponse<ScoreReport>>,
+  });
 
   const review = useMutation({
     mutationFn: () =>
@@ -228,6 +236,69 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Architecture score</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Deterministic score of the active snapshot across the five frozen dimensions
+            (ADR-0031). Running it stores one row per dimension.
+          </p>
+          <Button onClick={() => score.mutate()} disabled={disabled || score.isPending}>
+            {score.isPending ? "Scoring…" : "Compute score"}
+          </Button>
+          <ErrorLine error={score.error} />
+          {score.data && (
+            <div className="space-y-2 text-xs">
+              <EvidenceBlock
+                confidence={score.data.confidence}
+                snapshotVersion={score.data.snapshotVersion}
+                filesUsed={score.data.filesUsed}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={score.data.data.overall >= 70 ? "default" : "destructive"}>
+                  overall {score.data.data.overall}
+                </Badge>
+                <span className="text-muted-foreground">
+                  snapshot {score.data.data.snapshot}
+                </span>
+                {typeof score.data.data.delta === "number" && (
+                  <Badge variant={score.data.data.delta >= 0 ? "default" : "destructive"}>
+                    {score.data.data.delta >= 0 ? "+" : ""}
+                    {score.data.data.delta} vs {score.data.data.previousOverall}
+                  </Badge>
+                )}
+              </div>
+              <ul className="space-y-2">
+                {score.data.data.dimensions.map((d) => (
+                  <li key={d.name} className="rounded border p-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{d.name.replace(/_/g, " ")}</span>
+                      <span className="text-muted-foreground">
+                        {d.score} · weight {d.weight}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1.5 w-full rounded bg-muted">
+                      <div
+                        className="h-1.5 rounded bg-primary"
+                        style={{ width: `${Math.min(100, Math.max(0, d.score))}%` }}
+                      />
+                    </div>
+                    <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+                      {d.evidence.map((e) => (
+                        <li key={e}>{e}</li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader>

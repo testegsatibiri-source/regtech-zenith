@@ -11,6 +11,8 @@ import type {
 } from "@/lib/uada/contracts/context";
 import type { Evidence } from "@/lib/uada/contracts/response";
 import type { GraphEdge, GraphNode } from "@/lib/uada/contracts/graph";
+import type { ArchitectureFacts } from "@/lib/uada/contracts/score/facts";
+
 import { computeEvidenceHash } from "@/lib/uada/contracts/response/hash";
 import {
   DEFAULT_EMBEDDING_MODEL,
@@ -254,7 +256,89 @@ function estimateTokens(bundle: {
   return Math.ceil(chars / 4);
 }
 
+async function assembleArchitecture(
+  version?: number,
+  now?: string,
+): Promise<ArchitectureFacts> {
+  const db = await admin();
+  const snap = await resolveSnapshot(db, version);
+
+  const { data: snapRow } = await db
+    .from("uada_snapshots")
+    .select("created_at")
+    .eq("id", snap.id)
+    .maybeSingle();
+
+  const { data: nodeRows, error: nodeErr } = await db
+    .from("uada_graph_nodes")
+    .select("id, kind, label, path, metadata")
+    .eq("snapshot_id", snap.id)
+    .order("id", { ascending: true });
+  if (nodeErr) throw nodeErr;
+
+  const { data: edgeRows, error: edgeErr } = await db
+    .from("uada_graph_edges")
+    .select("from_node, to_node, kind, metadata")
+    .eq("snapshot_id", snap.id)
+    .order("from_node", { ascending: true });
+  if (edgeErr) throw edgeErr;
+
+  const { data: docRows, error: docErr } = await db
+    .from("uada_documents")
+    .select("path, kind, summary, updated_at")
+    .eq("snapshot_id", snap.id)
+    .order("path", { ascending: true });
+  if (docErr) throw docErr;
+
+  const { data: embRows, error: embErr } = await db
+    .from("uada_embeddings")
+    .select("status")
+    .eq("snapshot_id", snap.id);
+  if (embErr) throw embErr;
+
+  const embeddings = { ready: 0, failed: 0, pending: 0 };
+  for (const row of (embRows ?? []) as Array<{ status: string }>) {
+    if (row.status === "ready") embeddings.ready++;
+    else if (row.status === "failed") embeddings.failed++;
+    else embeddings.pending++;
+  }
+
+  return {
+    snapshotId: snap.id,
+    snapshotVersion: snap.version,
+    snapshotCreatedAt:
+      (snapRow as { created_at?: string } | null)?.created_at ?? new Date(0).toISOString(),
+    now: now ?? new Date().toISOString(),
+    nodes: ((nodeRows ?? []) as Array<Record<string, unknown>>).map((r) => ({
+      id: String(r.id),
+      kind: r.kind as GraphNode["kind"],
+      label: String(r.label ?? ""),
+      path: (r.path as string | null) ?? undefined,
+      metadata: (r.metadata as Record<string, unknown>) ?? {},
+    })),
+    edges: ((edgeRows ?? []) as Array<Record<string, unknown>>).map((r) => ({
+      fromId: String(r.from_node),
+      toId: String(r.to_node),
+      kind: r.kind as GraphEdge["kind"],
+      metadata: (r.metadata as Record<string, unknown>) ?? undefined,
+    })),
+    documents: ((docRows ?? []) as Array<Record<string, unknown>>).map((r) => ({
+      path: String(r.path),
+      kind: String(r.kind),
+      hasSummary: typeof r.summary === "string" && r.summary.trim().length > 0,
+      updatedAt: String(r.updated_at ?? ""),
+    })),
+    embeddings,
+  };
+}
+
 export const ContextAssembler = {
+  /**
+   * H16 — Read-only architecture projection for the ScoreEngine. Lives here so
+   * the assembler remains the single component touching the stores (ADR-0029).
+   */
+  assembleArchitecture,
+
   async assemble(req: ContextRequest): Promise<ContextBundle> {
     const started = Date.now();
     const db = await admin();
