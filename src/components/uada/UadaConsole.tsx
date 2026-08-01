@@ -12,12 +12,14 @@ import type { SearchHitV2 } from "@/lib/uada/engines/search.server";
 import type { ImpactReportV2 } from "@/lib/uada/contracts/impact";
 import type { Plan } from "@/lib/uada/contracts/plan";
 import type { ReviewReport } from "@/lib/uada/contracts/review";
+import type { ScoreReport } from "@/lib/uada/contracts/score";
 import {
   uadaSearch,
   uadaImpactOf,
   uadaPlan,
   uadaRunBenchmark,
   uadaReview,
+  uadaScore,
 } from "@/lib/uada/uada.functions";
 
 
@@ -65,11 +67,17 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
   const planFn = useServerFn(uadaPlan);
   const benchFn = useServerFn(uadaRunBenchmark);
   const reviewFn = useServerFn(uadaReview);
+  const scoreFn = useServerFn(uadaScore);
 
   const [query, setQuery] = useState("");
   const [nodeId, setNodeId] = useState("");
   const [objective, setObjective] = useState("");
   const [diff, setDiff] = useState("");
+
+  const score = useMutation({
+    mutationFn: () =>
+      scoreFn({ data: { persist: true } }) as Promise<UadaResponse<ScoreReport>>,
+  });
 
   const review = useMutation({
     mutationFn: () =>
