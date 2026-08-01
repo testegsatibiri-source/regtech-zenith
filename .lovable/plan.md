@@ -1,188 +1,64 @@
-# H14 — ContextAssembler, InferenceService, Search, Impact & Planner (v2)
+# Sprint H16 — UADA Architecture Score & Tool Bindings
 
-Sugestões aprovadas integralmente. As duas mudanças estruturais (ContextAssembler como único ponto de expansão de grafo + InferenceService entre engines e ModelRouter) são incorporadas ao core do plano. Os demais 7 ajustes viram contrato explícito.
+With Search, Impact, Planner and Review live (H14/H15), the next step is to make UADA
+measure the architecture instead of only answering questions about it, and to make every
+engine reachable through one uniform execution surface.
 
-## Arquitetura consolidada
+## Goals
 
-```text
-                UI  /  Server Functions
-                        │
-                        ▼
-              ┌───────────────────┐
-              │ ContextAssembler  │  única porta p/ contexto
-              │  (determinístico) │  faz search + graph expansion
-              └─────────┬─────────┘
-                        │
-        ┌───────────────┼────────────────┐
-        ▼               ▼                ▼
- KnowledgeStore    GraphStore       MemoryStore
-        └───────────────┼────────────────┘
-                        ▼
-                  ContextBundle
-                        │
-        ┌───────────────┼────────────────┐
-        ▼               ▼                ▼
-      Search          Impact           Planner
-                                         │
-                                         ▼
-                               ┌───────────────────┐
-                               │ InferenceService  │  única porta p/ IA
-                               │  (orçamento,      │
-                               │   retry, métricas)│
-                               └─────────┬─────────┘
-                                         ▼
-                                   ModelRouter
-                                         ▼
-                              Lovable AI Gateway
-```
+1. **Architecture Score** — a deterministic, evidence-backed score computed from the
+   current snapshot, persisted per snapshot so trends and regressions are visible.
+2. **Tool bindings** — register all existing engines (search, impact, plan, review, score)
+   in the ToolRegistry, so the future Orchestrator resolves capabilities uniformly instead
+   of importing engines directly.
+3. **Console surface** — a "Architecture score" card on `/platform/uada` showing dimensions,
+   deltas versus the previous snapshot, and the evidence behind each dimension.
 
-Princípios (ADR-0029):
-- **Context Assembly Principle** — nenhuma engine acessa `KnowledgeStore`, `GraphStore`, `SnapshotManager` ou embeddings diretamente. Tudo passa por `ContextAssembler`.
-- **Inference Principle** — nenhuma engine chama `ModelRouter`/AI Gateway diretamente. Tudo passa por `InferenceService`.
+## Score dimensions (all deterministic, computed from Knowledge + Graph stores)
 
-## Contratos novos
+| Dimension | What it measures |
+| --- | --- |
+| Coupling | Cross-boundary edges (packs → core, UI → `.server`) over total edges |
+| Boundary integrity | Violations of the ADR-0029/0030 rules found by re-running review rules over indexed files |
+| Documentation coverage | Share of ADR-relevant modules with a matching doc/ADR node |
+| Knowledge freshness | Snapshot age and share of stale documents per ADR-0028 |
+| Test coverage signal | Share of engines/packs with a sibling `__tests__` node in the graph |
 
-### ContextAssembler
+Each dimension yields `score 0..100`, a `weight`, and the evidence rows that produced it.
+The overall score is the weighted mean. No model is involved — the score must be
+reproducible for the same snapshot.
 
-```ts
-interface ContextRequest {
-  objective: string;
-  snapshotVersion?: number;   // default: active
-  maxDocuments: number;       // hard cap
-  maxTokens: number;          // budget
-  expansionDepth: number;     // 0 = sem expansão de grafo
-  includeDocs: boolean;
-  includeGraph: boolean;
-  includeMemory: boolean;
-  embeddingModel?: string;    // default: DEFAULT_EMBEDDING_MODEL
-}
+## Deliverables
 
-interface ContextBundle {
-  snapshotVersion: number;
-  documents: DocumentRef[];
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  memory: MemoryEntry[];
-  evidence: Evidence[];       // já com hash + snapshotVersion
-  metrics: ContextMetrics;
-}
+- `src/lib/uada/contracts/score/index.ts` — `ScoreDimension`, `ScoreReport`, weights table.
+- `src/lib/uada/engines/score.server.ts` — computes dimensions from ContextAssembler +
+  Graph Store; returns the standard `UadaResponse<ScoreReport>`.
+- Migration: `uada_score_reports` (snapshot_version, dimension, score, weight, details jsonb,
+  created_at) with GRANTs, RLS restricted to platform admin/operator/country CTO, plus a
+  unique key on (snapshot_version, dimension) so recomputation is idempotent.
+- `src/lib/uada/tools/bindings.server.ts` — binds `search`, `impact`, `plan`, `review`,
+  `score` into the ToolRegistry; a test asserts every CapabilityRegistry id that has an
+  engine is bound.
+- Server function `uadaScore` in `src/lib/uada/uada.functions.ts` (same role gate as the
+  other UADA functions).
+- Console card in `src/components/uada/UadaConsole.tsx`: overall gauge, per-dimension bars,
+  delta versus the previous stored snapshot, evidence block.
+- `docs/adr/ADR-0031-architecture-score.md` — dimensions, weights, determinism rule,
+  and the policy that a score drop over a threshold is a release blocker (documented,
+  not yet enforced in CI).
+- Tests in `src/lib/uada/__tests__/h16.test.ts`: determinism (same snapshot → same score),
+  weight normalisation, empty-snapshot behaviour (score 0, confidence 0), tool bindings.
 
-interface ContextMetrics {
-  documents: number;
-  nodes: number;
-  edges: number;
-  tokens: number;
-  assemblyMs: number;
-  expansionMs: number;
-  embeddingMs: number;
-}
-```
+## Technical notes
 
-Determinismo: mesmo `ContextRequest` + mesmo `snapshotVersion` → mesmo `ContextBundle` (ordenação estável por `(score desc, path asc)`).
+- Score engine reads context only through `ContextAssembler` — no direct store access from
+  the engine, per ADR-0029.
+- Persistence uses `supabaseAdmin` inside the handler after the role check, matching the
+  existing UADA server-function pattern.
+- Files declaring `createServerFn` stay thin wrappers with dynamic engine imports.
+- No business modules and no Country Pack changes in this sprint.
 
-### SearchEngine
+## Out of scope
 
-```ts
-interface SearchOptions {
-  snapshotVersion?: number;
-  k: number;
-  minimumScore: number;
-  expansionDepth: number;     // repassado ao ContextAssembler
-  reranker?: "none" | "graph-proximity";
-  embeddingModel?: string;
-}
-```
-
-Search **não** chama GraphStore. Apenas configura `ContextRequest` e o Assembler decide expansão.
-
-### ImpactEngine
-
-```ts
-type ImpactLevel = "direct" | "indirect" | "transitive";
-type EdgeSource = "ast" | "sql" | "docs" | "manifest" | "inferred";
-
-interface EdgeConfidence {
-  kind: string;
-  source: EdgeSource;
-  confidence: number;   // 0..1 — AST=1.0, docs=0.6, inferred=0.4
-}
-
-interface ImpactNode {
-  node: GraphNode;
-  level: ImpactLevel;
-  confidence: number;   // agregado das arestas do caminho
-  paths: EdgePath[];
-}
-```
-
-### Planner + Plan artefato
-
-```ts
-interface Plan {
-  objective: string;
-  summary: string;
-  steps: PlanStep[];
-  risks: Risk[];
-  assumptions: string[];
-  blockedBy: string[];
-  affectedFiles: string[];
-  estimatedImpact: ImpactLevel;
-  evidence: Evidence[];
-}
-```
-
-Reutilizável no H15 (Review) sem retrabalho.
-
-### InferenceService
-
-```ts
-interface InferenceService {
-  infer<T>(req: InferRequest<T>): Promise<UadaResponse<T>>;
-  summarize(text: string, opts?: SummarizeOpts): Promise<UadaResponse<string>>;
-  plan(bundle: ContextBundle, objective: string): Promise<UadaResponse<Plan>>;
-  review(bundle: ContextBundle, diff: string): Promise<UadaResponse<ReviewFindings>>; // stub, uso em H15
-}
-```
-
-Responsabilidades: escolha do modelo via `ModelRouter`, orçamento de tokens, retry/backoff, redaction, métricas por chamada, `assertEvidenceComplete` antes do return.
-
-### Benchmark por snapshot
-
-`uada_benchmark_results` já existe. Adicionar índice `(benchmark_id, snapshot_id)` e view `uada_benchmark_regression` comparando snapshot N vs. N−1 por fixture. Runner grava sempre com `snapshotVersion`.
-
-## Componentes técnicos
-
-- `src/lib/uada/context/ContextAssembler.server.ts`
-- `src/lib/uada/inference/InferenceService.server.ts`
-- `src/lib/uada/engines/search.server.ts`
-- `src/lib/uada/engines/impact.server.ts`
-- `src/lib/uada/engines/plan.server.ts`
-- `src/lib/uada/benchmark/runner.server.ts`
-- `src/lib/uada/uada.functions.ts` — server fns: `search`, `impactOf`, `plan`, `runBenchmark`
-- `src/routes/platform/uada.tsx` — abas **Search**, **Impact**, **Plan**, **Benchmarks**
-- Migração: índice + view de regressão de benchmark; coluna `confidence numeric` e `source text` em `uada_graph_edges` (default 1.0/'ast' para backward compat)
-- ADR-0029 — Context Assembly & Inference Principles
-
-## Segurança & gates
-
-- Feature gate existente `uada.enabled` continua obrigatório.
-- Novo gate `uada.planning` (default OFF em prod, ON em dev/staging).
-- Read-only sobre snapshot ativo; zero acesso a tabelas de clientes.
-- RBAC via `is_uada_reader` em toda server fn (`requireSupabaseAuth` + capability check).
-
-## Aceitação
-
-- ContextAssembler determinístico: 3 execuções da mesma request → hash idêntico do bundle.
-- Search: ≥95% do fixture com ≥1 evidência `score ≥ minimumScore`.
-- Impact: nível `direct` correto em 100% dos casos fixados; `confidence` populada em toda aresta.
-- Planner: sem evidências → `confidence=0` + warning `insufficient_evidence`; nunca gera `steps` sem `evidence[]`.
-- InferenceService: única origem de chamadas ao gateway (grep confirma zero import de `aiGateway.server` fora dele).
-- Benchmark runner detecta regressão vs. snapshot anterior quando score cai > 0.05.
-- `tsgo --noEmit` 0 erros; suite `h14.test.ts` verde.
-
-## Entregáveis
-
-- Código + migração acima
-- Testes `src/lib/uada/__tests__/h14.test.ts` (determinismo, evidência, isolamento de engines)
-- ADR-0029 com os dois princípios explícitos
-- UI operacional com 4 abas novas em `/platform/uada`
+Docs generation engine, multi-agent orchestrator, and CI enforcement of score thresholds —
+those follow in H17+.
