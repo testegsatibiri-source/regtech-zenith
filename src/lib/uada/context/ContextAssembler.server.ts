@@ -11,6 +11,8 @@ import type {
 } from "@/lib/uada/contracts/context";
 import type { Evidence } from "@/lib/uada/contracts/response";
 import type { GraphEdge, GraphNode } from "@/lib/uada/contracts/graph";
+import type { ArchitectureFacts } from "@/lib/uada/contracts/score/facts";
+
 import { computeEvidenceHash } from "@/lib/uada/contracts/response/hash";
 import {
   DEFAULT_EMBEDDING_MODEL,
