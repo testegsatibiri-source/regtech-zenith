@@ -28,9 +28,31 @@ Each dimension yields `score 0..100`, a `weight`, and the evidence rows that pro
 The overall score is the weighted mean. No model is involved — the score must be
 reproducible for the same snapshot.
 
+## H16.0 — Contract freeze (antes de codar)
+
+Primeira etapa da sprint, feita e revisada antes de qualquer engine ou migração:
+
+- `src/lib/uada/contracts/score/index.ts` — `ScoreDimension`, `ScoreReport`, tabela de pesos.
+- `src/lib/uada/contracts/score/examples.ts` — um `ScoreReport` de exemplo, tipado, servindo
+  como fonte única de verdade:
+
+```text
+{
+  "snapshot": "2026-07-31-h15",
+  "overall": 82,
+  "dimensions": [
+    { "name": "coupling", "score": 76, "weight": 0.25, "evidence": ["3 cross-boundary edges"] }
+  ]
+}
+```
+
+- O exemplo é consumido pelos testes (validação de forma e de soma de pesos = 1), pelas
+  fixtures da UI e pela checagem de que as colunas de `uada_score_reports` cobrem cada campo.
+  Engine, banco, UI e testes passam a divergir só se o contrato mudar.
+
 ## Deliverables
 
-- `src/lib/uada/contracts/score/index.ts` — `ScoreDimension`, `ScoreReport`, weights table.
+
 - `src/lib/uada/engines/score.server.ts` — computes dimensions from ContextAssembler +
   Graph Store; returns the standard `UadaResponse<ScoreReport>`.
 - Migration: `uada_score_reports` (snapshot_version, dimension, score, weight, details jsonb,
