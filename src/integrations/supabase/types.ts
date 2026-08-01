@@ -1854,6 +1854,42 @@ export type Database = {
         }
         Relationships: []
       }
+      uada_score_reports: {
+        Row: {
+          created_at: string
+          details: Json
+          dimension: string
+          id: string
+          overall: number
+          score: number
+          snapshot_version: number
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          dimension: string
+          id?: string
+          overall: number
+          score: number
+          snapshot_version: number
+          updated_at?: string
+          weight: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          dimension?: string
+          id?: string
+          overall?: number
+          score?: number
+          snapshot_version?: number
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       uada_search_benchmarks: {
         Row: {
           benchmark_version: string
