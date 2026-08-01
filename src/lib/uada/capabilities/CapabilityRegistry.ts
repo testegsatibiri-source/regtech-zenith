@@ -33,7 +33,7 @@ const CATALOG: Record<CapabilityId, CapabilityDescriptor> = {
   docs:         { id: "docs",         version: "1.0.0", summary: "Generate/verify documentation from the Snapshot.",  inputSchema: { target: "string" }, outputSchema: { markdown: "string" } },
   context:      { id: "context",      version: "1.0.0", summary: "Assemble task context (roadmap + evidence).",       inputSchema: { task: "string" }, outputSchema: { context: "ContextBundle" } },
   graph:        { id: "graph",        version: "1.0.0", summary: "Traverse the Graph Store.",                         inputSchema: { query: "TraversalQuery" }, outputSchema: { nodes: "GraphNode[]" } },
-  score:        { id: "score",        version: "1.0.0", summary: "Compute Architecture Score dimensions.",            inputSchema: { snapshotId: "string?" }, outputSchema: { scores: "ScoreRow[]" } },
+  score:        { id: "score",        version: "1.0.0", summary: "Compute Architecture Score dimensions.",            inputSchema: { snapshotVersion: "number?" }, outputSchema: { report: "ScoreReport" } },
   capabilities: { id: "capabilities", version: "1.0.0", summary: "List registered capabilities and bindings.",        inputSchema: {}, outputSchema: { capabilities: "CapabilityDescriptor[]" } },
 };
 
