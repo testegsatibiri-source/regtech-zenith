@@ -47,11 +47,20 @@ APP (autenticado)
 Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
 - lê `CountryRuntime.list()` para packs instalados;
 - funde com a lista de roadmap (`COUNTRIES`) para países ainda sem pack;
-- classifica cada país em `production | beta | roadmap` a partir de
-  status do Runtime + semver do manifesto (`>=1.0.0` e assinado = production;
-  instalado abaixo disso = beta; ausente = roadmap);
+- classifica cada país em `production | beta | roadmap` por **três** critérios
+  cumulativos, não apenas versão:
+  1. `status === "installed"` (não `degraded`/`failed`/`incompatible`);
+  2. manifesto `>= 1.0.0`, `interfaceVersion` presente e `signatureBlock` válido;
+  3. `health().status === "ok"` — avaliado em runtime, não assumido pela promoção.
+  Qualquer pack que falhe (2) ou (3) cai em `beta`, mesmo que o warning não tenha
+  relação com versão/assinatura. Ausente do Runtime = `roadmap`.
+- o health é assíncrono, então o catálogo expõe `classify()` síncrono (status+versão+
+  assinatura) e `classifyWithHealth()` para as superfícies que podem esperar; a
+  landing e a rota pública usam a versão com health resolvida no loader, de modo que
+  um pack que degradar depois da promoção deixa de aparecer como produção;
 - devolve um `PackCard` normalizado usado pela landing, pelo catálogo público e
   pelas telas do app — sem duplicar lógica em três lugares.
+
 
 ## Trabalho por área
 
@@ -64,9 +73,16 @@ Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
 
 ### 2. Rotas públicas de pack
 - `src/routes/packs/index.tsx` — catálogo (produção, beta, roadmap em três blocos).
+  Beta e roadmap aparecem como cards informativos **sem link**.
 - `src/routes/packs/$country.tsx` — página do pack com `head()` próprio
   (title/description/og por país), capacidades, motores, ruleset, idiomas,
-  CTA para `/calculator` e `/api-docs`, e `notFoundComponent` para códigos inválidos.
+  CTA para `/calculator` e `/api-docs`.
+- **A rota pública só serve packs classificados como `production`.** Códigos
+  inválidos, países de roadmap e packs em `beta` (ex.: Malásia com warning) caem
+  todos no mesmo `notFoundComponent` — nada de capacidades, motores ou ruleset de
+  pack não promovido vazando em URL pública adivinhável. O detalhe de beta continua
+  visível apenas em `/country-packs/$country` (autenticado).
+
 
 ### 3. App: lista → detalhe
 - Converter `src/routes/_authenticated/country-packs.tsx` em layout (`<Outlet />`),
@@ -81,11 +97,31 @@ Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
 - Assinatura: `src/packs/philippines/signature.ts` no mesmo padrão do
   `ID_SIGNATURE_BLOCK` (author + countersign da plataforma), com chave registrada.
 - Health check ganha as verificações de assinatura equivalentes às do pack ID.
+- Critério de aceite explícito: boot de PH tem de sair `installed` com
+  `health.status === "ok"` e **zero warnings**. Se sobrar qualquer warning não
+  relacionado a versão/assinatura, o pack fica em `beta` e a promoção não fecha —
+  a UI não mascara warning.
 - `COUNTRIES`: `PH` passa a `active: true`; Malásia permanece stub/roadmap.
-- Registro no `pack_registry` + `pack_installations` (migração Supabase com os
-  GRANTs/RLS já existentes) para o pack aparecer publicado no Platform Backoffice.
 - Testes: conformidade atualizada para exigir `interfaceVersion` e assinatura em PH,
-  mais um teste do catálogo (`production` inclui ID e PH, `roadmap` inclui VN/TH).
+  mais um teste do catálogo (`production` inclui ID e PH, `beta` inclui MY,
+  `roadmap` inclui VN/TH).
+
+### 5. Registro no Registry (último passo)
+- Migração Supabase inserindo PH em `pack_registry` + `pack_installations`
+  (usando GRANTs/RLS existentes) **só depois** de manifesto, assinatura, health `ok`
+  e suíte de testes verdes. A migração é o carimbo de "promovido", não o começo.
+- A linha entra já com o estado publicado correto; se a sprint travar antes disso,
+  nada foi registrado e não existe pack "registrado mas não promovido" para limpar.
+  Rollback, se necessário depois, é uma migração de reversão do registro.
+
+## Ordem de execução
+
+1. `catalog.ts` + regra de classificação (status + versão/assinatura + health).
+2. Rotas e telas consumindo o catálogo (landing, `/packs`, `/country-packs`),
+   com PH ainda em `beta` — prova que a classificação segura o pack sozinha.
+3. Promoção do PH (manifesto, assinatura, health) até `installed` + `ok`.
+4. Testes verdes (conformidade + catálogo + coexistência).
+5. Migração do `pack_registry` e ADR-0032.
 
 ## Notas técnicas
 
@@ -93,13 +129,15 @@ Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
   `CountryRuntime`, respeitando o Architecture Freeze e o ADR-0018.
 - Rotas públicas de pack são SSR normais e usam apenas dados do Runtime (sem
   Supabase), então não precisam de bearer e não quebram o prerender.
-- A migração do `pack_registry` é a única mudança de banco e roda antes do código
-  que a consome.
+- A migração do `pack_registry` é a única mudança de banco e é o último passo da
+  sprint (ver ordem de execução).
 - Um ADR curto (`ADR-0032 — Pack Catalog Presentation Layer`) documenta a nova
-  camada de apresentação e a regra de classificação production/beta/roadmap.
+  camada de apresentação e a regra de classificação production/beta/roadmap,
+  incluindo o critério de health como gate contínuo (não só de promoção).
 
 ## Fora de escopo
 
 - Implementar providers da Malásia, Vietnã ou Tailândia.
 - Marketplace transacional / instalação dinâmica pela UI.
 - Mudanças de pricing ou de motores de cálculo existentes.
+
