@@ -25,6 +25,7 @@ import { Route as PlatformParametersRouteImport } from './routes/platform/parame
 import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
+import { Route as PacksCountryRouteImport } from './routes/packs.$country'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -120,6 +121,11 @@ const PlatformAuditRoute = PlatformAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PacksCountryRoute = PacksCountryRouteImport.update({
+  id: '/packs/$country',
+  path: '/packs/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
   id: '/payroll',
   path: '/payroll',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/packs/$country': typeof PacksCountryRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/packs/$country': typeof PacksCountryRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/packs/$country': typeof PacksCountryRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/employees'
     | '/_authenticated/payroll'
+    | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -403,6 +415,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PacksCountryRoute: typeof PacksCountryRoute
   PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
   ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/platform/audit'
       preLoaderRoute: typeof PlatformAuditRouteImport
       parentRoute: typeof PlatformRouteRoute
+    }
+    '/packs/$country': {
+      id: '/packs/$country'
+      path: '/packs/$country'
+      fullPath: '/packs/$country'
+      preLoaderRoute: typeof PacksCountryRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/payroll': {
       id: '/_authenticated/payroll'
@@ -693,6 +713,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PacksCountryRoute: PacksCountryRoute,
   PacksIndexRoute: PacksIndexRoute,
   ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
   ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
