@@ -47,11 +47,20 @@ APP (autenticado)
 Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
 - lê `CountryRuntime.list()` para packs instalados;
 - funde com a lista de roadmap (`COUNTRIES`) para países ainda sem pack;
-- classifica cada país em `production | beta | roadmap` a partir de
-  status do Runtime + semver do manifesto (`>=1.0.0` e assinado = production;
-  instalado abaixo disso = beta; ausente = roadmap);
+- classifica cada país em `production | beta | roadmap` por **três** critérios
+  cumulativos, não apenas versão:
+  1. `status === "installed"` (não `degraded`/`failed`/`incompatible`);
+  2. manifesto `>= 1.0.0`, `interfaceVersion` presente e `signatureBlock` válido;
+  3. `health().status === "ok"` — avaliado em runtime, não assumido pela promoção.
+  Qualquer pack que falhe (2) ou (3) cai em `beta`, mesmo que o warning não tenha
+  relação com versão/assinatura. Ausente do Runtime = `roadmap`.
+- o health é assíncrono, então o catálogo expõe `classify()` síncrono (status+versão+
+  assinatura) e `classifyWithHealth()` para as superfícies que podem esperar; a
+  landing e a rota pública usam a versão com health resolvida no loader, de modo que
+  um pack que degradar depois da promoção deixa de aparecer como produção;
 - devolve um `PackCard` normalizado usado pela landing, pelo catálogo público e
   pelas telas do app — sem duplicar lógica em três lugares.
+
 
 ## Trabalho por área
 
