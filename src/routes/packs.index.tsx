@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { listCatalogWithHealth, type CatalogEntry } from "@/lib/packs/catalog";
 
-export const Route = createFileRoute("/packs")({
+export const Route = createFileRoute("/packs/")({
   // SSR per request: the production gate depends on live health(), so this
   // loader must never be frozen into a static prerendered artifact (ADR-0032).
   loader: async () => ({ packs: await listCatalogWithHealth() }),
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/packs")({
 });
 
 function PacksCatalog() {
-  const { packs } = Route.useLoaderData();
+  const { packs } = Route.useLoaderData() as { packs: CatalogEntry[] };
   const production = packs.filter((p) => p.tier === "production");
   const beta = packs.filter((p) => p.tier === "beta");
   const roadmap = packs.filter((p) => p.tier === "roadmap");

@@ -17,6 +17,7 @@ import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
 import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
@@ -78,6 +79,11 @@ const PlatformIndexRoute = PlatformIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PacksIndexRoute = PacksIndexRouteImport.update({
+  id: '/packs/',
+  path: '/packs/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformUadaRoute = PlatformUadaRouteImport.update({
   id: '/uada',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/packs': typeof PacksIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/packs/'
     | '/platform/'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/packs'
     | '/platform'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/packs/'
     | '/platform/'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
@@ -391,6 +403,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
   ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
@@ -458,6 +471,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/platform/'
       preLoaderRoute: typeof PlatformIndexRouteImport
       parentRoute: typeof PlatformRouteRoute
+    }
+    '/packs/': {
+      id: '/packs/'
+      path: '/packs'
+      fullPath: '/packs/'
+      preLoaderRoute: typeof PacksIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/platform/uada': {
       id: '/platform/uada'
@@ -673,6 +693,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PacksIndexRoute: PacksIndexRoute,
   ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
   ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
