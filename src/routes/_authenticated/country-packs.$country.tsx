@@ -9,17 +9,37 @@ import { CheckCircle2, XCircle, AlertTriangle, Activity, ShieldCheck } from "luc
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/country-packs/$country")({
-  head: () => ({
+  loader: ({ params }) => {
+    const code = params.country.toUpperCase();
+    const rec = CountryRuntime.list().find((r) => r.pack.manifest.country === code);
+    if (!rec) throw notFound();
+    return { code };
+  },
+  head: ({ params }) => ({
     meta: [
-      { title: "Country Packs · UBoard Asia" },
-      { name: "description", content: "Installed compliance country packs, engines, versions, health and validator reports." },
+      { title: `${params.country.toUpperCase()} Country Pack · UBoard Asia` },
+      { name: "description", content: "Manifest, engines, events, validator report and live health for this installed country pack." },
     ],
   }),
-  component: CountryPacksPage,
+  notFoundComponent: PackNotInstalled,
+  component: CountryPackDetailPage,
 });
 
-function CountryPacksPage() {
-  const installed = CountryRuntime.list();
+function PackNotInstalled() {
+  return (
+    <AppShell>
+      <div className="mx-auto max-w-3xl p-6">
+        <h1 className="font-display text-2xl font-bold">Pack not installed</h1>
+        <p className="mt-2 text-sm text-muted-foreground">This country pack is not present in the runtime.</p>
+        <Button asChild className="mt-4"><Link to="/country-packs">Back to packs</Link></Button>
+      </div>
+    </AppShell>
+  );
+}
+
+function CountryPackDetailPage() {
+  const { code } = Route.useLoaderData() as { code: string };
+  const installed = CountryRuntime.list().filter((r) => r.pack.manifest.country === code);
   const [health, setHealth] = useState<Record<string, HealthReport | { status: "loading" | "error"; checks: never[] }>>({});
 
   useEffect(() => {
