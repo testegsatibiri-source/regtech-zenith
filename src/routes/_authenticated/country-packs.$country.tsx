@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app/AppShell";
 import { CountryRuntime, type HealthReport } from "@/sdk";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, AlertTriangle, Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/country-packs")({
+export const Route = createFileRoute("/_authenticated/country-packs/$country")({
   head: () => ({
     meta: [
       { title: "Country Packs · UBoard Asia" },
@@ -43,15 +43,19 @@ function CountryPacksPage() {
     <AppShell>
       <div className="mx-auto max-w-5xl space-y-6 p-6">
         <header>
-          <h1 className="font-display text-3xl font-bold">Country Packs</h1>
+          <Link to="/country-packs" className="text-xs text-muted-foreground hover:text-foreground">
+            &larr; All country packs
+          </Link>
+          <h1 className="font-display text-3xl font-bold">
+            {installed[0]?.pack.manifest.name ?? code} Pack
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Installed via the Compliance SDK Country Runtime. Each pack ships its own manifest,
-            semver, capability set, event contract and health check. Core version{" "}
-            <code className="rounded bg-muted px-1">2.1.0</code>.
+            Manifest, capabilities, event contract, validator report and live health as resolved by
+            the Compliance SDK Country Runtime.
           </p>
         </header>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           {installed.map(({ pack, status, reason, validation }) => {
             const m = pack.manifest;
             const h = health[m.country];
