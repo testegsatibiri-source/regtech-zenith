@@ -127,13 +127,21 @@ Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
 
 - Nenhuma mudança em Core/SDK: o catálogo consome apenas APIs públicas do
   `CountryRuntime`, respeitando o Architecture Freeze e o ADR-0018.
-- Rotas públicas de pack são SSR normais e usam apenas dados do Runtime (sem
-  Supabase), então não precisam de bearer e não quebram o prerender.
-- A migração do `pack_registry` é a única mudança de banco e é o último passo da
-  sprint (ver ordem de execução).
+- **Rotas públicas de pack são SSR por request, nunca prerender estático.**
+  `/packs` e `/packs/$country` resolvem o catálogo (incluindo `health()`) no loader
+  a cada requisição, de modo que um pack que degrade em produção sai da vitrine na
+  requisição seguinte — sem esperar o próximo build/deploy. Elas ficam explicitamente
+  fora da lista de prerender, e o loader não usa Supabase (só o Runtime em memória),
+  então continua barato e sem bearer. A frase "não quebram o prerender" no plano
+  anterior significava apenas que não introduzem chamadas autenticadas que falhariam
+  em build — não que sejam estáticas.
+- Um teste garante que `/packs/$country` não está registrada como rota prerenderizada,
+  para essa garantia não se perder num refactor futuro.
 - Um ADR curto (`ADR-0032 — Pack Catalog Presentation Layer`) documenta a nova
-  camada de apresentação e a regra de classificação production/beta/roadmap,
-  incluindo o critério de health como gate contínuo (não só de promoção).
+  camada de apresentação, a regra de classificação production/beta/roadmap com
+  health como gate contínuo (não só de promoção), e a exigência de SSR por request
+  para as rotas públicas de pack.
+
 
 ## Fora de escopo
 
