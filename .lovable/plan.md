@@ -73,9 +73,16 @@ Criar `src/lib/packs/catalog.ts` (camada de apresentação, sem I/O):
 
 ### 2. Rotas públicas de pack
 - `src/routes/packs/index.tsx` — catálogo (produção, beta, roadmap em três blocos).
+  Beta e roadmap aparecem como cards informativos **sem link**.
 - `src/routes/packs/$country.tsx` — página do pack com `head()` próprio
   (title/description/og por país), capacidades, motores, ruleset, idiomas,
-  CTA para `/calculator` e `/api-docs`, e `notFoundComponent` para códigos inválidos.
+  CTA para `/calculator` e `/api-docs`.
+- **A rota pública só serve packs classificados como `production`.** Códigos
+  inválidos, países de roadmap e packs em `beta` (ex.: Malásia com warning) caem
+  todos no mesmo `notFoundComponent` — nada de capacidades, motores ou ruleset de
+  pack não promovido vazando em URL pública adivinhável. O detalhe de beta continua
+  visível apenas em `/country-packs/$country` (autenticado).
+
 
 ### 3. App: lista → detalhe
 - Converter `src/routes/_authenticated/country-packs.tsx` em layout (`<Outlet />`),
