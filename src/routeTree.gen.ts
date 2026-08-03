@@ -17,6 +17,7 @@ import { Route as PlatformRouteRouteImport } from './routes/platform/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
 import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
@@ -24,16 +25,18 @@ import { Route as PlatformParametersRouteImport } from './routes/platform/parame
 import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
+import { Route as PacksCountryRouteImport } from './routes/packs.$country'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedCountryPacksRouteImport } from './routes/_authenticated/country-packs'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
+import { Route as AuthenticatedCountryPacksIndexRouteImport } from './routes/_authenticated/country-packs.index'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
 import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
+import { Route as AuthenticatedCountryPacksCountryRouteImport } from './routes/_authenticated/country-packs.$country'
 import { Route as ApiPublicV1ReadinessRouteImport } from './routes/api/public/v1/readiness'
 import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
 import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
@@ -79,6 +82,11 @@ const PlatformIndexRoute = PlatformIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PacksIndexRoute = PacksIndexRouteImport.update({
+  id: '/packs/',
+  path: '/packs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlatformUadaRoute = PlatformUadaRouteImport.update({
   id: '/uada',
   path: '/uada',
@@ -114,6 +122,11 @@ const PlatformAuditRoute = PlatformAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PacksCountryRoute = PacksCountryRouteImport.update({
+  id: '/packs/$country',
+  path: '/packs/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
   id: '/payroll',
   path: '/payroll',
@@ -129,12 +142,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCountryPacksRoute =
-  AuthenticatedCountryPacksRouteImport.update({
-    id: '/country-packs',
-    path: '/country-packs',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
   id: '/contracts',
   path: '/contracts',
@@ -150,6 +157,12 @@ const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCountryPacksIndexRoute =
+  AuthenticatedCountryPacksIndexRouteImport.update({
+    id: '/country-packs/',
+    path: '/country-packs/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
   id: '/api/public/openapi.json',
   path: '/api/public/openapi.json',
@@ -165,6 +178,12 @@ const ApiPublicCalculateBpjsRoute = ApiPublicCalculateBpjsRouteImport.update({
   path: '/api/public/calculate-bpjs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCountryPacksCountryRoute =
+  AuthenticatedCountryPacksCountryRouteImport.update({
+    id: '/country-packs/$country',
+    path: '/country-packs/$country',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicV1ReadinessRoute = ApiPublicV1ReadinessRouteImport.update({
   id: '/api/public/v1/readiness',
   path: '/api/public/v1/readiness',
@@ -203,10 +222,10 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAuditRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/contracts': typeof AuthenticatedContractsRoute
-  '/country-packs': typeof AuthenticatedCountryPacksRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/packs/$country': typeof PacksCountryRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -214,10 +233,13 @@ export interface FileRoutesByFullPath {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/country-packs/': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -233,10 +255,10 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAuditRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/contracts': typeof AuthenticatedContractsRoute
-  '/country-packs': typeof AuthenticatedCountryPacksRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/packs/$country': typeof PacksCountryRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -244,10 +266,13 @@ export interface FileRoutesByTo {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/packs': typeof PacksIndexRoute
   '/platform': typeof PlatformIndexRoute
+  '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/country-packs': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -266,10 +291,10 @@ export interface FileRoutesById {
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
-  '/_authenticated/country-packs': typeof AuthenticatedCountryPacksRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/packs/$country': typeof PacksCountryRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -277,10 +302,13 @@ export interface FileRoutesById {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/_authenticated/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/_authenticated/country-packs/': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -299,10 +327,10 @@ export interface FileRouteTypes {
     | '/audit'
     | '/calendar'
     | '/contracts'
-    | '/country-packs'
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -310,10 +338,13 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/packs/'
     | '/platform/'
+    | '/country-packs/$country'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/country-packs/'
     | '/api/public/v1/calculate-bpjs'
     | '/api/public/v1/calculate-tax'
     | '/api/public/v1/health'
@@ -329,10 +360,10 @@ export interface FileRouteTypes {
     | '/audit'
     | '/calendar'
     | '/contracts'
-    | '/country-packs'
     | '/dashboard'
     | '/employees'
     | '/payroll'
+    | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -340,10 +371,13 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/packs'
     | '/platform'
+    | '/country-packs/$country'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/country-packs'
     | '/api/public/v1/calculate-bpjs'
     | '/api/public/v1/calculate-tax'
     | '/api/public/v1/health'
@@ -361,10 +395,10 @@ export interface FileRouteTypes {
     | '/_authenticated/audit'
     | '/_authenticated/calendar'
     | '/_authenticated/contracts'
-    | '/_authenticated/country-packs'
     | '/_authenticated/dashboard'
     | '/_authenticated/employees'
     | '/_authenticated/payroll'
+    | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -372,10 +406,13 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/packs/'
     | '/platform/'
+    | '/_authenticated/country-packs/$country'
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/_authenticated/country-packs/'
     | '/api/public/v1/calculate-bpjs'
     | '/api/public/v1/calculate-tax'
     | '/api/public/v1/health'
@@ -391,6 +428,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PacksCountryRoute: typeof PacksCountryRoute
+  PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
   ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
@@ -459,6 +498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformIndexRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/packs/': {
+      id: '/packs/'
+      path: '/packs'
+      fullPath: '/packs/'
+      preLoaderRoute: typeof PacksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/platform/uada': {
       id: '/platform/uada'
       path: '/uada'
@@ -508,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformAuditRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/packs/$country': {
+      id: '/packs/$country'
+      path: '/packs/$country'
+      fullPath: '/packs/$country'
+      preLoaderRoute: typeof PacksCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/payroll': {
       id: '/_authenticated/payroll'
       path: '/payroll'
@@ -527,13 +580,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/country-packs': {
-      id: '/_authenticated/country-packs'
-      path: '/country-packs'
-      fullPath: '/country-packs'
-      preLoaderRoute: typeof AuthenticatedCountryPacksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/contracts': {
@@ -557,6 +603,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/country-packs/': {
+      id: '/_authenticated/country-packs/'
+      path: '/country-packs'
+      fullPath: '/country-packs/'
+      preLoaderRoute: typeof AuthenticatedCountryPacksIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/openapi.json': {
       id: '/api/public/openapi.json'
       path: '/api/public/openapi.json'
@@ -577,6 +630,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/calculate-bpjs'
       preLoaderRoute: typeof ApiPublicCalculateBpjsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/country-packs/$country': {
+      id: '/_authenticated/country-packs/$country'
+      path: '/country-packs/$country'
+      fullPath: '/country-packs/$country'
+      preLoaderRoute: typeof AuthenticatedCountryPacksCountryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/v1/readiness': {
       id: '/api/public/v1/readiness'
@@ -620,20 +680,22 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
-  AuthenticatedCountryPacksRoute: typeof AuthenticatedCountryPacksRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
   AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
+  AuthenticatedCountryPacksCountryRoute: typeof AuthenticatedCountryPacksCountryRoute
+  AuthenticatedCountryPacksIndexRoute: typeof AuthenticatedCountryPacksIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
-  AuthenticatedCountryPacksRoute: AuthenticatedCountryPacksRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
   AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
+  AuthenticatedCountryPacksCountryRoute: AuthenticatedCountryPacksCountryRoute,
+  AuthenticatedCountryPacksIndexRoute: AuthenticatedCountryPacksIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -673,6 +735,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PacksCountryRoute: PacksCountryRoute,
+  PacksIndexRoute: PacksIndexRoute,
   ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
   ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,

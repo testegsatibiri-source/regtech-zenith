@@ -1,4 +1,6 @@
-// Philippines CountryPack — v0.1.0 (PH-2024.1).
+// Philippines CountryPack — v1.0.0 (PH-2024.1), promoted to production in H17.
+//   • interfaceVersion 1.0.0 (frozen contract)
+//   • dual signatureBlock (author + platform countersign)
 // Architectural validation of the SDK: implemented with ZERO edits outside
 // this folder (see docs/tech-debt.md DEBT-018 for findings).
 import type { CountryPack, Providers, HealthReport, Capability } from "@/sdk";
@@ -12,6 +14,8 @@ import type { ContractProvider } from "@/sdk";
 import type { RuleProvider, ComplianceRule } from "@/sdk/providers/RuleProvider";
 import type { AuditProvider, AuditHeuristic } from "@/sdk";
 
+import type { SignatureBlock } from "@/sdk/manifest";
+import { PH_SIGNATURE_BLOCK } from "./signature";
 import { PH_PARAMS } from "./params";
 import { calculatePhTax } from "./engines/tax";
 import { calculatePhBenefits } from "./engines/benefits";
@@ -29,8 +33,9 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "0.1.0",
+  version: "1.0.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
+  interfaceVersion: "1.0.0",
   engines: PROVIDES,
   provides: PROVIDES,
   requires: [],
@@ -42,6 +47,7 @@ const manifest: CountryManifest = {
   features: ["train-law", "13th-month", "sss", "philhealth", "pagibig"],
   supportedLanguages: ["en", "fil"],
   requiresCore: ">=2.0.0",
+  signatureBlock: PH_SIGNATURE_BLOCK as SignatureBlock,
 };
 
 const tax: TaxProvider = {
@@ -138,6 +144,9 @@ function health(): HealthReport {
     { name: "ruleset.version.present", ok: !!manifest.rulesetVersion },
     { name: "calendar.templates.non-empty", ok: (calendar.templates()?.length ?? 0) > 0 },
     { name: "rules.non-empty", ok: (rules.rules()?.length ?? 0) > 0 },
+    { name: "interface.version.present", ok: !!manifest.interfaceVersion },
+    { name: "signature.author.present", ok: !!manifest.signatureBlock?.author?.keyId },
+    { name: "signature.countersign.present", ok: !!manifest.signatureBlock?.countersign?.keyId },
   ];
   try {
     tax.calculate({ monthlyGross: 30_000, maritalStatus: "single", hasNpwp: true });

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app/AppShell";
 import { CountryRuntime, type HealthReport } from "@/sdk";
@@ -8,18 +8,38 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, AlertTriangle, Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/country-packs")({
-  head: () => ({
+export const Route = createFileRoute("/_authenticated/country-packs/$country")({
+  loader: ({ params }) => {
+    const code = params.country.toUpperCase();
+    const rec = CountryRuntime.list().find((r) => r.pack.manifest.country === code);
+    if (!rec) throw notFound();
+    return { code };
+  },
+  head: ({ params }) => ({
     meta: [
-      { title: "Country Packs · UBoard Asia" },
-      { name: "description", content: "Installed compliance country packs, engines, versions, health and validator reports." },
+      { title: `${params.country.toUpperCase()} Country Pack · UBoard Asia` },
+      { name: "description", content: "Manifest, engines, events, validator report and live health for this installed country pack." },
     ],
   }),
-  component: CountryPacksPage,
+  notFoundComponent: PackNotInstalled,
+  component: CountryPackDetailPage,
 });
 
-function CountryPacksPage() {
-  const installed = CountryRuntime.list();
+function PackNotInstalled() {
+  return (
+    <AppShell>
+      <div className="mx-auto max-w-3xl p-6">
+        <h1 className="font-display text-2xl font-bold">Pack not installed</h1>
+        <p className="mt-2 text-sm text-muted-foreground">This country pack is not present in the runtime.</p>
+        <Button asChild className="mt-4"><Link to="/country-packs">Back to packs</Link></Button>
+      </div>
+    </AppShell>
+  );
+}
+
+function CountryPackDetailPage() {
+  const { code } = Route.useLoaderData() as { code: string };
+  const installed = CountryRuntime.list().filter((r) => r.pack.manifest.country === code);
   const [health, setHealth] = useState<Record<string, HealthReport | { status: "loading" | "error"; checks: never[] }>>({});
 
   useEffect(() => {
@@ -43,15 +63,19 @@ function CountryPacksPage() {
     <AppShell>
       <div className="mx-auto max-w-5xl space-y-6 p-6">
         <header>
-          <h1 className="font-display text-3xl font-bold">Country Packs</h1>
+          <Link to="/country-packs" className="text-xs text-muted-foreground hover:text-foreground">
+            &larr; All country packs
+          </Link>
+          <h1 className="font-display text-3xl font-bold">
+            {installed[0]?.pack.manifest.name ?? code} Pack
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Installed via the Compliance SDK Country Runtime. Each pack ships its own manifest,
-            semver, capability set, event contract and health check. Core version{" "}
-            <code className="rounded bg-muted px-1">2.1.0</code>.
+            Manifest, capabilities, event contract, validator report and live health as resolved by
+            the Compliance SDK Country Runtime.
           </p>
         </header>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           {installed.map(({ pack, status, reason, validation }) => {
             const m = pack.manifest;
             const h = health[m.country];
