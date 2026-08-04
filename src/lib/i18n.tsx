@@ -16,14 +16,23 @@ const D: Dict = {
   "nav.companies": { en: "Companies", id: "Perusahaan" },
   "nav.signout": { en: "Sign out", id: "Keluar" },
 
-  "hero.badge": { en: "Compliance & Payroll for Southeast Asia", id: "Kepatuhan & Penggajian untuk Asia Tenggara" },
-  "hero.title": { en: "Payroll that stays compliant while the law keeps changing", id: "Penggajian yang tetap patuh saat regulasi berubah" },
+  "hero.badge": { en: "Global compliance infrastructure", id: "Infrastruktur kepatuhan global" },
+  "hero.title": {
+    en: "Global payroll compliance infrastructure, built for every jurisdiction",
+    id: "Infrastruktur kepatuhan payroll global, dibangun untuk setiap yurisdiksi",
+  },
   "hero.sub": {
-    en: "UBoard Asia decouples your Core ERP from Country Packs and Rule Engines — so a single config update keeps thousands of companies compliant. See your Compliance Score before the auditor does.",
-    id: "UBoard Asia memisahkan Core ERP dari Country Pack dan Rule Engine — satu pembaruan konfigurasi menjaga kepatuhan ribuan perusahaan. Lihat Skor Kepatuhan Anda sebelum auditor.",
+    en: "One secure core. Independent country packs. Payroll, tax and statutory compliance delivered through modular compliance engines.",
+    id: "Satu core yang aman. Country pack independen. Payroll, pajak, dan kepatuhan statutori melalui mesin kepatuhan modular.",
   },
   "hero.cta": { en: "Start free", id: "Mulai gratis" },
   "hero.cta2": { en: "Try the calculator", id: "Coba kalkulator" },
+  "hero.ctaPacks": { en: "Explore Country Packs", id: "Jelajahi Country Pack" },
+  "hero.ctaCore": { en: "Start with Global Core", id: "Mulai dengan Global Core" },
+  "hero.signal1": { en: "Minimum wage floor respected", id: "Batas upah minimum terpenuhi" },
+  "hero.signal2": { en: "Statutory contributions enrolled", id: "Iuran statutori terdaftar" },
+  "hero.signal3": { en: "Tax ID missing on 3 employees", id: "Nomor pajak hilang pada 3 karyawan" },
+
 
   "score.title": { en: "Compliance Score", id: "Skor Kepatuhan" },
   "score.audit": { en: "Audit readiness", id: "Kesiapan audit" },
