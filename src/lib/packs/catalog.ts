@@ -15,6 +15,8 @@ export interface CatalogEntry {
   currency: string;
   tier: PackTier;
   installed: boolean;
+  /** Optional local market site (presentation hint only, no routing impact). */
+  domain?: string;
   version?: string;
   rulesetVersion?: string;
   interfaceVersion?: string;
@@ -34,6 +36,18 @@ const ROADMAP: Array<{ code: string; name: string; nameLocal: string; flag: stri
   { code: "TH", name: "Thailand", nameLocal: "ประเทศไทย", flag: "🇹🇭", currency: "THB" },
   { code: "SG", name: "Singapore", nameLocal: "Singapura", flag: "🇸🇬", currency: "SGD" },
 ];
+
+/**
+ * Local market sites per jurisdiction. Presentation only — adding a market
+ * here never changes routing, which always stays on /packs/$country.
+ */
+const DOMAINS: Record<string, string> = {
+  ID: "uboardhr.id",
+  PH: "uboardhr.ph",
+  MY: "uboardhr.my",
+  TH: "uboardhr.co.th",
+  VN: "uboardhr.vn",
+};
 
 const FLAGS: Record<string, string> = {
   ID: "🇮🇩", MY: "🇲🇾", PH: "🇵🇭", SG: "🇸🇬", VN: "🇻🇳", TH: "🇹🇭",
@@ -88,6 +102,7 @@ function toEntry(
     currency: m.currency,
     tier: c.tier,
     installed: true,
+    domain: DOMAINS[m.country],
     version: m.version,
     rulesetVersion: m.rulesetVersion,
     interfaceVersion: m.interfaceVersion,
@@ -110,6 +125,7 @@ function roadmapEntries(installedCodes: Set<string>): CatalogEntry[] {
     currency: r.currency,
     tier: "roadmap" as const,
     installed: false,
+    domain: DOMAINS[r.code],
     signed: false,
     provides: [],
     languages: [],

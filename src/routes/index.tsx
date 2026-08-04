@@ -16,13 +16,15 @@ export const Route = createFileRoute("/")({
   loader: async () => ({ packs: await listCatalogWithHealth() }),
   head: () => ({
     meta: [
-      { title: "UBoard Asia — Compliance OS for Southeast Asian payroll" },
-      { name: "description", content: "One global compliance core, independent country packs. Payroll, tax and statutory compliance for Indonesia, the Philippines and beyond." },
-      { property: "og:title", content: "UBoard Asia — Compliance OS for Southeast Asia" },
-      { property: "og:description", content: "Global core plus signed, versioned country packs. Legislative change becomes a config update, not a code migration." },
+      { title: "Global payroll compliance infrastructure | UBoard" },
+      { name: "description", content: "One global compliance core, independent signed country packs — payroll, tax and statutory compliance across Southeast Asia." },
+      { property: "og:title", content: "Global compliance infrastructure with independent country packs" },
+      { property: "og:description", content: "One secure core, independent signed country packs. Legislative change becomes a config update, not a code migration." },
+      { property: "og:url", content: "https://uboardasia.com/" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://uboardasia.com/" }],
   }),
   component: Landing,
 });
@@ -45,9 +47,9 @@ function Landing() {
             <h1 className="font-display text-4xl font-bold leading-tight md:text-5xl">{t("hero.title")}</h1>
             <p className="mt-5 max-w-lg text-white/70">{t("hero.sub")}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg"><Link to="/auth">{t("hero.cta")} <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
+              <Button asChild size="lg"><Link to="/packs">{t("hero.ctaPacks")} <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
               <Button asChild size="lg" variant="outline" className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white">
-                <Link to="/calculator">{t("hero.cta2")}</Link>
+                <Link to="/auth">{t("hero.ctaCore")}</Link>
               </Button>
             </div>
           </div>
@@ -57,9 +59,9 @@ function Landing() {
                 <span className="text-sm text-white/60">{t("score.title")}</span>
                 <ScoreGauge score={95} label={t("score.audit")} />
                 <div className="w-full space-y-2 text-sm">
-                  <Signal ok text="Base salary ≥ UMP" />
-                  <Signal ok text="BPJS enrolled" />
-                  <Signal text="NPWP missing on 3 employees" />
+                  <Signal ok text={t("hero.signal1")} />
+                  <Signal ok text={t("hero.signal2")} />
+                  <Signal text={t("hero.signal3")} />
                 </div>
               </CardContent>
             </Card>
@@ -70,27 +72,30 @@ function Landing() {
       {/* Architecture layers */}
       <section id="product" className="mx-auto max-w-6xl px-4 py-20">
         <SectionTitle
-          eyebrow="Layered architecture"
-          title="Core ERP, Country Packs and Rule Engines — fully decoupled"
-          sub="Legislative change becomes a config update, not a code migration. Your clients simply wake up compliant."
+          eyebrow="Global Core"
+          title="One compliance core, independent country packs"
+          sub="Legislative change becomes a config update, not a code migration. The core never moves when a jurisdiction does."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-3">
-          <Feature icon={Layers} title="Country Packs" desc="Geography-specific rules (NIK, NPWP, BPJS, THR) isolated from the business core. Add Malaysia or Vietnam without touching payroll logic." />
-          <Feature icon={Cpu} title="Rule Engines" desc="Tax (PPh 21 / TER), BPJS and THR run as independent engines — sellable as standalone /calculate-tax and /calculate-bpjs APIs." />
-          <Feature icon={Activity} title="Compliance Score" desc="Every payroll close runs through boolean validators, producing a 0–100% auditable score with drill-down per rule." />
-          <Feature icon={Zap} title="Regulatory Update Service" desc="Rates, BPJS caps and TER brackets live in config. One deploy updates thousands of companies — no client upgrade." />
-          <Feature icon={Bot} title="Predictive AI Audit" desc="Cross-checks overtime against Omnibus Law limits and flags statistical anomalies before they become fines." />
-          <Feature icon={Globe2} title="Multi-country native" desc="A jsonb country_metadata model stores per-country identifiers without inflating the global schema." />
+          <Feature icon={Layers} title="Compliance Core" desc="Central compliance infrastructure for global payroll operations." />
+          <Feature icon={Globe2} title="Employee lifecycle" desc="Manage employee events from onboarding to offboarding." />
+          <Feature icon={Cpu} title="Payroll calculations" desc="Modular payroll calculation engines powered by country packs." />
+          <Feature icon={Activity} title="Audit trails" desc="Secure records and compliance evidence for every transaction." />
+          <Feature icon={Zap} title="API integrations" desc="Connect payroll workflows with enterprise systems." />
+          <Feature icon={Bot} title="AI compliance monitoring" desc="Detect anomalies before they become compliance risks." />
         </div>
 
         {/* Global core + country packs */}
         <div className="mt-16 rounded-2xl border border-border bg-muted/30 p-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h3 className="font-display text-xl font-semibold">Global Core</h3>
+              <h3 className="font-display text-xl font-semibold">Multi-country architecture</h3>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
                 Employees, payroll orchestration, compliance score, audit trail and public API — the
                 same everywhere. Country packs plug in without touching a single line of it.
+              </p>
+              <p className="mt-2 text-sm font-medium">
+                {production.length} {production.length === 1 ? "pack" : "packs"} in production · {upcoming.length} in validation or roadmap
               </p>
             </div>
             <Badge variant="outline" className="font-mono">core v{CORE_VERSION}</Badge>
@@ -116,6 +121,12 @@ function Landing() {
                 <div className="mt-3 flex flex-wrap gap-1">
                   {p.provides.slice(0, 4).map((c) => <Badge key={c} variant="secondary">{c}</Badge>)}
                 </div>
+                {p.domain && (
+                  <p className="mt-3 text-xs text-muted-foreground">Local site: {p.domain}</p>
+                )}
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  Explore {p.name} <ArrowRight className="h-3.5 w-3.5" />
+                </span>
               </Link>
             ))}
           </div>
@@ -148,26 +159,26 @@ function Landing() {
             <PriceCard
               name="Starter"
               base="$50/mo"
-              per="IDR 30,000 / employee / mo"
-              features={["Core ERP + companies & branches", "Indonesia Country Pack", "Payroll close (PPh 21, BPJS, THR)", "Basic Compliance Score"]}
+              per="$2 / employee / mo"
+              features={["Global Core + companies & branches", "One Country Pack included", "Payroll close with statutory engines", "Basic Compliance Score"]}
             />
             <PriceCard
               highlight
               name="Growth"
               base="$150/mo"
-              per="IDR 50,000 / employee / mo"
-              features={["Everything in Starter", "AI Compliance module (add-on)", "Predictive overtime & anomaly alerts", "Multi-branch dashboards", "Priority support"]}
+              per="$3.50 / employee / mo"
+              features={["Everything in Starter", "Additional country packs on demand", "AI Compliance module (add-on)", "Predictive overtime & anomaly alerts", "Multi-branch dashboards", "Priority support"]}
             />
             <PriceCard
               name="API / Enterprise"
               base="from $300/mo"
               per="10,000 calc API calls"
-              features={["/calculate-tax & /calculate-bpjs endpoints", "For SAP / Workday / SuccessFactors", "Volume-based API billing", "SLA & dedicated Country Packs"]}
+              features={["Standalone calculation API endpoints", "For SAP / Workday / SuccessFactors", "Volume-based API billing", "SLA & dedicated Country Packs"]}
             />
           </div>
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-muted-foreground">
             <FileWarning className="mr-1 inline h-4 w-4" />
-            AI Compliance add-on: +20–30% of monthly invoice, or $1/employee — cheaper than a single Kemenaker fine.
+            AI Compliance add-on: +20–30% of monthly invoice, or $1/employee — cheaper than a single labour-inspection fine.
           </p>
         </div>
       </section>
