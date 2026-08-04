@@ -57,3 +57,9 @@ NIK, NPWP, BPJS, PPh 21, TER, THR, UMP, Omnibus Law, Kemenaker, IDR pricing. The
 ## Technical notes
 
 Files touched: `src/routes/index.tsx` (structure and copy), the i18n dictionary in `src/lib/i18n.tsx` (hero strings, EN + ID), and `src/lib/packs/catalog.ts` only for the optional `domain` field on `CatalogEntry` and the roadmap list. No changes to country packs, the SDK, `/packs/$country` logic, the calculator, pricing logic, backend or routing.
+
+## Sprint acceptance
+
+- No occurrence on the home page of: NIK, NPWP, BPJS, PPh 21, TER, THR, UMP, Omnibus Law, Kemenaker, IDR, or a hardcoded country name (country names render only from the catalog).
+- The landing renders correctly for any new country added to the catalog, with no code change.
+- Adding a local site for a new market is a single `domain: "uboardhr.xx"` field in the catalog entry.
