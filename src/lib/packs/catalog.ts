@@ -168,6 +168,8 @@ function toEntry(
     flag: FLAGS[m.country] ?? "🏳️",
     currency: m.currency,
     tier: c.tier,
+    statusLabel: STATUS_LABELS[c.tier],
+    region: REGIONS[m.country] ?? "Global",
     installed: true,
     domain: DOMAINS[m.country],
     version: m.version,
@@ -177,6 +179,8 @@ function toEntry(
     status: rec.status,
     reason: rec.reason,
     provides: [...(m.provides ?? m.engines ?? [])],
+    complianceAreas: COMPLIANCE_AREAS[m.country] ?? [],
+    plannedCapabilities: PLANNED_CAPABILITIES[m.country] ?? [],
     languages: [...(m.supportedLanguages ?? [])],
     blockers: c.blockers,
     health: c.health,
@@ -191,14 +195,19 @@ function roadmapEntries(installedCodes: Set<string>): CatalogEntry[] {
     flag: r.flag,
     currency: r.currency,
     tier: "roadmap" as const,
+    statusLabel: STATUS_LABELS.roadmap,
+    region: REGIONS[r.code] ?? "Global",
     installed: false,
     domain: DOMAINS[r.code],
     signed: false,
     provides: [],
-    languages: [],
+    complianceAreas: COMPLIANCE_AREAS[r.code] ?? [],
+    plannedCapabilities: PLANNED_CAPABILITIES[r.code] ?? [],
+    languages: LOCALES[r.code] ?? [],
     blockers: ["pack not implemented yet"],
   }));
 }
+
 
 /** Synchronous catalog — no health gate. Safe for instant renders. */
 export function listCatalog(): CatalogEntry[] {
