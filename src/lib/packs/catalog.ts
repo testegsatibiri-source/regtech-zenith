@@ -14,6 +14,10 @@ export interface CatalogEntry {
   flag: string;
   currency: string;
   tier: PackTier;
+  /** Human label for the tier: Production / Validation / Roadmap. */
+  statusLabel: string;
+  /** Commercial region grouping (presentation only). */
+  region: string;
   installed: boolean;
   /** Optional local market site (presentation hint only, no routing impact). */
   domain?: string;
@@ -23,19 +27,74 @@ export interface CatalogEntry {
   signed: boolean;
   status?: InstalledPack["status"];
   reason?: string;
+  /** Runtime capabilities declared by the pack manifest. */
   provides: string[];
+  /** Marketing coverage lines (presentation only). */
+  complianceAreas: string[];
+  /** Announced capabilities for markets without a runtime engine. */
+  plannedCapabilities: string[];
   languages: string[];
   /** Why the pack is not classified as production (empty when it is). */
   blockers: string[];
   health?: HealthReport["status"];
 }
 
-/** Countries on the roadmap that have no installed pack yet. */
-const ROADMAP: Array<{ code: string; name: string; nameLocal: string; flag: string; currency: string }> = [
-  { code: "VN", name: "Vietnam", nameLocal: "Việt Nam", flag: "🇻🇳", currency: "VND" },
-  { code: "TH", name: "Thailand", nameLocal: "ประเทศไทย", flag: "🇹🇭", currency: "THB" },
-  { code: "SG", name: "Singapore", nameLocal: "Singapura", flag: "🇸🇬", currency: "SGD" },
-];
+/** Runtime capability -> friendly product label. Single place for these strings. */
+const CAPABILITY_LABELS: Record<string, string> = {
+  payroll: "Payroll",
+  tax: "Tax Engine",
+  benefits: "Benefits",
+  contributions: "Social Contributions",
+  thirteenth: "Statutory Bonuses",
+  overtime: "Overtime Rules",
+  leave: "Leave Management",
+  calendar: "Regulatory Calendar",
+  contracts: "Employment Contracts",
+  audit: "Audit Validation",
+  rules: "Compliance Rules",
+};
+
+export function capabilityLabel(capability: string): string {
+  return (
+    CAPABILITY_LABELS[capability] ??
+    capability.charAt(0).toUpperCase() + capability.slice(1).replace(/[-_]/g, " ")
+  );
+}
+
+export const STATUS_LABELS: Record<PackTier, string> = {
+  production: "Production",
+  beta: "Validation",
+  roadmap: "Roadmap",
+};
+
+/** Commercial region per jurisdiction (presentation only). */
+const REGIONS: Record<string, string> = {
+  ID: "Southeast Asia", MY: "Southeast Asia", PH: "Southeast Asia",
+  SG: "Southeast Asia", VN: "Southeast Asia", TH: "Southeast Asia",
+};
+
+/** Coverage lines shown on production cards. */
+const COMPLIANCE_AREAS: Record<string, string[]> = {
+  ID: ["Payroll calculation", "Tax compliance", "Employee obligations"],
+  PH: ["Payroll processing", "Tax calculation", "Labor compliance"],
+  MY: ["Payroll calculation", "Statutory contributions"],
+  VN: ["Payroll calculation", "Social insurance"],
+  TH: ["Payroll calculation", "Tax compliance"],
+  SG: ["Enterprise payroll", "Compliance automation"],
+};
+
+/** Announced capabilities for markets without runtime engines yet. */
+const PLANNED_CAPABILITIES: Record<string, string[]> = {
+  MY: ["Payroll Engine", "Tax Framework", "Employee Compliance", "Statutory Rules"],
+  VN: ["Payroll", "Tax", "Insurance", "Labor Rules"],
+  TH: ["Payroll", "Tax", "Benefits", "Compliance Engine"],
+  SG: ["Enterprise Payroll", "API Integration", "Compliance Automation"],
+};
+
+/** Locales per planned market (installed packs read theirs from the manifest). */
+const LOCALES: Record<string, string[]> = {
+  MY: ["ms", "en"], VN: ["vi", "en"], TH: ["th", "en"], SG: ["en"],
+};
 
 /**
  * Local market sites per jurisdiction. Presentation only — adding a market
@@ -48,6 +107,7 @@ const DOMAINS: Record<string, string> = {
   TH: "uboardhr.co.th",
   VN: "uboardhr.vn",
 };
+
 
 const FLAGS: Record<string, string> = {
   ID: "🇮🇩", MY: "🇲🇾", PH: "🇵🇭", SG: "🇸🇬", VN: "🇻🇳", TH: "🇹🇭",
