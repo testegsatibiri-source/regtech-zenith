@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
+import { CountryPackCard } from "@/components/packs/CountryPackCard";
 import { listCatalogWithHealth, type CatalogEntry } from "@/lib/packs/catalog";
 import { CORE_VERSION } from "@/sdk";
+
 
 export const Route = createFileRoute("/")({
   // SSR per request — the production tier depends on live health().
@@ -33,7 +35,10 @@ function Landing() {
   const { t } = useI18n();
   const { packs } = Route.useLoaderData() as { packs: CatalogEntry[] };
   const production = packs.filter((p) => p.tier === "production");
+  const validation = packs.filter((p) => p.tier === "beta");
+  const roadmap = packs.filter((p) => p.tier === "roadmap");
   const upcoming = packs.filter((p) => p.tier !== "production");
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -89,10 +94,10 @@ function Landing() {
         <div className="mt-16 rounded-2xl border border-border bg-muted/30 p-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h3 className="font-display text-xl font-semibold">Multi-country architecture</h3>
+              <h3 className="font-display text-xl font-semibold">Compliance intelligence for every jurisdiction</h3>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Employees, payroll orchestration, compliance score, audit trail and public API — the
-                same everywhere. Country packs plug in without touching a single line of it.
+                Each Country Pack contains local payroll rules, tax engines, statutory requirements
+                and compliance workflows — connected to the same global core.
               </p>
               <p className="mt-2 text-sm font-medium">
                 {production.length} {production.length === 1 ? "pack" : "packs"} in production · {upcoming.length} in validation or roadmap
@@ -101,49 +106,44 @@ function Landing() {
             <Badge variant="outline" className="font-mono">core v{CORE_VERSION}</Badge>
           </div>
 
-          <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-accent">In production</h4>
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            {production.map((p) => (
-              <Link
-                key={p.code}
-                to="/packs/$country"
-                params={{ country: p.code.toLowerCase() }}
-                className="group rounded-xl border border-border bg-background p-5 transition-shadow hover:shadow-md"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="text-2xl">{p.flag}</div>
-                    <p className="mt-2 font-display font-semibold">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">pack v{p.version} · {p.rulesetVersion}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
-                </div>
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {p.provides.slice(0, 4).map((c) => <Badge key={c} variant="secondary">{c}</Badge>)}
-                </div>
-                {p.domain && (
-                  <p className="mt-3 text-xs text-muted-foreground">Local site: {p.domain}</p>
-                )}
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                  Explore {p.name} <ArrowRight className="h-3.5 w-3.5" />
-                </span>
-              </Link>
-            ))}
-          </div>
+          {production.length > 0 && (
+            <>
+              <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-accent">Production</h4>
+              <div className="mt-3 grid gap-4 md:grid-cols-2">
+                {production.map((p) => (
+                  <CountryPackCard key={p.code} pack={p} variant="production" />
+                ))}
+              </div>
+            </>
+          )}
 
-          <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Next up</h4>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {upcoming.map((p) => (
-              <span key={p.code} className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm text-muted-foreground">
-                <span>{p.flag}</span>{p.name} · {p.tier === "beta" ? "in validation" : "roadmap"}
-              </span>
-            ))}
-          </div>
+          {validation.length > 0 && (
+            <>
+              <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Validation</h4>
+              <div className="mt-3 grid gap-4 md:grid-cols-3">
+                {validation.map((p) => (
+                  <CountryPackCard key={p.code} pack={p} variant="validation" />
+                ))}
+              </div>
+            </>
+          )}
+
+          {roadmap.length > 0 && (
+            <>
+              <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Next markets</h4>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {roadmap.map((p) => (
+                  <CountryPackCard key={p.code} pack={p} variant="roadmap" />
+                ))}
+              </div>
+            </>
+          )}
 
           <Button asChild variant="outline" className="mt-8">
             <Link to="/packs">Explore all country packs <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
         </div>
+
 
       </section>
 

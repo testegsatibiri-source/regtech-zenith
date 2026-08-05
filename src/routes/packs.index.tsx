@@ -1,9 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import { CountryPackCard, RoadmapPackCard } from "@/components/packs/CountryPackCard";
 import { listCatalogWithHealth, type CatalogEntry } from "@/lib/packs/catalog";
 
 export const Route = createFileRoute("/packs/")({
@@ -42,9 +40,24 @@ function PacksCatalog() {
           </p>
         </header>
 
-        <Group title="In production" sub="Signed, version 1.0+ and passing live health checks." items={production} linkable />
-        <Group title="In validation" sub="Installed and running, not yet promoted to production." items={beta} />
-        <Group title="Roadmap" sub="Planned jurisdictions." items={roadmap} />
+        <Group title="Production" count={production.length} sub="Signed, version 1.0+ and passing live health checks.">
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {production.map((p) => <CountryPackCard key={p.code} pack={p} variant="production" />)}
+          </div>
+        </Group>
+
+        <Group title="Validation" count={beta.length} sub="Installed and running, not yet promoted to production.">
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {beta.map((p) => <CountryPackCard key={p.code} pack={p} variant="validation" />)}
+          </div>
+        </Group>
+
+        <Group title="Roadmap" count={roadmap.length} sub="Planned jurisdictions.">
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {roadmap.map((p) => <RoadmapPackCard key={p.code} pack={p} />)}
+          </div>
+        </Group>
+
       </main>
       <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
         <div className="flex items-center justify-center gap-2 font-display font-semibold text-foreground">
@@ -55,42 +68,13 @@ function PacksCatalog() {
   );
 }
 
-function Group({ title, sub, items, linkable }: { title: string; sub: string; items: CatalogEntry[]; linkable?: boolean }) {
-  if (items.length === 0) return null;
+function Group({ title, sub, count, children }: { title: string; sub: string; count: number; children: React.ReactNode }) {
+  if (count === 0) return null;
   return (
     <section className="mt-12">
       <h2 className="font-display text-xl font-semibold">{title}</h2>
       <p className="text-sm text-muted-foreground">{sub}</p>
-      <div className="mt-5 grid gap-4 md:grid-cols-3">
-        {items.map((p) => (
-          <Card key={p.code}>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-3xl">{p.flag}</div>
-                  <h3 className="mt-2 font-display text-lg font-semibold">{p.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {p.installed ? `pack v${p.version} · ${p.rulesetVersion} · ${p.currency}` : `${p.currency} · planned`}
-                  </p>
-                </div>
-                <Badge variant={p.tier === "production" ? "default" : "outline"}>{p.tier}</Badge>
-              </div>
-              {p.provides.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-1">
-                  {p.provides.slice(0, 5).map((c) => <Badge key={c} variant="secondary">{c}</Badge>)}
-                </div>
-              )}
-              {linkable && (
-                <Button asChild variant="outline" size="sm" className="mt-5 w-full">
-                  <Link to="/packs/$country" params={{ country: p.code.toLowerCase() }}>
-                    Open pack <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {children}
     </section>
   );
 }
