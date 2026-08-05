@@ -35,7 +35,10 @@ function Landing() {
   const { t } = useI18n();
   const { packs } = Route.useLoaderData() as { packs: CatalogEntry[] };
   const production = packs.filter((p) => p.tier === "production");
+  const validation = packs.filter((p) => p.tier === "beta");
+  const roadmap = packs.filter((p) => p.tier === "roadmap");
   const upcoming = packs.filter((p) => p.tier !== "production");
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
