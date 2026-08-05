@@ -108,10 +108,17 @@ const DOMAINS: Record<string, string> = {
   VN: "uboardhr.vn",
 };
 
+/** Countries on the roadmap that have no installed pack yet. */
+const ROADMAP: Array<{ code: string; name: string; nameLocal: string; flag: string; currency: string }> = [
+  { code: "VN", name: "Vietnam", nameLocal: "Việt Nam", flag: "🇻🇳", currency: "VND" },
+  { code: "TH", name: "Thailand", nameLocal: "ประเทศไทย", flag: "🇹🇭", currency: "THB" },
+  { code: "SG", name: "Singapore", nameLocal: "Singapura", flag: "🇸🇬", currency: "SGD" },
+];
 
 const FLAGS: Record<string, string> = {
   ID: "🇮🇩", MY: "🇲🇾", PH: "🇵🇭", SG: "🇸🇬", VN: "🇻🇳", TH: "🇹🇭",
 };
+
 
 function major(v?: string): number {
   return Number.parseInt((v ?? "0").split(".")[0] ?? "0", 10) || 0;
