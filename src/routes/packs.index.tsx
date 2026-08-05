@@ -1,8 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
-import { ArrowRight, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link as RouterLink } from "@tanstack/react-router";
+import { ShieldCheck } from "lucide-react";
 import { CountryPackCard, RoadmapPackCard } from "@/components/packs/CountryPackCard";
 import { listCatalogWithHealth, type CatalogEntry } from "@/lib/packs/catalog";
 
@@ -42,19 +40,19 @@ function PacksCatalog() {
           </p>
         </header>
 
-        <Group title="Production" sub="Signed, version 1.0+ and passing live health checks.">
+        <Group title="Production" count={production.length} sub="Signed, version 1.0+ and passing live health checks.">
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             {production.map((p) => <CountryPackCard key={p.code} pack={p} variant="production" />)}
           </div>
         </Group>
 
-        <Group title="Validation" sub="Installed and running, not yet promoted to production.">
+        <Group title="Validation" count={beta.length} sub="Installed and running, not yet promoted to production.">
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {beta.map((p) => <CountryPackCard key={p.code} pack={p} variant="validation" />)}
           </div>
         </Group>
 
-        <Group title="Roadmap" sub="Planned jurisdictions.">
+        <Group title="Roadmap" count={roadmap.length} sub="Planned jurisdictions.">
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {roadmap.map((p) => <RoadmapPackCard key={p.code} pack={p} />)}
           </div>
@@ -70,11 +68,8 @@ function PacksCatalog() {
   );
 }
 
-function Group({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
-  const has = Array.isArray((children as { props?: { children?: unknown[] } })?.props?.children)
-    ? ((children as { props: { children: unknown[] } }).props.children.length > 0)
-    : true;
-  if (!has) return null;
+function Group({ title, sub, count, children }: { title: string; sub: string; count: number; children: React.ReactNode }) {
+  if (count === 0) return null;
   return (
     <section className="mt-12">
       <h2 className="font-display text-xl font-semibold">{title}</h2>
