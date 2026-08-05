@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
+import { CountryPackCard } from "@/components/packs/CountryPackCard";
 import { listCatalogWithHealth, type CatalogEntry } from "@/lib/packs/catalog";
 import { CORE_VERSION } from "@/sdk";
+
 
 export const Route = createFileRoute("/")({
   // SSR per request — the production tier depends on live health().
