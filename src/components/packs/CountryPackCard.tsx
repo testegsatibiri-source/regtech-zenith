@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CountryFlag } from "@/components/packs/CountryFlag";
 import { capabilityLabel, type CatalogEntry } from "@/lib/packs/catalog";
 
 export type PackCardVariant = "production" | "validation" | "roadmap";
