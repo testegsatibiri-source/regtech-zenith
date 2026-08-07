@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/app/AppShell";
+
 import { CountryRuntime, type HealthReport } from "@/sdk";
 import "@/sdk/bootstrap";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
