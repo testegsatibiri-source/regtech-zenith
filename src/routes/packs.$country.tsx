@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { getProductionPack, type CatalogEntry } from "@/lib/packs/catalog";
+import { CountryFlag } from "@/components/packs/CountryFlag";
+import { LocaleScope } from "@/lib/i18n";
 
 export const Route = createFileRoute("/packs/$country")({
   // SSR per request. The production gate re-evaluates health() on every
@@ -39,7 +41,10 @@ export const Route = createFileRoute("/packs/$country")({
 
 function PackDetail() {
   const { pack } = Route.useLoaderData() as { pack: CatalogEntry };
+  // The global shell is English-only; the pack surface exposes its own locales.
+  const locales = ["en", ...pack.languages.filter((l) => l !== "en")];
   return (
+    <LocaleScope available={locales}>
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-4 py-16">
@@ -48,7 +53,7 @@ function PackDetail() {
         </Link>
 
         <header className="mt-6 flex items-start gap-4">
-          <span className="text-5xl">{pack.flag}</span>
+          <CountryFlag code={pack.code} name={pack.name} className="h-12 w-[4.5rem]" />
           <div>
             <h1 className="font-display text-4xl font-bold">{pack.name} Country Pack</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -101,6 +106,7 @@ function PackDetail() {
         </div>
       </footer>
     </div>
+    </LocaleScope>
   );
 }
 
