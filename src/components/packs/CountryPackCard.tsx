@@ -23,7 +23,7 @@ function ProductionCard({ pack }: { pack: CatalogEntry }) {
       <CardContent className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-3xl">{pack.flag}</div>
+            <CountryFlag code={pack.code} name={pack.name} className="h-7 w-10" />
             <h3 className="mt-2 font-display text-lg font-semibold">{pack.name}</h3>
             <p className="text-xs text-muted-foreground">{pack.region}</p>
           </div>
@@ -86,7 +86,7 @@ function ValidationCard({ pack }: { pack: CatalogEntry }) {
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-2xl">{pack.flag}</div>
+            <CountryFlag code={pack.code} name={pack.name} className="h-6 w-9" />
             <h3 className="mt-2 font-display font-semibold">{pack.name}</h3>
             <p className="text-xs text-muted-foreground">{pack.region}</p>
           </div>
@@ -118,7 +118,7 @@ function ValidationCard({ pack }: { pack: CatalogEntry }) {
 function RoadmapCard({ pack }: { pack: CatalogEntry }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm text-muted-foreground">
-      <span>{pack.flag}</span>
+      <CountryFlag code={pack.code} name={pack.name} className="h-3.5 w-5" />
       {pack.name} · {pack.statusLabel}
     </span>
   );
@@ -131,7 +131,7 @@ export function RoadmapPackCard({ pack }: { pack: CatalogEntry }) {
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-2xl">{pack.flag}</div>
+            <CountryFlag code={pack.code} name={pack.name} className="h-6 w-9" />
             <h3 className="mt-2 font-display font-semibold">{pack.name}</h3>
             <p className="text-xs text-muted-foreground">{pack.region}</p>
           </div>
