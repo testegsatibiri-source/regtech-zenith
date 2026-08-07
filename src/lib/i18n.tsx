@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type Lang = "en" | "id";
+export type Lang = "en" | "id" | (string & {});
 
 type Dict = Record<string, { en: string; id: string }>;
 
@@ -57,10 +57,22 @@ interface I18nCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: keyof typeof D | string) => string;
+  /** Languages offered in this scope. One entry = no language switcher. */
+  available: Lang[];
 }
 
-const Ctx = createContext<I18nCtx>({ lang: "en", setLang: () => {}, t: (k) => String(k) });
+const Ctx = createContext<I18nCtx>({ lang: "en", setLang: () => {}, t: (k) => String(k), available: ["en"] });
 
+function translate(key: string, lang: Lang): string {
+  const entry = D[key];
+  if (!entry) return key;
+  return entry[lang as "en" | "id"] ?? entry.en;
+}
+
+/**
+ * Global scope. The marketing/global surface is English-only: country
+ * languages belong to the Country Pack pages, not to the global core.
+ */
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
@@ -74,13 +86,25 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("uboard.lang", l);
   };
 
-  const t = (key: string) => {
-    const entry = D[key];
-    if (!entry) return key;
-    return entry[lang];
-  };
+  return (
+    <Ctx.Provider value={{ lang, setLang, t: (k) => translate(k, lang), available: ["en"] }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
 
-  return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
+/**
+ * Scoped locale for a Country Pack surface: exposes the pack's own languages
+ * without leaking them into the global English-only shell.
+ */
+export function LocaleScope({ available, children }: { available: Lang[]; children: ReactNode }) {
+  const options = available.length > 0 ? available : ["en"];
+  const [lang, setLang] = useState<Lang>(options.includes("en") ? "en" : options[0]!);
+  return (
+    <Ctx.Provider value={{ lang, setLang, t: (k) => translate(k, lang), available: options }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useI18n() {

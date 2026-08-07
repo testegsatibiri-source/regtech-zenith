@@ -1,10 +1,12 @@
 import { useI18n } from "@/lib/i18n";
 
+/** Language switcher. Renders nothing when the scope offers a single language. */
 export function LangToggle() {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, available } = useI18n();
+  if (available.length < 2) return null;
   return (
     <div className="inline-flex overflow-hidden rounded-md border border-border text-xs font-semibold">
-      {(["en", "id"] as const).map((l) => (
+      {available.map((l) => (
         <button
           key={l}
           onClick={() => setLang(l)}
