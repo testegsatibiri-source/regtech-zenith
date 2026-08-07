@@ -214,7 +214,7 @@ function CountryPackDetailPage() {
           })}
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }
 
