@@ -117,7 +117,6 @@ function CountryPacksListPage() {
             </section>
           );
         })}
-      </div>
-    </AppShell>
+    </div>
   );
 }
