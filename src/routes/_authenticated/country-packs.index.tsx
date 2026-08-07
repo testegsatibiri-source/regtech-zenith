@@ -34,8 +34,7 @@ function CountryPacksListPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="mx-auto max-w-5xl space-y-8 p-6">
+    <div className="mx-auto max-w-5xl space-y-8 p-6">
         <header>
           <h1 className="font-display text-3xl font-bold">Country Packs</h1>
           <p className="text-sm text-muted-foreground">
