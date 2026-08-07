@@ -27,13 +27,11 @@ export const Route = createFileRoute("/_authenticated/country-packs/$country")({
 
 function PackNotInstalled() {
   return (
-    <AppShell>
-      <div className="mx-auto max-w-3xl p-6">
-        <h1 className="font-display text-2xl font-bold">Pack not installed</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This country pack is not present in the runtime.</p>
-        <Button asChild className="mt-4"><Link to="/country-packs">Back to packs</Link></Button>
-      </div>
-    </AppShell>
+    <div className="mx-auto max-w-3xl p-6">
+      <h1 className="font-display text-2xl font-bold">Pack not installed</h1>
+      <p className="mt-2 text-sm text-muted-foreground">This country pack is not present in the runtime.</p>
+      <Button asChild className="mt-4"><Link to="/country-packs">Back to packs</Link></Button>
+    </div>
   );
 }
 
