@@ -212,7 +212,6 @@ function CountryPackDetailPage() {
             );
           })}
         </div>
-      </div>
     </div>
   );
 }
