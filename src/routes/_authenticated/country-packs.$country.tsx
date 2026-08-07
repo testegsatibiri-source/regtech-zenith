@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/app/AppShell";
+
 import { CountryRuntime, type HealthReport } from "@/sdk";
 import "@/sdk/bootstrap";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,13 +27,11 @@ export const Route = createFileRoute("/_authenticated/country-packs/$country")({
 
 function PackNotInstalled() {
   return (
-    <AppShell>
-      <div className="mx-auto max-w-3xl p-6">
-        <h1 className="font-display text-2xl font-bold">Pack not installed</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This country pack is not present in the runtime.</p>
-        <Button asChild className="mt-4"><Link to="/country-packs">Back to packs</Link></Button>
-      </div>
-    </AppShell>
+    <div className="mx-auto max-w-3xl p-6">
+      <h1 className="font-display text-2xl font-bold">Pack not installed</h1>
+      <p className="mt-2 text-sm text-muted-foreground">This country pack is not present in the runtime.</p>
+      <Button asChild className="mt-4"><Link to="/country-packs">Back to packs</Link></Button>
+    </div>
   );
 }
 
@@ -60,8 +58,7 @@ function CountryPackDetailPage() {
   }, []);
 
   return (
-    <AppShell>
-      <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <div className="mx-auto max-w-5xl space-y-6 p-6">
         <header>
           <Link to="/country-packs" className="text-xs text-muted-foreground hover:text-foreground">
             &larr; All country packs
@@ -213,8 +210,7 @@ function CountryPackDetailPage() {
             );
           })}
         </div>
-      </div>
-    </AppShell>
+    </div>
   );
 }
 

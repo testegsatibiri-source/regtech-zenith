@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/app/AppShell";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,8 +34,7 @@ function CountryPacksListPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="mx-auto max-w-5xl space-y-8 p-6">
+    <div className="mx-auto max-w-5xl space-y-8 p-6">
         <header>
           <h1 className="font-display text-3xl font-bold">Country Packs</h1>
           <p className="text-sm text-muted-foreground">
@@ -117,7 +116,6 @@ function CountryPacksListPage() {
             </section>
           );
         })}
-      </div>
-    </AppShell>
+    </div>
   );
 }
