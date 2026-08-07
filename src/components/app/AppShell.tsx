@@ -40,7 +40,6 @@ function ShellInner({ children }: { children: ReactNode }) {
     { to: "/calendar", label: "Calendar", icon: CalendarClock },
     { to: "/contracts", label: "Contracts", icon: FileSignature },
     { to: "/audit", label: "AI Audit", icon: Sparkles },
-    { to: "/country-packs", label: "Country Packs", icon: Package },
   ];
 
 
