@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ShieldCheck } from "lucide-react";
 import { CountryPackCard, RoadmapPackCard } from "@/components/packs/CountryPackCard";
-import { listCatalogWithHealth, type CatalogEntry } from "@/lib/packs/catalog";
+import type { CatalogEntry } from "@/lib/packs/catalog";
+import { getPacksPageData } from "@/lib/packs/packs.functions";
+import type { AvailablePack } from "@/lib/packs/onboarding-contract";
 
 export const Route = createFileRoute("/packs/")({
   // SSR per request: the production gate depends on live health(), so this
   // loader must never be frozen into a static prerendered artifact (ADR-0032).
-  loader: async () => ({ packs: await listCatalogWithHealth() }),
+  // Availability comes from the same loader as onboarding (ADR-0033).
+  loader: async () => getPacksPageData(),
   head: () => ({
     meta: [
       { title: "Country Packs — Compliance coverage across SE Asia | UBoard Asia" },
@@ -22,10 +25,16 @@ export const Route = createFileRoute("/packs/")({
 });
 
 function PacksCatalog() {
-  const { packs } = Route.useLoaderData() as { packs: CatalogEntry[] };
-  const production = packs.filter((p) => p.tier === "production");
+  const { catalog, available } = Route.useLoaderData() as {
+    catalog: CatalogEntry[];
+    available: AvailablePack[];
+  };
+  const packs = catalog;
+  const availableCodes = new Set(available.map((p) => p.countryCode));
+  const production = packs.filter((p) => availableCodes.has(p.code.toUpperCase()));
   const beta = packs.filter((p) => p.tier === "beta");
   const roadmap = packs.filter((p) => p.tier === "roadmap");
+
 
   return (
     <div className="min-h-screen">
