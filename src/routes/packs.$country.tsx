@@ -41,10 +41,11 @@ export const Route = createFileRoute("/packs/$country")({
 
 function PackDetail() {
   const { pack } = Route.useLoaderData() as { pack: CatalogEntry };
-  // The global shell is English-only; the pack surface exposes its own locales.
-  const locales = ["en", ...pack.languages.filter((l) => l !== "en")];
+  // Each pack page is locked to the language defined for that jurisdiction:
+  // the global shell language cannot alter this copy.
+  const packLang = pack.languages.find((l) => l !== "en") ?? pack.languages[0] ?? "en";
   return (
-    <LocaleScope available={locales}>
+    <LocaleScope lang={packLang}>
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-4 py-16">
