@@ -14,26 +14,42 @@ export const listCompanies = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-const companySchema = z.object({
-  name: z.string().min(1),
-  legal_name: z.string().optional().nullable(),
-  country_code: z.string().default("ID"),
-  currency: z.string().default("IDR"),
-  tax_id: z.string().optional().nullable(),
-});
+// H18.5 — the client never chooses the currency, and `country_code` is an
+// explicit, backend-validated choice. A legacy `currency` field in the payload
+// is accepted and ignored (DEBT-023) so older clients keep working.
+const companySchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    legal_name: z.string().trim().max(160).optional().nullable(),
+    country_code: z.string().trim().length(2),
+    tax_id: z.string().trim().max(64).optional().nullable(),
+  })
+  .passthrough()
+  .transform(({ name, legal_name, country_code, tax_id }) => ({
+    name,
+    legal_name: legal_name ?? null,
+    country_code: country_code.toUpperCase(),
+    tax_id: tax_id ?? null,
+  }));
 
 export const createCompany = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => companySchema.parse(d))
   .handler(async ({ data, context }) => {
+    // Re-validate availability at submit time (pack may have degraded) and
+    // derive the currency from the pack manifest — never from the client.
+    const { assertPackAvailable } = await import("@/lib/packs/loader.server");
+    const pack = await assertPackAvailable(data.country_code);
+
     const { data: row, error } = await context.supabase
       .from("companies")
-      .insert({ ...data, owner_id: context.userId })
+      .insert({ ...data, currency: pack.currency, owner_id: context.userId })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return row;
   });
+
 
 // ---------- Employees ----------
 export const listEmployees = createServerFn({ method: "GET" })

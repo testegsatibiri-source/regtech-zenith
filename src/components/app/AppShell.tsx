@@ -1,11 +1,15 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles, CalendarClock, FileSignature } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { CompanyProvider, useCompany } from "@/lib/companyContext";
 import { createCompany } from "@/lib/data.functions";
+import { getAvailableCountryPacks } from "@/lib/packs/packs.functions";
+import { CountryPackSelector } from "@/components/packs/CountryPackSelector";
+import type { AvailablePack } from "@/lib/packs/onboarding-contract";
+
 import { useI18n } from "@/lib/i18n";
 import { LangToggle } from "@/components/LangToggle";
 import { Button } from "@/components/ui/button";
@@ -100,17 +104,26 @@ function ShellInner({ children }: { children: ReactNode }) {
 function CompanySwitcher() {
   const { companies, companyId, setCompanyId, refetch } = useCompany();
   const createCo = useServerFn(createCompany);
+  const fetchPacks = useServerFn(getAvailableCountryPacks);
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [taxId, setTaxId] = useState("");
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+
+  // Same availability source as /onboarding and /packs (ADR-0033).
+  const { data: packs = [] } = useQuery({
+    queryKey: ["available-country-packs"],
+    queryFn: () => fetchPacks() as Promise<AvailablePack[]>,
+    enabled: open,
+  });
 
   async function add() {
-    if (!name.trim()) return;
+    if (!name.trim() || !countryCode) return;
     try {
-      await createCo({ data: { name, tax_id: taxId || null, country_code: "ID", currency: "IDR" } });
+      await createCo({ data: { name: name.trim(), tax_id: taxId || null, country_code: countryCode } });
       toast.success("Company created");
-      setOpen(false); setName(""); setTaxId("");
+      setOpen(false); setName(""); setTaxId(""); setCountryCode(null);
       await queryClient.invalidateQueries({ queryKey: ["companies"] });
       refetch();
     } catch (e) {
@@ -137,11 +150,16 @@ function CompanySwitcher() {
           <DialogHeader><DialogTitle>New company</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5"><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>Tax ID (NPWP)</Label><Input value={taxId} onChange={(e) => setTaxId(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label>Tax ID</Label><Input value={taxId} onChange={(e) => setTaxId(e.target.value)} /></div>
+            <div className="space-y-1.5">
+              <Label>Country pack</Label>
+              <CountryPackSelector packs={packs} value={countryCode} onSelect={setCountryCode} />
+            </div>
           </div>
-          <DialogFooter><Button onClick={add}>Create</Button></DialogFooter>
+          <DialogFooter><Button onClick={add} disabled={!name.trim() || !countryCode}>Create</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
