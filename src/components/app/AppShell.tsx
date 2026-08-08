@@ -1,11 +1,15 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles, CalendarClock, FileSignature } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { CompanyProvider, useCompany } from "@/lib/companyContext";
 import { createCompany } from "@/lib/data.functions";
+import { getAvailableCountryPacks } from "@/lib/packs/packs.functions";
+import { CountryPackSelector } from "@/components/packs/CountryPackSelector";
+import type { AvailablePack } from "@/lib/packs/onboarding-contract";
+
 import { useI18n } from "@/lib/i18n";
 import { LangToggle } from "@/components/LangToggle";
 import { Button } from "@/components/ui/button";
