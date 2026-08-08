@@ -70,38 +70,26 @@ function translate(key: string, lang: Lang): string {
 }
 
 /**
- * Global scope. The marketing/global surface is English-only: country
- * languages belong to the Country Pack pages, not to the global core.
+ * Global scope. The marketing/global surface is English-only and has no
+ * persisted language state: country languages belong to Country Pack pages.
  */
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("uboard.lang") as Lang | null;
-    if (saved === "en" || saved === "id") setLangState(saved);
-  }, []);
-
-  const setLang = (l: Lang) => {
-    setLangState(l);
-    localStorage.setItem("uboard.lang", l);
-  };
-
   return (
-    <Ctx.Provider value={{ lang, setLang, t: (k) => translate(k, lang), available: ["en"] }}>
+    <Ctx.Provider value={{ lang: "en", setLang: () => {}, t: (k) => translate(k, "en"), available: ["en"] }}>
       {children}
     </Ctx.Provider>
   );
 }
 
 /**
- * Scoped locale for a Country Pack surface: exposes the pack's own languages
- * without leaking them into the global English-only shell.
+ * Locale locked to a single Country Pack language. No switcher is exposed and
+ * no global state can change it, so pack copy always renders in the language
+ * defined for that jurisdiction.
  */
-export function LocaleScope({ available, children }: { available: Lang[]; children: ReactNode }) {
-  const options = available.length > 0 ? available : ["en"];
-  const [lang, setLang] = useState<Lang>(options.includes("en") ? "en" : options[0]!);
+export function LocaleScope({ lang, children }: { lang: Lang; children: ReactNode }) {
+  const fixed: Lang = lang || "en";
   return (
-    <Ctx.Provider value={{ lang, setLang, t: (k) => translate(k, lang), available: options }}>
+    <Ctx.Provider value={{ lang: fixed, setLang: () => {}, t: (k) => translate(k, fixed), available: [fixed] }}>
       {children}
     </Ctx.Provider>
   );
