@@ -1,35 +1,81 @@
-# Onboarding: escolher a jurisdição (Country Pack) no cadastro
+# Sprint H18 — Onboarding & CountryPackSelector Runtime Parity
 
-## Como está hoje (verificado no código)
+## Objetivo
 
-- `/auth` (`src/routes/auth.tsx`): cadastro pede apenas nome, e-mail e senha. Nenhuma escolha de país.
-- Depois do cadastro o usuário cai direto em `/dashboard`, sem empresa criada.
-- A empresa só é criada pelo botão "+" no topo (`CompanySwitcher` em `AppShell.tsx`), e ali o país está **fixo em `ID` / `IDR`** no código.
-- `createCompany` (`src/lib/data.functions.ts`) aceita `country_code`, com default `"ID"` — ou seja, o backend já suporta multi-país; só a interface não pergunta.
+Uma única fonte de verdade sobre "qual Country Pack está disponível agora", compartilhada
+por `/packs` (pública), `/onboarding` e New Company (autenticadas), avaliada por request
+via `classifyWithHealth()`.
 
-Resultado: hoje o usuário **não informa** o country pack, e qualquer empresa nasce como Indonésia.
+## Estado atual (verificado)
 
-## O que proponho
+- `/packs`, `/` e `/packs/$country` já chamam `listCatalogWithHealth()` / `getProductionPack()` diretamente no loader — lógica repetida em cada rota.
+- `createCompany` (`src/lib/data.functions.ts`) aceita `country_code` e `currency` do cliente, ambos com default `"ID"` / `"IDR"`.
+- `CompanySwitcher` (`AppShell.tsx`) envia `country_code: "ID", currency: "IDR"` fixos.
+- Não existe `/onboarding` nem `CountryPackSelector`.
+- Não há redirect por ausência de empresa: usuário sem empresa vê o dashboard vazio.
 
-A escolha do país não deve ficar no formulário de cadastro (a conta é global), e sim no **primeiro passo depois do login**, junto com a criação da empresa — porque o country pack pertence à empresa, não ao usuário.
+## Arquitetura
 
-### 1. Tela de onboarding `/onboarding`
-Exibida quando o usuário autenticado ainda não tem nenhuma empresa:
-- Nome da empresa, nome legal (opcional), Tax ID.
-- Seleção de jurisdição em cards com bandeira, nome do país e moeda.
-- Só jurisdições **em produção** ficam selecionáveis (hoje Indonésia e Filipinas); as demais aparecem como "Em breve", desabilitadas.
-- Ao confirmar: cria a empresa com o `country_code` e a `currency` corretos e leva ao dashboard.
+```text
+catalog/manifest -> classify() -> classifyWithHealth()
+                          |
+              loadCountryPacksForRequest()   (loader único, SSR por request)
+                          |
+        /packs      /onboarding      CompanySwitcher > New Company
+                          |
+              CountryPackSelector (packs)  -> seleção
+                          |
+              createCompany(country_code)  -> backend revalida + deriva currency
+```
 
-### 2. Diálogo "New company" passa a perguntar o país
-O mesmo seletor de jurisdição entra no diálogo do `CompanySwitcher`, eliminando o `ID` fixo.
+## Etapas
 
-### 3. Redirecionamento
-O layout autenticado manda para `/onboarding` quando a lista de empresas está vazia, em vez de mostrar um dashboard sem dados.
+### H18.0 — Contract freeze
+- `src/lib/packs/onboarding-contract/index.ts`: tipo `AvailablePack` (`countryCode`, `name`, `currency`, `status`, `flagAsset`).
+- `src/lib/packs/onboarding-contract/examples.ts`: exemplo real com um pack production, um beta (que fica de fora) e um roadmap.
+- Saída: shape único, sem definição duplicada.
 
-## Detalhes técnicos
+### H18.1 — Loader único
+- `src/lib/packs/loader.server.ts` com `loadCountryPacksForRequest()` chamando `classifyWithHealth()` e retornando só `tier === "production"` (installed não-degradado, manifesto >= 1.0.0 válido, `health().status === "ok"`).
+- Refatorar o loader de `/packs` para consumir essa função.
+- Teste de paridade: mesma chamada em contexto público e autenticado simulados retorna resultado idêntico; pack degradado (fixtures H17 ID/PH/MY) não aparece.
 
-- Fonte das jurisdições: `listCatalog()` de `src/lib/packs/catalog.ts` (filtro `tier === "production"`), reaproveitando `CountryFlag`. Nada de lista nova duplicada.
-- `currency` vem do catálogo/manifesto do pack, não digitada pelo usuário.
-- Novo arquivo `src/routes/_authenticated/onboarding.tsx` com `head()` próprio.
-- `createCompany` já valida `country_code`; nenhuma mudança de schema ou migração é necessária.
-- A página de onboarding permanece em inglês (shell global), conforme a regra atual de idioma.
+### H18.2 — CountryPackSelector
+- Assinatura final: `<CountryPackSelector packs={availablePacks} value={...} onSelect={...} />`.
+- Sem `productionOnly` nem qualquer regra de negócio; sem `<select>`.
+- Apresentação: `CountryFlag`, nome, moeda derivada (`Indonesia · IDR`).
+- Teste: renderiza exatamente os packs recebidos, sem chamar `listCatalog`/`classify` internamente.
+
+### H18.3 — `/onboarding`
+- Rota autenticada com layout mínimo (sem sidebar do dashboard).
+- Passo único: nome, legal name, tax ID + `CountryPackSelector` alimentado pelo loader.
+- CTA `Create company` desabilitado até haver `country_code`.
+- Submit: `createCompany({ ...companyFields, country_code })` — sem `currency`.
+
+### H18.4 — Redirect no layout autenticado
+- Regra aplicada uma única vez no layout raiz autenticado:
+  - zero empresas e rota != `/onboarding` -> redireciona para `/onboarding`;
+  - com empresa e rota == `/onboarding` -> redireciona para `/dashboard`.
+- Falha ao criar empresa mantém o erro na própria página, sem loop de redirect.
+- Teste E2E: usuário novo em `/employees` cai em `/onboarding`; após criar, `/onboarding` manda para `/dashboard`.
+
+### H18.5 — `createCompany` server-side
+- `currency` sai do input aceito; payload antigo com `currency` é ignorado, não gera erro (rollout controlado).
+- Backend revalida `country_code` contra `loadCountryPacksForRequest()` antes de persistir; rejeita se o pack não estiver production no momento do submit (corrida de degradação).
+- Currency gravada vem do manifesto do pack.
+- Teste: `country_code` de pack beta/roadmap retorna erro explícito.
+
+### ADR-0033
+Documenta a regra: uma única fonte de disponibilidade runtime para todas as superfícies.
+
+## Fora de escopo (H19+)
+Providers MY/VN/TH; multi-company com jurisdições distintas no mesmo dashboard; troca de jurisdição de empresa existente; telemetria de funil.
+
+## Critérios de aceite
+- Nenhuma empresa nova nasce com país default — `country_code` é escolha explícita validada no backend.
+- Usuário autenticado sem empresa sempre passa por `/onboarding`; com empresa, nunca o vê.
+- `/onboarding`, New Company e `/packs` consomem exatamente `loadCountryPacksForRequest()`, com teste de paridade.
+
+## Débitos
+- DEBT-022: auditar `currency` de empresas existentes contra o manifesto do respectivo pack.
+- DEBT-023: remover definitivamente `currency` do schema de input quando não houver clientes antigos.
