@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, ShieldAlert, ShieldCheck, TrendingUp, AlertTriangle, Loader2, FileText } from "lucide-react";
 import { runComplianceAudit, type AuditReport, type AuditInsight } from "@/lib/audit.functions";
 import { useCompany } from "@/lib/companyContext";
+import { useActivePack } from "@/lib/packs/useActivePack";
 import { formatIDR } from "@/lib/format";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,7 @@ const RISK_STYLE: Record<AuditReport["riskLevel"], string> = {
 
 function AuditPage() {
   const { company, companyId } = useCompany();
+  const activePack = useActivePack();
   const run = useServerFn(runComplianceAudit);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<AuditReport | null>(null);
@@ -156,7 +158,7 @@ function AuditPage() {
           </Card>
 
           <p className="text-center text-xs text-muted-foreground">
-            Generated {new Date(report.generatedAt).toLocaleString()} · Indonesia Country Pack v2024.1
+            Generated {new Date(report.generatedAt).toLocaleString()} · {activePack.name} Country Pack {activePack.rulesetVersion ?? ""}
           </p>
         </>
       )}
@@ -181,12 +183,13 @@ function Stat({ icon: Icon, value, label, tone }: { icon: typeof ShieldAlert; va
 }
 
 function EmptyState() {
+  const activePack = useActivePack();
   return (
     <Card><CardContent className="space-y-3 p-8 text-center">
       <Sparkles className="mx-auto h-8 w-8 text-accent" />
       <h3 className="text-lg font-semibold">Run a predictive audit</h3>
       <p className="mx-auto max-w-md text-sm text-muted-foreground">
-        UBoard Asia will cross-check every employee against the Indonesia Country Pack (UMP, PPh 21 TER, BPJS, Omnibus Law overtime, THR liability),
+        UBoard Asia will cross-check every employee against the {activePack.name} Country Pack rules (wage floors, tax IDs, statutory contributions, working-time and bonus liabilities),
         detect statistical outliers in salaries and effective tax rates, and generate an executive summary powered by AI.
       </p>
     </CardContent></Card>

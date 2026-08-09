@@ -9,6 +9,7 @@ import {
   classifyRisk,
 } from "@/lib/calendar.functions";
 import { useCompany } from "@/lib/companyContext";
+import { useActivePack } from "@/lib/packs/useActivePack";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ const RISK_LABEL: Record<ReturnType<typeof classifyRisk>, string> = {
 
 function CalendarPage() {
   const { companyId } = useCompany();
+  const activePack = useActivePack();
   const list = useServerFn(listObligations);
   const seed = useServerFn(seedObligations);
   const update = useServerFn(updateObligationStatus);
@@ -127,7 +129,7 @@ function CalendarPage() {
             <CalendarClock className="h-8 w-8 text-primary" /> Regulatory Calendar
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Indonesian tax, BPJS and labor obligations — driven by the Country Pack.
+            {activePack.name} statutory obligations — driven by the Country Pack.
           </p>
         </div>
         <Button onClick={handleSeed} disabled={seeding}>
@@ -168,7 +170,7 @@ function CalendarPage() {
             <div className="py-10 text-center text-muted-foreground"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></div>
           ) : filtered.length === 0 ? (
             <div className="py-10 text-center text-sm text-muted-foreground">
-              No obligations yet. Click <strong>Seed {year} obligations</strong> to bootstrap the Indonesia calendar.
+              No obligations yet. Click <strong>Seed {year} obligations</strong> to bootstrap the {activePack.name} calendar.
             </div>
           ) : (
             <ul className="divide-y divide-border">

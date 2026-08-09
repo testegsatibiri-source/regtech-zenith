@@ -5,9 +5,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { Play, History } from "lucide-react";
 import { listEmployees, savePayrollRun, listPayrollRuns } from "@/lib/data.functions";
 import { useCompany } from "@/lib/companyContext";
-import { buildPayslip } from "@/lib/engines/indonesia";
 import { evaluateCompany } from "@/lib/engines/compliance";
-import { formatIDR } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { useActivePack } from "@/lib/packs/useActivePack";
+import { CountryRuntime } from "@/sdk";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ type Emp = {
 
 function Payroll() {
   const { company, companyId } = useCompany();
+  const activePack = useActivePack();
+  const fmt = (v: number) => formatCurrency(v, activePack.currency);
   const fetchEmployees = useServerFn(listEmployees);
   const saveRun = useServerFn(savePayrollRun);
   const fetchRuns = useServerFn(listPayrollRuns);
@@ -55,25 +58,31 @@ function Payroll() {
   });
 
   const computed = useMemo(() => {
+    if (!activePack.pack || !activePack.supports("payroll")) return [];
+    const provider = CountryRuntime.resolve(activePack.code, "payroll");
+    const ctx = CountryRuntime.contextFor(activePack.code);
     return (employees as Emp[]).map((e) => {
       const hasNpwp = Boolean(e.country_metadata?.npwp);
-      const slip = buildPayslip({ baseSalary: e.base_salary, maritalStatus: e.marital_status, hasNpwp });
+      const slip = provider.buildPayslip(
+        { baseSalary: e.base_salary, maritalStatus: e.marital_status, hasNpwp },
+        ctx,
+      );
       return { emp: e, slip };
     });
-  }, [employees]);
+  }, [employees, activePack]);
 
   const totals = computed.reduce(
     (a, { slip }) => ({
       gross: a.gross + slip.gross,
       tax: a.tax + slip.tax.tax,
-      bpjsEmp: a.bpjsEmp + slip.bpjs.employee.total,
+      bpjsEmp: a.bpjsEmp + slip.benefits.employee.total,
       net: a.net + slip.net,
       cost: a.cost + slip.employerCost,
     }),
     { gross: 0, tax: 0, bpjsEmp: 0, net: 0, cost: 0 },
   );
 
-  const score = employees.length ? evaluateCompany(employees as never[]).score : 100;
+  const score = employees.length ? evaluateCompany(employees as never[], activePack.code as never).score : 100;
 
   if (!companyId) return <p className="text-muted-foreground">Create a company first.</p>;
 
@@ -86,7 +95,7 @@ function Payroll() {
           company_id: companyId!,
           period_month: month,
           period_year: year,
-          country_code: "ID",
+          country_code: activePack.code,
           compliance_score: score,
           totals,
           items: computed.map(({ emp, slip }) => ({
@@ -94,8 +103,8 @@ function Payroll() {
             employee_name: emp.full_name,
             gross: slip.gross,
             tax: slip.tax.tax,
-            bpjs_employee: slip.bpjs.employee.total,
-            bpjs_employer: slip.bpjs.employer.total,
+            bpjs_employee: slip.benefits.employee.total,
+            bpjs_employer: slip.benefits.employer.total,
             net: slip.net,
             breakdown: { terCategory: slip.tax.category, terRate: slip.tax.rate },
           })),
@@ -112,7 +121,7 @@ function Payroll() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Payroll</h1>
-          <p className="text-muted-foreground">{company?.name} · close the month and lock in the Compliance Score</p>
+          <p className="text-muted-foreground">{company?.name} · {activePack.name} Country Pack{activePack.rulesetVersion ? ` · ${activePack.rulesetVersion}` : ""}</p>
         </div>
         <div className="flex items-end gap-2">
           <div className="w-28">
@@ -136,10 +145,10 @@ function Payroll() {
           <ScoreGauge score={score} size={120} label="Compliance" />
         </Card>
         <div className="grid gap-4 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-2">
-          <Metric label="Total gross" value={formatIDR(totals.gross)} />
-          <Metric label="PPh 21 withheld" value={formatIDR(totals.tax)} />
-          <Metric label="Net take-home" value={formatIDR(totals.net)} tone="net" />
-          <Metric label="Total employer cost" value={formatIDR(totals.cost)} tone="cost" />
+          <Metric label="Total gross" value={fmt(totals.gross)} />
+          <Metric label="Income tax withheld" value={fmt(totals.tax)} />
+          <Metric label="Net take-home" value={fmt(totals.net)} tone="net" />
+          <Metric label="Total employer cost" value={fmt(totals.cost)} tone="cost" />
         </div>
       </div>
 
@@ -150,25 +159,27 @@ function Payroll() {
             <TableHeader>
               <TableRow>
                 <TableHead>Employee</TableHead>
-                <TableHead>TER</TableHead>
+                <TableHead>Bracket</TableHead>
                 <TableHead className="text-right">Gross</TableHead>
-                <TableHead className="text-right">PPh 21</TableHead>
-                <TableHead className="text-right">BPJS</TableHead>
+                <TableHead className="text-right">Tax</TableHead>
+                <TableHead className="text-right">Contributions</TableHead>
                 <TableHead className="text-right">Net</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {computed.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Add employees to run payroll.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  {activePack.pack ? "Add employees to run payroll." : `No installed Country Pack for ${activePack.code}.`}
+                </TableCell></TableRow>
               )}
               {computed.map(({ emp, slip }) => (
                 <TableRow key={emp.id}>
                   <TableCell className="font-medium">{emp.full_name}</TableCell>
-                  <TableCell><Badge variant="secondary">{slip.tax.category} · {(slip.tax.rate * 100).toFixed(2)}%</Badge></TableCell>
-                  <TableCell className="text-right tabular-nums">{formatIDR(slip.gross)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatIDR(slip.tax.tax)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatIDR(slip.bpjs.employee.total)}</TableCell>
-                  <TableCell className="text-right font-semibold tabular-nums text-success">{formatIDR(slip.net)}</TableCell>
+                  <TableCell><Badge variant="secondary">{slip.tax.category ?? "—"} · {(slip.tax.rate * 100).toFixed(2)}%</Badge></TableCell>
+                  <TableCell className="text-right tabular-nums">{fmt(slip.gross)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmt(slip.tax.tax)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmt(slip.benefits.employee.total)}</TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums text-success">{fmt(slip.net)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -197,7 +208,7 @@ function Payroll() {
                   <TableCell className="font-medium">{MONTHS[r.period_month - 1]} {r.period_year}</TableCell>
                   <TableCell><Badge className={"border-0 " + (r.compliance_score >= 85 ? "bg-success/15 text-success" : "bg-warning/15 text-warning")}>{r.compliance_score}%</Badge></TableCell>
                   <TableCell className="capitalize text-muted-foreground">{r.status}</TableCell>
-                  <TableCell className="text-right tabular-nums">{r.totals?.net != null ? formatIDR(r.totals.net) : "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">{r.totals?.net != null ? fmt(r.totals.net) : "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

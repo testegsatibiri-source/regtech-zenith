@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Plus, Trash2, Pencil, CheckCircle2, XCircle } from "lucide-react";
 import { listEmployees, upsertEmployee, deleteEmployee } from "@/lib/data.functions";
 import { useCompany } from "@/lib/companyContext";
+import { useActivePack } from "@/lib/packs/useActivePack";
 import { MARITAL_STATUS, RELIGIONS } from "@/lib/countryPacks";
 import { evaluateEmployee, scoreFindings } from "@/lib/engines/compliance";
 import { formatIDR } from "@/lib/format";
@@ -50,6 +51,7 @@ function blank(companyId: string): Emp {
 
 function Employees() {
   const { companyId } = useCompany();
+  const activePack = useActivePack();
   const fetchEmployees = useServerFn(listEmployees);
   const saveEmp = useServerFn(upsertEmployee);
   const delEmp = useServerFn(deleteEmployee);
@@ -164,7 +166,7 @@ function Employees() {
                 </Select>
               </F>
               <div className="sm:col-span-2 mt-1 rounded-lg border border-border p-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Indonesia identifiers (country_metadata)</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{activePack.name} identifiers (country_metadata)</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <F label="NIK"><Input value={meta.nik ?? ""} onChange={(e) => setMeta("nik", e.target.value)} /></F>
                   <F label="NPWP"><Input value={meta.npwp ?? ""} onChange={(e) => setMeta("npwp", e.target.value)} /></F>
