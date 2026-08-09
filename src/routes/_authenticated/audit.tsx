@@ -183,6 +183,7 @@ function Stat({ icon: Icon, value, label, tone }: { icon: typeof ShieldAlert; va
 }
 
 function EmptyState() {
+  const activePack = useActivePack();
   return (
     <Card><CardContent className="space-y-3 p-8 text-center">
       <Sparkles className="mx-auto h-8 w-8 text-accent" />
