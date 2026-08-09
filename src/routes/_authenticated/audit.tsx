@@ -32,6 +32,7 @@ const RISK_STYLE: Record<AuditReport["riskLevel"], string> = {
 
 function AuditPage() {
   const { company, companyId } = useCompany();
+  const activePack = useActivePack();
   const run = useServerFn(runComplianceAudit);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<AuditReport | null>(null);

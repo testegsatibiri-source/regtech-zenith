@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { company, companyId } = useCompany();
+  const activePack = useActivePack();
   const fetchEmployees = useServerFn(listEmployees);
   const fetchRuns = useServerFn(listPayrollRuns);
   const fetchObligations = useServerFn(listObligations);

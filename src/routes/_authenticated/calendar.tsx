@@ -49,6 +49,7 @@ const RISK_LABEL: Record<ReturnType<typeof classifyRisk>, string> = {
 
 function CalendarPage() {
   const { companyId } = useCompany();
+  const activePack = useActivePack();
   const list = useServerFn(listObligations);
   const seed = useServerFn(seedObligations);
   const update = useServerFn(updateObligationStatus);

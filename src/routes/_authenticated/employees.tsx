@@ -51,6 +51,7 @@ function blank(companyId: string): Emp {
 
 function Employees() {
   const { companyId } = useCompany();
+  const activePack = useActivePack();
   const fetchEmployees = useServerFn(listEmployees);
   const saveEmp = useServerFn(upsertEmployee);
   const delEmp = useServerFn(deleteEmployee);
