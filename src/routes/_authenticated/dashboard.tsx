@@ -7,6 +7,7 @@ import { listObligations, obligationFindings, classifyRisk } from "@/lib/calenda
 import { listContracts } from "@/lib/contracts.functions";
 import { evaluateContracts, type ContractLike } from "@/lib/engines/contracts";
 import { useCompany } from "@/lib/companyContext";
+import { useActivePack } from "@/lib/packs/useActivePack";
 import { evaluateCompany, scoreFindings, type Finding } from "@/lib/engines/compliance";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,7 +69,7 @@ function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{company?.name ?? "Dashboard"}</h1>
-        <p className="text-muted-foreground">Compliance overview · Indonesia Country Pack</p>
+        <p className="text-muted-foreground">Compliance overview · {activePack.name} Country Pack</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
