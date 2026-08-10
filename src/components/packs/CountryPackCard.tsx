@@ -7,15 +7,25 @@ import { capabilityLabel, type CatalogEntry } from "@/lib/packs/catalog";
 
 export type PackCardVariant = "production" | "validation" | "roadmap";
 
+/** Presentation derives from the runtime classification — never hardcoded. */
+export function variantForTier(tier: CatalogEntry["tier"]): PackCardVariant {
+  if (tier === "production") return "production";
+  if (tier === "roadmap") return "roadmap";
+  return "validation";
+}
+
 /**
  * Single presentation of a Country Pack, shared by the landing showcase,
  * /packs and any future regional page. Never duplicate this card.
+ * `variant` is presentation-only; when omitted it is derived from pack.tier.
  */
-export function CountryPackCard({ pack, variant }: { pack: CatalogEntry; variant: PackCardVariant }) {
-  if (variant === "roadmap") return <RoadmapCard pack={pack} />;
-  if (variant === "validation") return <ValidationCard pack={pack} />;
+export function CountryPackCard({ pack, variant }: { pack: CatalogEntry; variant?: PackCardVariant }) {
+  const v = variant ?? variantForTier(pack.tier);
+  if (v === "roadmap") return <RoadmapCard pack={pack} />;
+  if (v === "validation") return <ValidationCard pack={pack} />;
   return <ProductionCard pack={pack} />;
 }
+
 
 function ProductionCard({ pack }: { pack: CatalogEntry }) {
   return (
