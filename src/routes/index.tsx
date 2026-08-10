@@ -111,7 +111,7 @@ function Landing() {
               <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-accent">Production</h4>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 {production.map((p) => (
-                  <CountryPackCard key={p.code} pack={p} variant="production" />
+                  <CountryPackCard key={p.code} pack={p} />
                 ))}
               </div>
             </>
@@ -122,7 +122,7 @@ function Landing() {
               <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Validation</h4>
               <div className="mt-3 grid gap-4 md:grid-cols-3">
                 {validation.map((p) => (
-                  <CountryPackCard key={p.code} pack={p} variant="validation" />
+                  <CountryPackCard key={p.code} pack={p} />
                 ))}
               </div>
             </>
@@ -133,7 +133,7 @@ function Landing() {
               <h4 className="mt-8 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Next markets</h4>
               <div className="mt-3 flex flex-wrap gap-2">
                 {roadmap.map((p) => (
-                  <CountryPackCard key={p.code} pack={p} variant="roadmap" />
+                  <CountryPackCard key={p.code} pack={p} />
                 ))}
               </div>
             </>

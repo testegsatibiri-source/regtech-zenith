@@ -51,13 +51,13 @@ function PacksCatalog() {
 
         <Group title="Production" count={production.length} sub="Signed, version 1.0+ and passing live health checks.">
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {production.map((p) => <CountryPackCard key={p.code} pack={p} variant="production" />)}
+            {production.map((p) => <CountryPackCard key={p.code} pack={p} />)}
           </div>
         </Group>
 
         <Group title="Validation" count={beta.length} sub="Installed and running, not yet promoted to production.">
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {beta.map((p) => <CountryPackCard key={p.code} pack={p} variant="validation" />)}
+            {beta.map((p) => <CountryPackCard key={p.code} pack={p} />)}
           </div>
         </Group>
 
