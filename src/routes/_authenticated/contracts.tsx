@@ -9,7 +9,8 @@ import { useCompany } from "@/lib/companyContext";
 import { classifyContractRisk, evaluateContracts, type ContractLike, type ContractRisk } from "@/lib/engines/contracts";
 import { scoreFindings } from "@/lib/engines/compliance";
 import { ScoreGauge } from "@/components/ScoreGauge";
-import { formatIDR } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { useActivePack } from "@/lib/packs/useActivePack";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,7 +175,7 @@ function Contracts() {
                     <TableCell className="text-xs text-muted-foreground">
                       {c.start_date} → {c.end_date ?? "∞"}
                     </TableCell>
-                    <TableCell className="tabular-nums">{formatIDR(c.base_salary)}</TableCell>
+                    <TableCell className="tabular-nums">{money(c.base_salary)}</TableCell>
                     <TableCell><StatusBadge s={c.status} /></TableCell>
                     <TableCell><RiskBadge r={risk} /></TableCell>
                     <TableCell className="text-right">
@@ -255,7 +256,7 @@ function Contracts() {
                 </Select>
               </F>
               <F label="Position"><Input value={draft.position ?? ""} onChange={(e) => setDraft({ ...draft, position: e.target.value })} /></F>
-              <F label="Base salary (IDR)"><Input type="number" value={draft.base_salary} onChange={(e) => setDraft({ ...draft, base_salary: Number(e.target.value) })} /></F>
+              <F label={`Base salary (${activePack.currency})`}><Input type="number" value={draft.base_salary} onChange={(e) => setDraft({ ...draft, base_salary: Number(e.target.value) })} /></F>
               <F label="Start date"><Input type="date" value={draft.start_date} onChange={(e) => setDraft({ ...draft, start_date: e.target.value })} /></F>
               <F label={draft.contract_type === "PKWT" ? "End date (required)" : "End date (optional)"}>
                 <Input type="date" value={draft.end_date ?? ""} onChange={(e) => setDraft({ ...draft, end_date: e.target.value || null })} />

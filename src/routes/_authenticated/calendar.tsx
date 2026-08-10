@@ -24,12 +24,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 
 type Obligation = Awaited<ReturnType<typeof listObligations>>[number];
 
-const CATEGORY_LABEL: Record<string, string> = {
-  tax: "Tax (DJP)",
-  bpjs: "BPJS",
-  labor: "Labor (Kemnaker)",
-  other: "Other",
-};
+
 
 const RISK_STYLE: Record<ReturnType<typeof classifyRisk>, string> = {
   overdue: "bg-destructive/15 text-destructive border-destructive/40",
@@ -158,7 +153,7 @@ function CalendarPage() {
                 <SelectItem value="at_risk">At risk</SelectItem>
                 <SelectItem value="open">Open (pending)</SelectItem>
                 <SelectItem value="tax">Tax</SelectItem>
-                <SelectItem value="bpjs">BPJS</SelectItem>
+                <SelectItem value="bpjs">{t.categories.social}</SelectItem>
                 <SelectItem value="labor">Labor</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>

@@ -5,7 +5,8 @@ import { Sparkles, ShieldAlert, ShieldCheck, TrendingUp, AlertTriangle, Loader2,
 import { runComplianceAudit, type AuditReport, type AuditInsight } from "@/lib/audit.functions";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
-import { formatIDR } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { terminologyFor } from "@/lib/packs/terminology";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ const RISK_STYLE: Record<AuditReport["riskLevel"], string> = {
 function AuditPage() {
   const { company, companyId } = useCompany();
   const activePack = useActivePack();
+  const t = terminologyFor(activePack.code);
+  const money = (v: number) => formatCurrency(v, activePack.currency);
   const run = useServerFn(runComplianceAudit);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<AuditReport | null>(null);
@@ -102,11 +105,11 @@ function AuditPage() {
 
             <div className="space-y-4 lg:col-span-2">
               <div className="grid gap-3 sm:grid-cols-3">
-                <Stat icon={AlertTriangle} tone="warn" value={report.stats.belowUmp} label="Below UMP" />
+                <Stat icon={AlertTriangle} tone="warn" value={report.stats.belowUmp} label={`Below ${t.minimumWage}`} />
                 <Stat icon={AlertTriangle} tone="warn" value={report.stats.overtimeViolations} label="OT violations" />
                 <Stat icon={TrendingUp} value={report.stats.salaryOutliers} label="Salary outliers" />
-                <Stat icon={FileText} value={report.stats.missingNpwp} label="Missing NPWP" />
-                <Stat icon={ShieldAlert} value={report.stats.missingBpjs} label="Missing BPJS" />
+                <Stat icon={FileText} value={report.stats.missingNpwp} label={`Missing ${t.taxId}`} />
+                <Stat icon={ShieldAlert} value={report.stats.missingBpjs} label={`Missing ${t.socialSecurity}`} />
                 <Stat icon={ShieldCheck} value={report.stats.payrollPeriod ?? "—"} label="Last run" />
               </div>
 
@@ -120,9 +123,9 @@ function AuditPage() {
                     {report.narrative}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-4 border-t border-border pt-3 text-xs text-muted-foreground">
-                    <span>Total gross: <strong className="text-foreground">{formatIDR(report.stats.totalGross)}</strong></span>
-                    <span>Avg salary: <strong className="text-foreground">{formatIDR(report.stats.avgSalary)}</strong></span>
-                    <span>Median: <strong className="text-foreground">{formatIDR(report.stats.medianSalary)}</strong></span>
+                    <span>Total gross: <strong className="text-foreground">{money(report.stats.totalGross)}</strong></span>
+                    <span>Avg salary: <strong className="text-foreground">{money(report.stats.avgSalary)}</strong></span>
+                    <span>Median: <strong className="text-foreground">{money(report.stats.medianSalary)}</strong></span>
                   </div>
                 </CardContent>
               </Card>
@@ -184,6 +187,8 @@ function Stat({ icon: Icon, value, label, tone }: { icon: typeof ShieldAlert; va
 
 function EmptyState() {
   const activePack = useActivePack();
+  const t = terminologyFor(activePack.code);
+  const money = (v: number) => formatCurrency(v, activePack.currency);
   return (
     <Card><CardContent className="space-y-3 p-8 text-center">
       <Sparkles className="mx-auto h-8 w-8 text-accent" />

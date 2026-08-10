@@ -8,7 +8,8 @@ import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
 import { MARITAL_STATUS, RELIGIONS } from "@/lib/countryPacks";
 import { evaluateEmployee, scoreFindings } from "@/lib/engines/compliance";
-import { formatIDR } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { terminologyFor } from "@/lib/packs/terminology";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,8 +112,8 @@ function Employees() {
                 <TableHead>Name</TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Base salary</TableHead>
-                <TableHead>PTKP</TableHead>
-                <TableHead>NPWP</TableHead>
+                <TableHead>{t.taxStatus}</TableHead>
+                <TableHead>{t.taxId}</TableHead>
                 <TableHead>Score</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -128,7 +129,7 @@ function Employees() {
                   <TableRow key={e.id}>
                     <TableCell className="font-medium">{e.full_name}</TableCell>
                     <TableCell className="text-muted-foreground">{e.position || "—"}</TableCell>
-                    <TableCell className="tabular-nums">{formatIDR(e.base_salary)}</TableCell>
+                    <TableCell className="tabular-nums">{money(e.base_salary)}</TableCell>
                     <TableCell>{e.marital_status}</TableCell>
                     <TableCell>{hasNpwp ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}</TableCell>
                     <TableCell><Badge className={"border-0 " + (score >= 85 ? "bg-success/15 text-success" : score >= 60 ? "bg-warning/15 text-warning" : "bg-destructive/15 text-destructive")}>{score}%</Badge></TableCell>
@@ -152,14 +153,14 @@ function Employees() {
               <F label="Full name" className="sm:col-span-2"><Input value={draft.full_name} onChange={(e) => setDraft({ ...draft, full_name: e.target.value })} /></F>
               <F label="Position"><Input value={draft.position ?? ""} onChange={(e) => setDraft({ ...draft, position: e.target.value })} /></F>
               <F label="Department"><Input value={draft.department ?? ""} onChange={(e) => setDraft({ ...draft, department: e.target.value })} /></F>
-              <F label="Base salary (IDR)"><Input type="number" value={draft.base_salary} onChange={(e) => setDraft({ ...draft, base_salary: Number(e.target.value) })} /></F>
-              <F label="Marital status (PTKP)">
+              <F label={`Base salary (${activePack.currency})`}><Input type="number" value={draft.base_salary} onChange={(e) => setDraft({ ...draft, base_salary: Number(e.target.value) })} /></F>
+              <F label={`Marital status (${t.taxStatus})`}>
                 <Select value={draft.marital_status} onValueChange={(v) => setDraft({ ...draft, marital_status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{MARITAL_STATUS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select>
               </F>
-              <F label="Religion (THR)">
+              <F label={`Religion (${t.bonus})`}>
                 <Select value={draft.religion ?? ""} onValueChange={(v) => setDraft({ ...draft, religion: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{RELIGIONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
@@ -168,10 +169,11 @@ function Employees() {
               <div className="sm:col-span-2 mt-1 rounded-lg border border-border p-3">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{activePack.name} identifiers (country_metadata)</p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <F label="NIK"><Input value={meta.nik ?? ""} onChange={(e) => setMeta("nik", e.target.value)} /></F>
-                  <F label="NPWP"><Input value={meta.npwp ?? ""} onChange={(e) => setMeta("npwp", e.target.value)} /></F>
-                  <F label="BPJS Kesehatan"><Input value={meta.bpjs_kesehatan ?? ""} onChange={(e) => setMeta("bpjs_kesehatan", e.target.value)} /></F>
-                  <F label="BPJS Ketenagakerjaan"><Input value={meta.bpjs_ketenagakerjaan ?? ""} onChange={(e) => setMeta("bpjs_ketenagakerjaan", e.target.value)} /></F>
+                  {t.identifiers.map((f) => (
+                    <F key={f.key} label={f.label}>
+                      <Input value={(meta[f.key] as string) ?? ""} onChange={(e) => setMeta(f.key, e.target.value)} />
+                    </F>
+                  ))}
                   <F label="Weekly overtime (h)"><Input type="number" value={meta.weekly_overtime_hours ?? "0"} onChange={(e) => setMeta("weekly_overtime_hours", e.target.value)} /></F>
                 </div>
               </div>
