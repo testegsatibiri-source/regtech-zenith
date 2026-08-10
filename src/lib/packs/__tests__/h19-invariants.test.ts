@@ -31,7 +31,7 @@ function entry(over: Partial<CatalogEntry> & Pick<CatalogEntry, "code">): Catalo
 const STATE_A: CatalogEntry[] = [
   entry({ code: "ID", name: "Indonesia", currency: "IDR" }),
   entry({ code: "PH", name: "Philippines", currency: "PHP" }),
-  entry({ code: "MY", name: "Malaysia", currency: "MYR", tier: "beta", statusLabel: "Validation", health: "degraded", blockers: ["pre-1.0"] }),
+  entry({ code: "MY", name: "Malaysia", currency: "MYR", tier: "beta", statusLabel: "Validation", health: "warn", blockers: ["pre-1.0"] }),
   entry({ code: "BR", name: "Brazil", currency: "BRL", region: "South America" }),
   entry({ code: "VN", name: "Vietnam", currency: "VND", tier: "roadmap", statusLabel: "Roadmap", installed: false, signed: false }),
 ];
@@ -39,7 +39,7 @@ const STATE_A: CatalogEntry[] = [
 /** Same runtime, PH health degraded. */
 const STATE_B: CatalogEntry[] = STATE_A.map((e) =>
   e.code === "PH"
-    ? { ...e, tier: "beta" as const, statusLabel: "Validation", health: "degraded" as const, blockers: ['health check is "degraded"'] }
+    ? { ...e, tier: "beta" as const, statusLabel: "Validation", health: "warn" as const, blockers: ['health check is "degraded"'] }
     : e,
 );
 
@@ -92,7 +92,7 @@ describe("H19.5 — production -> degraded transition (PH)", () => {
   it("state B: PH stays on the showcase as validation but is NOT selectable", () => {
     const shown = selectRegionalCatalog(STATE_B, "asia").find((e) => e.code === "PH")!;
     expect(shown.tier).toBe("beta");
-    expect(shown.health).toBe("degraded");
+    expect(shown.health).toBe("warn");
     expect(selectAvailablePacks(STATE_B, "asia").map((p) => p.countryCode)).not.toContain("PH");
   });
 
