@@ -10,6 +10,7 @@ import {
 } from "@/lib/calendar.functions";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
+import { terminologyFor } from "@/lib/packs/terminology";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,12 +25,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 
 type Obligation = Awaited<ReturnType<typeof listObligations>>[number];
 
-const CATEGORY_LABEL: Record<string, string> = {
-  tax: "Tax (DJP)",
-  bpjs: "BPJS",
-  labor: "Labor (Kemnaker)",
-  other: "Other",
-};
+
 
 const RISK_STYLE: Record<ReturnType<typeof classifyRisk>, string> = {
   overdue: "bg-destructive/15 text-destructive border-destructive/40",
@@ -50,6 +46,13 @@ const RISK_LABEL: Record<ReturnType<typeof classifyRisk>, string> = {
 function CalendarPage() {
   const { companyId } = useCompany();
   const activePack = useActivePack();
+  const t = terminologyFor(activePack.code);
+  const CATEGORY_LABEL: Record<string, string> = {
+    tax: t.categories.tax,
+    bpjs: t.categories.social,
+    labor: t.categories.labor,
+    other: t.categories.other,
+  };
   const list = useServerFn(listObligations);
   const seed = useServerFn(seedObligations);
   const update = useServerFn(updateObligationStatus);
@@ -158,7 +161,7 @@ function CalendarPage() {
                 <SelectItem value="at_risk">At risk</SelectItem>
                 <SelectItem value="open">Open (pending)</SelectItem>
                 <SelectItem value="tax">Tax</SelectItem>
-                <SelectItem value="bpjs">BPJS</SelectItem>
+                <SelectItem value="bpjs">{t.categories.social}</SelectItem>
                 <SelectItem value="labor">Labor</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
