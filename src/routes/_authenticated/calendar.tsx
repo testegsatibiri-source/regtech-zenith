@@ -10,6 +10,7 @@ import {
 } from "@/lib/calendar.functions";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
+import { terminologyFor } from "@/lib/packs/terminology";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,13 @@ const RISK_LABEL: Record<ReturnType<typeof classifyRisk>, string> = {
 function CalendarPage() {
   const { companyId } = useCompany();
   const activePack = useActivePack();
+  const t = terminologyFor(activePack.code);
+  const CATEGORY_LABEL: Record<string, string> = {
+    tax: t.categories.tax,
+    bpjs: t.categories.social,
+    labor: t.categories.labor,
+    other: t.categories.other,
+  };
   const list = useServerFn(listObligations);
   const seed = useServerFn(seedObligations);
   const update = useServerFn(updateObligationStatus);

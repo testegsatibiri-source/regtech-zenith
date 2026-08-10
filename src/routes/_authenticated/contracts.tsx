@@ -55,6 +55,8 @@ function blank(companyId: string): Contract {
 
 function Contracts() {
   const { companyId } = useCompany();
+  const activePack = useActivePack();
+  const money = (v: number) => formatCurrency(v, activePack.currency);
   const fetchContracts = useServerFn(listContracts);
   const fetchEmployees = useServerFn(listEmployees);
   const saveContract = useServerFn(upsertContract);
