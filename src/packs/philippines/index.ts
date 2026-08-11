@@ -121,15 +121,29 @@ const rules: RuleProvider = {
   rules: () => phRules,
 };
 
-// Overtime heuristic (Labor Code Art. 87).
+// Data-driven heuristics only. A control that can never fail inflates the
+// compliance score, so the previous overtime placeholder was removed: it
+// returns once the timekeeping (T&A) module supplies real hours.
 const phHeuristics: AuditHeuristic[] = [
   {
-    code: "PH-LC-87-OT-PREMIUM",
-    title: "Overtime premium ≥ 25% on ordinary days",
-    severity: "medium",
-    evaluate: () => ({ passed: true, message: "Requires timekeeping data (T&A module)" }),
+    code: "PH-WO-NCR-MINWAGE",
+    title: "Monthly pay at or above the NCR minimum wage",
+    severity: "critical",
+    evaluate: (ctx) => {
+      const monthlyFloor = PH_PARAMS.minWageNCRDaily * PH_PARAMS.workingDaysPerMonth;
+      const below = ctx.employees.filter((e) => Number(e.base_salary ?? 0) > 0
+        && Number(e.base_salary) < monthlyFloor);
+      return {
+        passed: below.length === 0,
+        message: below.length === 0
+          ? `All employees are at or above PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-24)`
+          : `${below.length} employee(s) earn below the NCR minimum wage equivalent of PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-24)`,
+        impact: below.length,
+      };
+    },
   },
 ];
+
 
 const audit: AuditProvider = {
   version: "1.0.0",
