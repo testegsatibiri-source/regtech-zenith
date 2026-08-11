@@ -156,11 +156,13 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     const sd = stddev(salaries, avgSalary);
     const insights: AuditInsight[] = [];
 
-    // ---- Minimum wage (UMP) ----
+    // ---- Jurisdiction-specific heuristics ----
+    // Indonesia-only signals (UMP / NPWP / BPJS / Omnibus overtime). Other
+    // jurisdictions contribute through their own pack audit provider below.
     const pack = CountryRuntime.get(countryCode);
-    const params = pack.params as unknown as IndonesiaParams;
-    const umpJakarta = params.minimumWage["DKI Jakarta"];
-    const belowUmp = emps.filter((e) => Number(e.base_salary) < umpJakarta);
+    const params = isID ? (pack.params as unknown as IndonesiaParams) : null;
+    const umpJakarta = params?.minimumWage["DKI Jakarta"] ?? 0;
+    const belowUmp = params ? emps.filter((e) => Number(e.base_salary) < umpJakarta) : [];
     if (belowUmp.length) {
       insights.push({
         code: "AI-UMP-01",
@@ -174,7 +176,9 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- Missing NPWP ----
-    const missingNpwp = emps.filter((e) => !(e.country_metadata as Record<string, unknown> | null)?.npwp);
+    const missingNpwp = isID
+      ? emps.filter((e) => !(e.country_metadata as Record<string, unknown> | null)?.npwp)
+      : [];
     if (missingNpwp.length) {
       const extraTax = missingNpwp.reduce((a, e) => {
         const rate = 0.05; // rough average TER
@@ -191,10 +195,12 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- BPJS enrolment ----
-    const missingBpjs = emps.filter((e) => {
-      const m = (e.country_metadata as Record<string, unknown> | null) ?? {};
-      return !m.bpjs_kesehatan || !m.bpjs_ketenagakerjaan;
-    });
+    const missingBpjs = isID
+      ? emps.filter((e) => {
+          const m = (e.country_metadata as Record<string, unknown> | null) ?? {};
+          return !m.bpjs_kesehatan || !m.bpjs_ketenagakerjaan;
+        })
+      : [];
     if (missingBpjs.length) {
       insights.push({
         code: "AI-BPJS-03",
@@ -207,10 +213,12 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- Overtime (Omnibus Law) ----
-    const otViolations = emps.filter((e) => {
-      const h = Number((e.country_metadata as Record<string, unknown> | null)?.weekly_overtime_hours ?? 0);
-      return h > params.overtime.maxPerWeek;
-    });
+    const otViolations = params
+      ? emps.filter((e) => {
+          const h = Number((e.country_metadata as Record<string, unknown> | null)?.weekly_overtime_hours ?? 0);
+          return h > params.overtime.maxPerWeek;
+        })
+      : [];
     if (otViolations.length) {
       const dept = otViolations.reduce<Record<string, number>>((a, e) => {
         const d = String(e.department ?? "Unassigned");
