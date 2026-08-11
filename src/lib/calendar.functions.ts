@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { ID_OBLIGATIONS, computeDueDate, periodLabel } from "./obligations.catalog";
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
 
 export const listObligations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -27,33 +28,37 @@ export const seedObligations = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const rows: {
-      company_id: string;
-      country_code: string;
-      code: string;
-      name: string;
-      category: string;
-      frequency: string;
-      base_legal: string | null;
-      due_date: string;
-      period_label: string;
-      status: string;
-      notes: string | null;
-    }[] = [];
+    // The regulatory calendar always comes from the Country Pack installed for
+    // this company's jurisdiction — never from a hardcoded Indonesian catalog.
+    const { data: company, error: cErr } = await context.supabase
+      .from("companies")
+      .select("country_code")
+      .eq("id", data.companyId)
+      .maybeSingle();
+    if (cErr) throw new Error(cErr.message);
+    const countryCode = (company?.country_code ?? "ID").toUpperCase();
 
-    for (const tpl of ID_OBLIGATIONS) {
-      if (tpl.frequency === "monthly") {
-        for (let m = 1; m <= 12; m++) {
-          rows.push(makeRow(data.companyId, tpl, data.year, m));
-        }
-      } else if (tpl.frequency === "quarterly") {
-        for (const m of [3, 6, 9, 12]) {
-          rows.push(makeRow(data.companyId, tpl, data.year, m));
-        }
-      } else if (tpl.frequency === "annual") {
-        rows.push(makeRow(data.companyId, tpl, data.year, tpl.annualMonth ?? 1));
-      }
+    const pack = CountryRuntime.get(countryCode);
+    const templates = pack.providers.calendar?.templates() ?? [];
+    if (!templates.length) {
+      throw new Error(`Country Pack ${countryCode} provides no regulatory calendar`);
     }
+
+    const rows = templates.flatMap((tpl) =>
+      tpl.occurrences(data.year).map((occ) => ({
+        company_id: data.companyId,
+        country_code: countryCode,
+        code: tpl.code,
+        name: tpl.title,
+        category: tpl.category,
+        frequency: tpl.cadence,
+        base_legal: tpl.legalBasis ?? null,
+        due_date: occ.due_date,
+        period_label: periodLabelFrom(tpl.cadence, occ.period_start),
+        status: "pending",
+        notes: null as string | null,
+      })),
+    );
 
     // Fetch existing to avoid duplicates (code + due_date).
     const { data: existing } = await context.supabase
@@ -67,30 +72,19 @@ export const seedObligations = createServerFn({ method: "POST" })
       const { error } = await context.supabase.from("compliance_obligations").insert(fresh);
       if (error) throw new Error(error.message);
     }
-    return { inserted: fresh.length, skipped: rows.length - fresh.length };
+    return { inserted: fresh.length, skipped: rows.length - fresh.length, countryCode };
   });
 
-function makeRow(
-  companyId: string,
-  tpl: (typeof ID_OBLIGATIONS)[number],
-  year: number,
-  month: number,
-) {
-  const due = computeDueDate(tpl, year, month);
-  return {
-    company_id: companyId,
-    country_code: "ID",
-    code: tpl.code,
-    name: tpl.name,
-    category: tpl.category,
-    frequency: tpl.frequency,
-    base_legal: tpl.base_legal ?? null,
-    due_date: due.toISOString().slice(0, 10),
-    period_label: periodLabel(tpl, year, month),
-    status: "pending",
-    notes: tpl.notes ?? null,
-  };
+function periodLabelFrom(cadence: string, periodStart: string): string {
+  const [y, m] = periodStart.split("-");
+  if (cadence === "annual") return `FY ${y}`;
+  if (cadence === "quarterly") {
+    const q = Math.ceil(Number(m) / 3);
+    return `Q${q} ${y}`;
+  }
+  return `${y}-${m}`;
 }
+
 
 export const updateObligationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
