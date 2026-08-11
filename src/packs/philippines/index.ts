@@ -45,7 +45,8 @@ const manifest: CountryManifest = {
   },
   permissions: ["employees.read", "payroll.write"],
   features: ["train-law", "13th-month", "sss", "philhealth", "pagibig"],
-  supportedLanguages: ["en", "fil"],
+  // Only ship languages that actually have translated copy (audit finding #6).
+  supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
   signatureBlock: PH_SIGNATURE_BLOCK as SignatureBlock,
 };
