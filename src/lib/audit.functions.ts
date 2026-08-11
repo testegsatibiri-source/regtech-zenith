@@ -56,31 +56,43 @@ function stddev(nums: number[], mean: number): number {
   return Math.sqrt(v);
 }
 
-async function generateNarrative(report: Omit<AuditReport, "narrative">): Promise<string> {
+const JURISDICTIONS: Record<string, { name: string; authorities: string; regs: string }> = {
+  ID: { name: "Indonesian", authorities: "Kemenaker + DJP", regs: "Omnibus Law, PP 58/2023, BPJS" },
+  PH: { name: "Philippine", authorities: "DOLE + BIR", regs: "Labor Code, TRAIN Law, SSS/PhilHealth/Pag-IBIG" },
+  MY: { name: "Malaysian", authorities: "LHDN + KWSP", regs: "Employment Act, EPF, SOCSO" },
+};
+
+async function generateNarrative(
+  report: Omit<AuditReport, "narrative">,
+  countryCode: string,
+  currency: string,
+): Promise<string> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) {
     return "AI narrative unavailable (LOVABLE_API_KEY missing). Review insights below for details.";
   }
+  const j = JURISDICTIONS[countryCode] ?? { name: countryCode, authorities: "local regulators", regs: "local labour and tax law" };
   const topInsights = report.insights
     .filter((i) => i.severity === "critical" || i.severity === "high")
     .slice(0, 8)
     .map((i) => `- [${i.severity.toUpperCase()}] ${i.title}: ${i.message}`)
     .join("\n");
 
-  const prompt = `You are a senior Indonesian payroll compliance auditor (Kemenaker + DJP).
+  const prompt = `You are a senior ${j.name} payroll compliance auditor (${j.authorities}).
 Write a concise executive audit summary (max 180 words) for a CFO.
-Use plain language, name specific regulations (Omnibus Law, PP 58/2023, BPJS),
-quantify risk in IDR where possible, and end with the top 3 recommended actions.
+Use plain language, name specific regulations (${j.regs}),
+quantify risk in ${currency} where possible, and end with the top 3 recommended actions.
 
 Company snapshot:
+- Jurisdiction: ${countryCode}
 - Employees: ${report.employeeCount}
 - Compliance Score: ${report.complianceScore}/100 (${report.riskLevel} risk)
 - Payroll period: ${report.stats.payrollPeriod ?? "not yet processed"}
-- Total gross monthly payroll: IDR ${report.stats.totalGross.toLocaleString("id-ID")}
+- Total gross monthly payroll: ${currency} ${report.stats.totalGross.toLocaleString("en-US")}
 - Below minimum wage: ${report.stats.belowUmp} employees
-- Missing NPWP: ${report.stats.missingNpwp}
-- Missing BPJS enrolment: ${report.stats.missingBpjs}
-- Overtime limit violations (Omnibus Law): ${report.stats.overtimeViolations}
+- Missing tax ID: ${report.stats.missingNpwp}
+- Missing statutory enrolment: ${report.stats.missingBpjs}
+- Overtime limit violations: ${report.stats.overtimeViolations}
 - Salary statistical outliers (>2σ): ${report.stats.salaryOutliers}
 
 Top findings:
@@ -93,7 +105,7 @@ ${topInsights || "No critical or high-severity findings."}`;
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are a precise, non-alarmist Indonesian payroll compliance auditor." },
+          { role: "system", content: `You are a precise, non-alarmist ${j.name} payroll compliance auditor.` },
           { role: "user", content: prompt },
         ],
       }),
