@@ -238,6 +238,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- Salary outliers (>2σ from mean) ----
+    const money = (n: number) => `${currency} ${Math.round(n).toLocaleString("en-US")}`;
     const outliers = sd > 0 ? emps.filter((e) => Math.abs(Number(e.base_salary) - avgSalary) > 2 * sd) : [];
     if (outliers.length) {
       insights.push({
@@ -245,14 +246,14 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
         title: "Statistical salary anomalies",
         severity: "medium",
         category: "payroll",
-        message: `${outliers.length} salary value(s) sit more than 2σ from the company mean (IDR ${avgSalary.toLocaleString("id-ID")}). Verify data-entry errors or unauthorised adjustments before running payroll.`,
-        evidence: outliers.slice(0, 5).map((e) => `${e.full_name}: IDR ${Number(e.base_salary).toLocaleString("id-ID")}`).join("; "),
+        message: `${outliers.length} salary value(s) sit more than 2σ from the company mean (${money(avgSalary)}). Verify data-entry errors or unauthorised adjustments before running payroll.`,
+        evidence: outliers.slice(0, 5).map((e) => `${e.full_name}: ${money(Number(e.base_salary))}`).join("; "),
         affected: outliers.length,
       });
     }
 
-    // ---- THR readiness (Muslim employees vs Eid) ----
-    const muslim = emps.filter((e) => (e.religion ?? "").toLowerCase() === "islam");
+    // ---- THR readiness (Muslim employees vs Eid) — Indonesia only ----
+    const muslim = isID ? emps.filter((e) => (e.religion ?? "").toLowerCase() === "islam") : [];
     if (muslim.length) {
       insights.push({
         code: "AI-THR-06",
@@ -261,6 +262,22 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
         category: "thr",
         message: `${muslim.length} Muslim employee(s) are entitled to THR before Eid al-Fitr. Estimated one-month THR liability: IDR ${muslim.reduce((a, e) => a + Number(e.base_salary), 0).toLocaleString("id-ID")}. Payment must occur no later than 7 days before the holiday (Permenaker 6/2016).`,
         affected: muslim.length,
+      });
+    }
+
+    // ---- Country Pack audit heuristics (all jurisdictions) ----
+    for (const h of pack.providers.audit?.heuristics() ?? []) {
+      const outcome = h.evaluate({
+        employees: emps as unknown as Array<Record<string, unknown>>,
+        params: pack.params as unknown as Record<string, unknown>,
+      });
+      if (outcome.passed) continue; // only failing controls become insights
+      insights.push({
+        code: h.code,
+        title: h.title,
+        severity: h.severity,
+        category: "labour",
+        message: outcome.message,
       });
     }
 
