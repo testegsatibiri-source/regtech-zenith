@@ -114,18 +114,27 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<AuditReport> => {
     const { companyId } = data;
 
-    const [{ data: employees, error: eErr }, { data: latestRun, error: rErr }] = await Promise.all([
-      context.supabase.from("employees").select("*").eq("company_id", companyId),
-      context.supabase
-        .from("payroll_runs")
-        .select("*")
-        .eq("company_id", companyId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
+    const [{ data: company, error: cErr }, { data: employees, error: eErr }, { data: latestRun, error: rErr }] =
+      await Promise.all([
+        context.supabase.from("companies").select("country_code, currency").eq("id", companyId).maybeSingle(),
+        context.supabase.from("employees").select("*").eq("company_id", companyId),
+        context.supabase
+          .from("payroll_runs")
+          .select("*")
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+    if (cErr) throw new Error(cErr.message);
     if (eErr) throw new Error(eErr.message);
     if (rErr) throw new Error(rErr.message);
+
+    // The audit always runs against the jurisdiction of the company, never a
+    // hardcoded pack (audit finding #2 — Indonesia leak).
+    const countryCode = (company?.country_code ?? "ID").toUpperCase();
+    const currency = company?.currency ?? "IDR";
+    const isID = countryCode === "ID";
 
     const emps = employees ?? [];
     let items: { employee_id: string | null; employee_name: string; gross: number; tax: number; bpjs_employee: number; bpjs_employer: number; net: number; breakdown: Record<string, unknown> }[] = [];
@@ -137,7 +146,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // Base compliance report (rule-based findings, per-employee)
-    const compliance = evaluateCompany(emps as never[]);
+    const compliance = evaluateCompany(emps as never[], countryCode);
 
     const salaries = emps.map((e) => Number(e.base_salary ?? 0)).filter((n) => n > 0);
     const totalGross = items.reduce((a, i) => a + Number(i.gross ?? 0), 0)
@@ -147,7 +156,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     const insights: AuditInsight[] = [];
 
     // ---- Minimum wage (UMP) ----
-    const pack = CountryRuntime.get("ID");
+    const pack = CountryRuntime.get(countryCode);
     const params = pack.params as unknown as IndonesiaParams;
     const umpJakarta = params.minimumWage["DKI Jakarta"];
     const belowUmp = emps.filter((e) => Number(e.base_salary) < umpJakarta);
