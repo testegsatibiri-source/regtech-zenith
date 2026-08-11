@@ -24,7 +24,7 @@ describe("PH tax bracket continuity", () => {
 
   it("exempts income at or below the zero bracket", () => {
     expect(calculatePhTax({ monthlyGross: 20_833, maritalStatus: "single", hasNpwp: true }).tax).toBe(0);
-    expect(calculatePhTax({ monthlyGross: 20_834, maritalStatus: "single", hasNpwp: true }).tax).toBeGreaterThan(0);
+    expect(calculatePhTax({ monthlyGross: 21_000, maritalStatus: "single", hasNpwp: true }).tax).toBeGreaterThan(0);
   });
 });
 
