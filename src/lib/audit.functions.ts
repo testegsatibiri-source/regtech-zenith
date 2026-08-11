@@ -8,6 +8,7 @@ import { CountryRuntime } from "@/sdk";
 import "@/sdk/bootstrap";
 import type { IndonesiaParams } from "./countryPacks";
 import { evaluateCompany, type Finding } from "./engines/compliance";
+import type { CountryCode } from "./engines/types";
 
 export type AuditSeverity = "critical" | "high" | "medium" | "info";
 
