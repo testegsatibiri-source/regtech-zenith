@@ -1,0 +1,1 @@
+ALTER TABLE public.compliance_obligations ALTER COLUMN country_code DROP DEFAULT;

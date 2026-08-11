@@ -72,7 +72,14 @@ function ProductionCard({ pack }: { pack: CatalogEntry }) {
         {pack.domain && (
           <div className="mt-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Local site</p>
-            <p className="text-sm">{pack.domain}</p>
+            <a
+              href={`https://${pack.domain}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-primary underline-offset-4 hover:underline"
+            >
+              {pack.domain}
+            </a>
           </div>
         )}
 

@@ -8,6 +8,7 @@ import { CountryRuntime } from "@/sdk";
 import "@/sdk/bootstrap";
 import type { IndonesiaParams } from "./countryPacks";
 import { evaluateCompany, type Finding } from "./engines/compliance";
+import type { CountryCode } from "./engines/types";
 
 export type AuditSeverity = "critical" | "high" | "medium" | "info";
 
@@ -55,31 +56,43 @@ function stddev(nums: number[], mean: number): number {
   return Math.sqrt(v);
 }
 
-async function generateNarrative(report: Omit<AuditReport, "narrative">): Promise<string> {
+const JURISDICTIONS: Record<string, { name: string; authorities: string; regs: string }> = {
+  ID: { name: "Indonesian", authorities: "Kemenaker + DJP", regs: "Omnibus Law, PP 58/2023, BPJS" },
+  PH: { name: "Philippine", authorities: "DOLE + BIR", regs: "Labor Code, TRAIN Law, SSS/PhilHealth/Pag-IBIG" },
+  MY: { name: "Malaysian", authorities: "LHDN + KWSP", regs: "Employment Act, EPF, SOCSO" },
+};
+
+async function generateNarrative(
+  report: Omit<AuditReport, "narrative">,
+  countryCode: string,
+  currency: string,
+): Promise<string> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) {
     return "AI narrative unavailable (LOVABLE_API_KEY missing). Review insights below for details.";
   }
+  const j = JURISDICTIONS[countryCode] ?? { name: countryCode, authorities: "local regulators", regs: "local labour and tax law" };
   const topInsights = report.insights
     .filter((i) => i.severity === "critical" || i.severity === "high")
     .slice(0, 8)
     .map((i) => `- [${i.severity.toUpperCase()}] ${i.title}: ${i.message}`)
     .join("\n");
 
-  const prompt = `You are a senior Indonesian payroll compliance auditor (Kemenaker + DJP).
+  const prompt = `You are a senior ${j.name} payroll compliance auditor (${j.authorities}).
 Write a concise executive audit summary (max 180 words) for a CFO.
-Use plain language, name specific regulations (Omnibus Law, PP 58/2023, BPJS),
-quantify risk in IDR where possible, and end with the top 3 recommended actions.
+Use plain language, name specific regulations (${j.regs}),
+quantify risk in ${currency} where possible, and end with the top 3 recommended actions.
 
 Company snapshot:
+- Jurisdiction: ${countryCode}
 - Employees: ${report.employeeCount}
 - Compliance Score: ${report.complianceScore}/100 (${report.riskLevel} risk)
 - Payroll period: ${report.stats.payrollPeriod ?? "not yet processed"}
-- Total gross monthly payroll: IDR ${report.stats.totalGross.toLocaleString("id-ID")}
+- Total gross monthly payroll: ${currency} ${report.stats.totalGross.toLocaleString("en-US")}
 - Below minimum wage: ${report.stats.belowUmp} employees
-- Missing NPWP: ${report.stats.missingNpwp}
-- Missing BPJS enrolment: ${report.stats.missingBpjs}
-- Overtime limit violations (Omnibus Law): ${report.stats.overtimeViolations}
+- Missing tax ID: ${report.stats.missingNpwp}
+- Missing statutory enrolment: ${report.stats.missingBpjs}
+- Overtime limit violations: ${report.stats.overtimeViolations}
 - Salary statistical outliers (>2σ): ${report.stats.salaryOutliers}
 
 Top findings:
@@ -92,7 +105,7 @@ ${topInsights || "No critical or high-severity findings."}`;
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are a precise, non-alarmist Indonesian payroll compliance auditor." },
+          { role: "system", content: `You are a precise, non-alarmist ${j.name} payroll compliance auditor.` },
           { role: "user", content: prompt },
         ],
       }),
@@ -114,18 +127,27 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<AuditReport> => {
     const { companyId } = data;
 
-    const [{ data: employees, error: eErr }, { data: latestRun, error: rErr }] = await Promise.all([
-      context.supabase.from("employees").select("*").eq("company_id", companyId),
-      context.supabase
-        .from("payroll_runs")
-        .select("*")
-        .eq("company_id", companyId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
+    const [{ data: company, error: cErr }, { data: employees, error: eErr }, { data: latestRun, error: rErr }] =
+      await Promise.all([
+        context.supabase.from("companies").select("country_code, currency").eq("id", companyId).maybeSingle(),
+        context.supabase.from("employees").select("*").eq("company_id", companyId),
+        context.supabase
+          .from("payroll_runs")
+          .select("*")
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+    if (cErr) throw new Error(cErr.message);
     if (eErr) throw new Error(eErr.message);
     if (rErr) throw new Error(rErr.message);
+
+    // The audit always runs against the jurisdiction of the company, never a
+    // hardcoded pack (audit finding #2 — Indonesia leak).
+    const countryCode = (company?.country_code ?? "ID").toUpperCase();
+    const currency = company?.currency ?? "IDR";
+    const isID = countryCode === "ID";
 
     const emps = employees ?? [];
     let items: { employee_id: string | null; employee_name: string; gross: number; tax: number; bpjs_employee: number; bpjs_employer: number; net: number; breakdown: Record<string, unknown> }[] = [];
@@ -137,7 +159,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // Base compliance report (rule-based findings, per-employee)
-    const compliance = evaluateCompany(emps as never[]);
+    const compliance = evaluateCompany(emps as never[], countryCode as CountryCode);
 
     const salaries = emps.map((e) => Number(e.base_salary ?? 0)).filter((n) => n > 0);
     const totalGross = items.reduce((a, i) => a + Number(i.gross ?? 0), 0)
@@ -146,11 +168,13 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     const sd = stddev(salaries, avgSalary);
     const insights: AuditInsight[] = [];
 
-    // ---- Minimum wage (UMP) ----
-    const pack = CountryRuntime.get("ID");
-    const params = pack.params as unknown as IndonesiaParams;
-    const umpJakarta = params.minimumWage["DKI Jakarta"];
-    const belowUmp = emps.filter((e) => Number(e.base_salary) < umpJakarta);
+    // ---- Jurisdiction-specific heuristics ----
+    // Indonesia-only signals (UMP / NPWP / BPJS / Omnibus overtime). Other
+    // jurisdictions contribute through their own pack audit provider below.
+    const pack = CountryRuntime.get(countryCode);
+    const params = isID ? (pack.params as unknown as IndonesiaParams) : null;
+    const umpJakarta = params?.minimumWage["DKI Jakarta"] ?? 0;
+    const belowUmp = params ? emps.filter((e) => Number(e.base_salary) < umpJakarta) : [];
     if (belowUmp.length) {
       insights.push({
         code: "AI-UMP-01",
@@ -164,7 +188,9 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- Missing NPWP ----
-    const missingNpwp = emps.filter((e) => !(e.country_metadata as Record<string, unknown> | null)?.npwp);
+    const missingNpwp = isID
+      ? emps.filter((e) => !(e.country_metadata as Record<string, unknown> | null)?.npwp)
+      : [];
     if (missingNpwp.length) {
       const extraTax = missingNpwp.reduce((a, e) => {
         const rate = 0.05; // rough average TER
@@ -181,10 +207,12 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- BPJS enrolment ----
-    const missingBpjs = emps.filter((e) => {
-      const m = (e.country_metadata as Record<string, unknown> | null) ?? {};
-      return !m.bpjs_kesehatan || !m.bpjs_ketenagakerjaan;
-    });
+    const missingBpjs = isID
+      ? emps.filter((e) => {
+          const m = (e.country_metadata as Record<string, unknown> | null) ?? {};
+          return !m.bpjs_kesehatan || !m.bpjs_ketenagakerjaan;
+        })
+      : [];
     if (missingBpjs.length) {
       insights.push({
         code: "AI-BPJS-03",
@@ -197,10 +225,12 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- Overtime (Omnibus Law) ----
-    const otViolations = emps.filter((e) => {
-      const h = Number((e.country_metadata as Record<string, unknown> | null)?.weekly_overtime_hours ?? 0);
-      return h > params.overtime.maxPerWeek;
-    });
+    const otViolations = params
+      ? emps.filter((e) => {
+          const h = Number((e.country_metadata as Record<string, unknown> | null)?.weekly_overtime_hours ?? 0);
+          return h > params.overtime.maxPerWeek;
+        })
+      : [];
     if (otViolations.length) {
       const dept = otViolations.reduce<Record<string, number>>((a, e) => {
         const d = String(e.department ?? "Unassigned");
@@ -220,6 +250,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // ---- Salary outliers (>2σ from mean) ----
+    const money = (n: number) => `${currency} ${Math.round(n).toLocaleString("en-US")}`;
     const outliers = sd > 0 ? emps.filter((e) => Math.abs(Number(e.base_salary) - avgSalary) > 2 * sd) : [];
     if (outliers.length) {
       insights.push({
@@ -227,14 +258,14 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
         title: "Statistical salary anomalies",
         severity: "medium",
         category: "payroll",
-        message: `${outliers.length} salary value(s) sit more than 2σ from the company mean (IDR ${avgSalary.toLocaleString("id-ID")}). Verify data-entry errors or unauthorised adjustments before running payroll.`,
-        evidence: outliers.slice(0, 5).map((e) => `${e.full_name}: IDR ${Number(e.base_salary).toLocaleString("id-ID")}`).join("; "),
+        message: `${outliers.length} salary value(s) sit more than 2σ from the company mean (${money(avgSalary)}). Verify data-entry errors or unauthorised adjustments before running payroll.`,
+        evidence: outliers.slice(0, 5).map((e) => `${e.full_name}: ${money(Number(e.base_salary))}`).join("; "),
         affected: outliers.length,
       });
     }
 
-    // ---- THR readiness (Muslim employees vs Eid) ----
-    const muslim = emps.filter((e) => (e.religion ?? "").toLowerCase() === "islam");
+    // ---- THR readiness (Muslim employees vs Eid) — Indonesia only ----
+    const muslim = isID ? emps.filter((e) => (e.religion ?? "").toLowerCase() === "islam") : [];
     if (muslim.length) {
       insights.push({
         code: "AI-THR-06",
@@ -243,6 +274,22 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
         category: "thr",
         message: `${muslim.length} Muslim employee(s) are entitled to THR before Eid al-Fitr. Estimated one-month THR liability: IDR ${muslim.reduce((a, e) => a + Number(e.base_salary), 0).toLocaleString("id-ID")}. Payment must occur no later than 7 days before the holiday (Permenaker 6/2016).`,
         affected: muslim.length,
+      });
+    }
+
+    // ---- Country Pack audit heuristics (all jurisdictions) ----
+    for (const h of pack.providers.audit?.heuristics() ?? []) {
+      const outcome = h.evaluate({
+        employees: emps as unknown as Array<Record<string, unknown>>,
+        params: pack.params as unknown as Record<string, unknown>,
+      });
+      if (outcome.passed) continue; // only failing controls become insights
+      insights.push({
+        code: h.code,
+        title: h.title,
+        severity: h.severity,
+        category: "labour",
+        message: outcome.message,
       });
     }
 
@@ -315,6 +362,6 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
       },
     };
 
-    const narrative = await generateNarrative(base);
+    const narrative = await generateNarrative(base, countryCode, currency);
     return { ...base, narrative };
   });

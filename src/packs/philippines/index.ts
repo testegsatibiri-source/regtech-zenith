@@ -40,12 +40,13 @@ const manifest: CountryManifest = {
   provides: PROVIDES,
   requires: [],
   events: {
-    emits: ["PayrollCalculated@1", "TaxCalculated@1"],
-    consumes: ["EmployeeUpserted@1"],
+    emits: ["PayrollCalculated@1", "PayrollFinalized@1", "TaxCalculated@1"],
+    consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
   features: ["train-law", "13th-month", "sss", "philhealth", "pagibig"],
-  supportedLanguages: ["en", "fil"],
+  // Only ship languages that actually have translated copy (audit finding #6).
+  supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
   signatureBlock: PH_SIGNATURE_BLOCK as SignatureBlock,
 };
@@ -121,15 +122,29 @@ const rules: RuleProvider = {
   rules: () => phRules,
 };
 
-// Overtime heuristic (Labor Code Art. 87).
+// Data-driven heuristics only. A control that can never fail inflates the
+// compliance score, so the previous overtime placeholder was removed: it
+// returns once the timekeeping (T&A) module supplies real hours.
 const phHeuristics: AuditHeuristic[] = [
   {
-    code: "PH-LC-87-OT-PREMIUM",
-    title: "Overtime premium ≥ 25% on ordinary days",
-    severity: "medium",
-    evaluate: () => ({ passed: true, message: "Requires timekeeping data (T&A module)" }),
+    code: "PH-WO-NCR-MINWAGE",
+    title: "Monthly pay at or above the NCR minimum wage",
+    severity: "critical",
+    evaluate: (ctx) => {
+      const monthlyFloor = PH_PARAMS.minWageNCRDaily * PH_PARAMS.workingDaysPerMonth;
+      const below = ctx.employees.filter((e) => Number(e.base_salary ?? 0) > 0
+        && Number(e.base_salary) < monthlyFloor);
+      return {
+        passed: below.length === 0,
+        message: below.length === 0
+          ? `All employees are at or above PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-24)`
+          : `${below.length} employee(s) earn below the NCR minimum wage equivalent of PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-24)`,
+        impact: below.length,
+      };
+    },
   },
 ];
+
 
 const audit: AuditProvider = {
   version: "1.0.0",
@@ -159,6 +174,23 @@ function health(): HealthReport {
     checks.push({ name: "benefits.calculate.smoke", ok: true });
   } catch (err) {
     checks.push({ name: "benefits.calculate.smoke", ok: false, message: (err as Error).message });
+  }
+  try {
+    thirteenth.calculate({ monthlySalary: 30_000, monthsOfService: 12 });
+    checks.push({ name: "thirteenth.calculate.smoke", ok: true });
+  } catch (err) {
+    checks.push({ name: "thirteenth.calculate.smoke", ok: false, message: (err as Error).message });
+  }
+  try {
+    contracts.validate({
+      contract_type: "probationary",
+      status: "active",
+      start_date: "2026-01-01",
+      probation_end: "2026-05-01",
+    });
+    checks.push({ name: "contracts.validate.smoke", ok: true });
+  } catch (err) {
+    checks.push({ name: "contracts.validate.smoke", ok: false, message: (err as Error).message });
   }
   const failing = checks.filter((c) => !c.ok);
   const status: HealthReport["status"] = failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
