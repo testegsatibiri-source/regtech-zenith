@@ -362,6 +362,6 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
       },
     };
 
-    const narrative = await generateNarrative(base);
+    const narrative = await generateNarrative(base, countryCode, currency);
     return { ...base, narrative };
   });
