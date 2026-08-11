@@ -37,11 +37,11 @@ describe("PH pack manifest & health", () => {
     expect(philippinesPack.manifest.events?.emits).toContain("PayrollFinalized@1");
   });
 
-  it("health covers every declared engine capability", () => {
-    const report = philippinesPack.health!();
+  it("health covers every declared engine capability", async () => {
+    const report = await philippinesPack.health!();
     const names = report.checks.map((c) => c.name);
-    for (const engine of ["tax", "benefits", "thirteenth", "contracts"]) {
-      expect(names).toContain(`${engine}.calculate.smoke`.replace("contracts.calculate", "contracts.validate"));
+    for (const check of ["tax.calculate.smoke", "benefits.calculate.smoke", "thirteenth.calculate.smoke", "contracts.validate.smoke"]) {
+      expect(names).toContain(check);
     }
     expect(report.status).toBe("ok");
   });
