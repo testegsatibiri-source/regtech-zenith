@@ -146,7 +146,7 @@ export const runComplianceAudit = createServerFn({ method: "POST" })
     }
 
     // Base compliance report (rule-based findings, per-employee)
-    const compliance = evaluateCompany(emps as never[], countryCode);
+    const compliance = evaluateCompany(emps as never[], countryCode as CountryCode);
 
     const salaries = emps.map((e) => Number(e.base_salary ?? 0)).filter((n) => n > 0);
     const totalGross = items.reduce((a, i) => a + Number(i.gross ?? 0), 0)
