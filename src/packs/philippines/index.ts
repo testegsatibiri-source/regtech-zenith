@@ -40,8 +40,8 @@ const manifest: CountryManifest = {
   provides: PROVIDES,
   requires: [],
   events: {
-    emits: ["PayrollCalculated@1", "TaxCalculated@1"],
-    consumes: ["EmployeeUpserted@1"],
+    emits: ["PayrollCalculated@1", "PayrollFinalized@1", "TaxCalculated@1"],
+    consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
   features: ["train-law", "13th-month", "sss", "philhealth", "pagibig"],
