@@ -174,6 +174,24 @@ function health(): HealthReport {
   } catch (err) {
     checks.push({ name: "benefits.calculate.smoke", ok: false, message: (err as Error).message });
   }
+  try {
+    thirteenth.calculate({ monthlyBasic: 30_000, monthsWorked: 12 });
+    checks.push({ name: "thirteenth.calculate.smoke", ok: true });
+  } catch (err) {
+    checks.push({ name: "thirteenth.calculate.smoke", ok: false, message: (err as Error).message });
+  }
+  try {
+    contracts.validate({
+      contract_type: "probationary",
+      status: "active",
+      start_date: "2026-01-01",
+      probation_end: "2026-05-01",
+      base_salary: 30_000,
+    } as Parameters<typeof contracts.validate>[0]);
+    checks.push({ name: "contracts.validate.smoke", ok: true });
+  } catch (err) {
+    checks.push({ name: "contracts.validate.smoke", ok: false, message: (err as Error).message });
+  }
   const failing = checks.filter((c) => !c.ok);
   const status: HealthReport["status"] = failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
   return { status, checks };
