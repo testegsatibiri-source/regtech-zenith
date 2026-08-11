@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { listCatalogWithHealth } from "@/lib/packs/catalog";
+import "@/sdk/bootstrap";
 
 const BASE_URL = "https://id-preview--46ec53e1-c4ac-415d-911a-f979dd409603.lovable.app";
 
@@ -13,8 +15,19 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
+        const catalog = await listCatalogWithHealth();
+        const packEntries: SitemapEntry[] = catalog
+          .filter((p) => p.tier === "production")
+          .map((p) => ({
+            path: `/packs/${p.code.toLowerCase()}`,
+            changefreq: "weekly" as const,
+            priority: "0.9",
+          }));
+
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/packs", changefreq: "weekly", priority: "0.9" },
+          ...packEntries,
           { path: "/calculator", changefreq: "monthly", priority: "0.8" },
           { path: "/auth", changefreq: "yearly", priority: "0.3" },
         ];
