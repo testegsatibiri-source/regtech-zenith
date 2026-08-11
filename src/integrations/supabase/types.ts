@@ -465,7 +465,7 @@ export type Database = {
           code: string
           company_id: string
           completed_at?: string | null
-          country_code?: string
+          country_code: string
           created_at?: string
           due_date: string
           frequency?: string
