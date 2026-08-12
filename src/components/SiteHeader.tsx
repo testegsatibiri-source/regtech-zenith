@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
 import { useSession } from "@/lib/useSession";
 import { Button } from "@/components/ui/button";
-import { LangToggle } from "./LangToggle";
 
+/**
+ * Global shell header. Global surfaces are English-only by decision, so no
+ * language toggle here — pack pages set their own locale via LocaleScope.
+ */
 export function SiteHeader() {
-  const { t } = useI18n();
   const { user } = useSession();
 
   return (
@@ -20,19 +21,18 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          <a href="/#product" className="text-muted-foreground transition-colors hover:text-foreground">{t("nav.product")}</a>
-          <a href="/#pricing" className="text-muted-foreground transition-colors hover:text-foreground">{t("nav.pricing")}</a>
-          <Link to="/calculator" className="text-muted-foreground transition-colors hover:text-foreground">{t("nav.calculator")}</Link>
+          <a href="/#platform" className="text-muted-foreground transition-colors hover:text-foreground">Platform</a>
+          <Link to="/packs" className="text-muted-foreground transition-colors hover:text-foreground">Country Packs</Link>
+          <Link to="/api-docs" className="text-muted-foreground transition-colors hover:text-foreground">Docs &amp; API</Link>
         </nav>
 
         <div className="flex items-center gap-2">
-          <LangToggle />
           {user ? (
-            <Button asChild size="sm"><Link to="/dashboard">{t("nav.dashboard")}</Link></Button>
+            <Button asChild size="sm"><Link to="/dashboard">Dashboard</Link></Button>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm"><Link to="/auth">{t("nav.signin")}</Link></Button>
-              <Button asChild size="sm"><Link to="/auth">{t("hero.cta")}</Link></Button>
+              <Button asChild variant="ghost" size="sm"><Link to="/auth">Sign in</Link></Button>
+              <Button asChild size="sm"><a href="/#contact">Talk to us</a></Button>
             </>
           )}
         </div>
