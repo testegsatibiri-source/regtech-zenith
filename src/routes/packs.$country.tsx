@@ -1,12 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { getProductionPack, type CatalogEntry } from "@/lib/packs/catalog";
+import { hasCalculator } from "@/lib/packs/calculators";
 import { CountryFlag } from "@/components/packs/CountryFlag";
 import { LocaleScope } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/packs/$country")({
   // SSR per request. The production gate re-evaluates health() on every
@@ -98,15 +101,18 @@ function PackDetail() {
 
         <div className="mt-10 flex gap-3">
           <Button asChild><Link to="/auth">Start with {pack.name}</Link></Button>
-          <Button asChild variant="outline"><Link to="/calculator">Try the calculator</Link></Button>
+          {hasCalculator(pack.code) && (
+            <Button asChild variant="outline">
+              <Link to="/packs/$country/calculator" params={{ country: pack.code.toLowerCase() }}>
+                Try the calculator
+              </Link>
+            </Button>
+          )}
         </div>
       </main>
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="flex items-center justify-center gap-2 font-display font-semibold text-foreground">
-          <ShieldCheck className="h-4 w-4 text-accent" /> UBoard Asia
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
+
     </LocaleScope>
   );
 }

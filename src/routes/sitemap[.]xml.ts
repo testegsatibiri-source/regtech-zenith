@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { listCatalogWithHealth } from "@/lib/packs/catalog";
+import { hasCalculator } from "@/lib/packs/calculators";
+
 import "@/sdk/bootstrap";
 
 const BASE_URL = "https://id-preview--46ec53e1-c4ac-415d-911a-f979dd409603.lovable.app";
@@ -16,21 +18,25 @@ export const Route = createFileRoute("/sitemap.xml")({
     handlers: {
       GET: async () => {
         const catalog = await listCatalogWithHealth();
-        const packEntries: SitemapEntry[] = catalog
-          .filter((p) => p.tier === "production")
-          .map((p) => ({
-            path: `/packs/${p.code.toLowerCase()}`,
-            changefreq: "weekly" as const,
-            priority: "0.9",
-          }));
+        const productionPacks = catalog.filter((p) => p.tier === "production");
+        const packEntries: SitemapEntry[] = productionPacks.flatMap((p) => {
+          const slug = p.code.toLowerCase();
+          const entries: SitemapEntry[] = [
+            { path: `/packs/${slug}`, changefreq: "weekly" as const, priority: "0.9" },
+          ];
+          if (hasCalculator(p.code)) {
+            entries.push({ path: `/packs/${slug}/calculator`, changefreq: "monthly" as const, priority: "0.8" });
+          }
+          return entries;
+        });
 
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/packs", changefreq: "weekly", priority: "0.9" },
           ...packEntries,
-          { path: "/calculator", changefreq: "monthly", priority: "0.8" },
           { path: "/auth", changefreq: "yearly", priority: "0.3" },
         ];
+
 
         const urls = entries.map((e) =>
           [
