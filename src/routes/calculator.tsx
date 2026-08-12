@@ -8,8 +8,8 @@ export const Route = createFileRoute("/calculator")({
   beforeLoad: () => {
     throw redirect({
       to: "/packs/$country/calculator",
-      params: { country: "indonesia" },
+      params: { country: "id" },
       statusCode: 301,
-￼    });
+    });
   },
 });
