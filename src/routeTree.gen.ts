@@ -34,6 +34,7 @@ import { Route as AuthenticatedContractsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedCountryPacksIndexRouteImport } from './routes/_authenticated/country-packs.index'
+import { Route as PacksCountryCalculatorRouteImport } from './routes/packs.$country.calculator'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
 import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
@@ -169,6 +170,11 @@ const AuthenticatedCountryPacksIndexRoute =
     path: '/country-packs/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const PacksCountryCalculatorRoute = PacksCountryCalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => PacksCountryRoute,
+} as any)
 const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
   id: '/api/public/openapi.json',
   path: '/api/public/openapi.json',
@@ -232,7 +238,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
-  '/packs/$country': typeof PacksCountryRoute
+  '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -246,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/packs/$country/calculator': typeof PacksCountryCalculatorRoute
   '/country-packs/': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
@@ -266,7 +273,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees': typeof AuthenticatedEmployeesRoute
   '/payroll': typeof AuthenticatedPayrollRoute
-  '/packs/$country': typeof PacksCountryRoute
+  '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/packs/$country/calculator': typeof PacksCountryCalculatorRoute
   '/country-packs': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
@@ -303,7 +311,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
-  '/packs/$country': typeof PacksCountryRoute
+  '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/packs/$country/calculator': typeof PacksCountryCalculatorRoute
   '/_authenticated/country-packs/': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
   '/api/public/v1/calculate-tax': typeof ApiPublicV1CalculateTaxRoute
@@ -354,6 +363,7 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/packs/$country/calculator'
     | '/country-packs/'
     | '/api/public/v1/calculate-bpjs'
     | '/api/public/v1/calculate-tax'
@@ -388,6 +398,7 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/packs/$country/calculator'
     | '/country-packs'
     | '/api/public/v1/calculate-bpjs'
     | '/api/public/v1/calculate-tax'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/packs/$country/calculator'
     | '/_authenticated/country-packs/'
     | '/api/public/v1/calculate-bpjs'
     | '/api/public/v1/calculate-tax'
@@ -441,7 +453,7 @@ export interface RootRouteChildren {
   CalculatorRoute: typeof CalculatorRoute
   OnboardingRoute: typeof OnboardingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  PacksCountryRoute: typeof PacksCountryRoute
+  PacksCountryRoute: typeof PacksCountryRouteWithChildren
   PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
   ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
@@ -630,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCountryPacksIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/packs/$country/calculator': {
+      id: '/packs/$country/calculator'
+      path: '/calculator'
+      fullPath: '/packs/$country/calculator'
+      preLoaderRoute: typeof PacksCountryCalculatorRouteImport
+      parentRoute: typeof PacksCountryRoute
+    }
     '/api/public/openapi.json': {
       id: '/api/public/openapi.json'
       path: '/api/public/openapi.json'
@@ -747,6 +766,18 @@ const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(
   PlatformRouteRouteChildren,
 )
 
+interface PacksCountryRouteChildren {
+  PacksCountryCalculatorRoute: typeof PacksCountryCalculatorRoute
+}
+
+const PacksCountryRouteChildren: PacksCountryRouteChildren = {
+  PacksCountryCalculatorRoute: PacksCountryCalculatorRoute,
+}
+
+const PacksCountryRouteWithChildren = PacksCountryRoute._addFileChildren(
+  PacksCountryRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -756,7 +787,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalculatorRoute: CalculatorRoute,
   OnboardingRoute: OnboardingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  PacksCountryRoute: PacksCountryRoute,
+  PacksCountryRoute: PacksCountryRouteWithChildren,
   PacksIndexRoute: PacksIndexRoute,
   ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
   ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
