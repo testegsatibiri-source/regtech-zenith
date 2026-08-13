@@ -8,7 +8,8 @@ export type ScoreDimensionName =
   | "boundary_integrity"
   | "documentation_coverage"
   | "knowledge_freshness"
-  | "test_coverage";
+  | "test_coverage"
+  | "regulatory_accuracy";
 
 export const SCORE_DIMENSIONS: readonly ScoreDimensionName[] = [
   "coupling",
@@ -16,16 +17,19 @@ export const SCORE_DIMENSIONS: readonly ScoreDimensionName[] = [
   "documentation_coverage",
   "knowledge_freshness",
   "test_coverage",
+  "regulatory_accuracy",
 ] as const;
 
 /** Frozen weights. MUST sum to exactly 1. Enforced by tests. */
 export const SCORE_WEIGHTS: Readonly<Record<ScoreDimensionName, number>> = {
-  coupling: 0.25,
-  boundary_integrity: 0.25,
-  documentation_coverage: 0.2,
+  coupling: 0.20,
+  boundary_integrity: 0.20,
+  documentation_coverage: 0.15,
   knowledge_freshness: 0.15,
   test_coverage: 0.15,
+  regulatory_accuracy: 0.15,
 };
+
 
 export interface ScoreDimension {
   name: ScoreDimensionName;
