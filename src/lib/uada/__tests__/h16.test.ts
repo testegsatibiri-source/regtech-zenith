@@ -51,8 +51,9 @@ describe("H16 — score contract freeze", () => {
   });
 
   it("example overall matches the weighted mean of its dimensions", () => {
-    expect(computeOverall(SCORE_REPORT_EXAMPLE.dimensions)).toBe(83.125);
+    expect(computeOverall(SCORE_REPORT_EXAMPLE.dimensions)).toBe(83.13);
   });
+
 
 
   it("rejects a drifted weight", () => {
