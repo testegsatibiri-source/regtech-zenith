@@ -30,11 +30,13 @@ function signBytes(bytes: Uint8Array, privateKey: any): string {
 }
 
 function exportRawPublicKey(publicKey: any): string {
-  // Node raw Ed25519 export returns the 32-byte key; encode it as base64 for
-  // the Web Crypto verifier used in verifyEd25519.
-  const buf = publicKey.export({ type: "raw", format: "der" });
-  return Buffer.from(buf).toString("base64");
+  // Node does not support raw Ed25519 export directly; SPKI DER is
+  // 30 2a 30 05 06 03 2b 65 70 03 21 00 <32-byte key>. Slice the last 32 bytes.
+  const spki = publicKey.export({ type: "spki", format: "der" }) as Buffer;
+  const raw = spki.slice(-32);
+  return raw.toString("base64");
 }
+
 
 
 describe("H20 — commercialReady signature tamper", () => {
