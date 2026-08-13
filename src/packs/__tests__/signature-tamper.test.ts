@@ -30,8 +30,12 @@ function signBytes(bytes: Uint8Array, privateKey: any): string {
 }
 
 function exportRawPublicKey(publicKey: any): string {
-  return publicKey.export({ type: "raw", format: "base64" });
+  // Node raw Ed25519 export returns the 32-byte key; encode it as base64 for
+  // the Web Crypto verifier used in verifyEd25519.
+  const buf = publicKey.export({ type: "raw", format: "der" });
+  return Buffer.from(buf).toString("base64");
 }
+
 
 describe("H20 — commercialReady signature tamper", () => {
   it("accepts a signature computed over the canonical bytes including commercialReady", async () => {
