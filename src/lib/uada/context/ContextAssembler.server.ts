@@ -1,7 +1,12 @@
 // H14 — ContextAssembler (server-only). ADR-0029 — Context Assembly Principle.
 // The ONLY component that touches KnowledgeStore, GraphStore or MemoryStore.
 // Deterministic: same request + same snapshot => byte-identical bundle.
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
+import { classify } from "@/lib/packs/catalog";
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+
 import type {
   ContextBundle,
   ContextMetrics,
@@ -303,6 +308,8 @@ async function assembleArchitecture(
     else embeddings.pending++;
   }
 
+  const regulatory = buildRegulatoryFacts();
+
   return {
     snapshotId: snap.id,
     snapshotVersion: snap.version,
@@ -329,8 +336,32 @@ async function assembleArchitecture(
       updatedAt: String(r.updated_at ?? ""),
     })),
     embeddings,
+    regulatory,
   };
 }
+
+function buildRegulatoryFacts(): ArchitectureFacts["regulatory"] {
+  const flags: ArchitectureFacts["regulatory"] = [];
+  for (const rec of CountryRuntime.list()) {
+    const { tier, blockers } = classify(rec);
+    const flagsList: string[] = [];
+    if (rec.status !== "installed") flagsList.push(`status:${rec.status}`);
+    if (tier !== "production") flagsList.push("tier:non-production");
+    for (const b of blockers) {
+      if (b.startsWith("regulatory correction pending")) flagsList.push("regulatory-correction-pending");
+    }
+    flags.push({
+      country: rec.pack.manifest.country,
+      version: rec.pack.manifest.version,
+      rulesetVersion: rec.pack.manifest.rulesetVersion,
+      commercialReady: rec.pack.manifest.commercialReady,
+      simplified: rec.pack.manifest.commercialReady !== true,
+      flags: flagsList,
+    });
+  }
+  return flags;
+}
+
 
 export const ContextAssembler = {
   /**

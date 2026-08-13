@@ -35,7 +35,7 @@ The distinction between `manifest.version` (provider surface) and
 Incompatible packs surface as `status: "incompatible"` in `/country-packs`
 and emit `CountryPackFailed@1`.
 
-## Release Gates (H7-Gov)
+## Release Gates (H7-Gov / H20)
 
 A Country Pack **MUST NOT** be released — i.e. the release checklist may not
 be signed by an "Approve Release" role (see
@@ -48,6 +48,15 @@ be signed by an "Approve Release" role (see
    justification.
 3. **Health Check fails.** `pack.health(ctx)` returns any check with
    `status: "error"`. `warn` is permitted but MUST be documented.
+4. **Commercial readiness mismatch (H20).** If the manifest declares
+   `commercialReady: true`, the release approver MUST attach evidence that the
+   pack's calculation engines are backed by real statutory tables/rates
+   (e.g. BIR, SSS, DOLE, BPJS) and not by simplified or clamped heuristics. A
+   `commercialReady: true` declaration with a simplified engine is a release
+   blocker and is considered a signing-material integrity issue. Packs that are
+   not yet commercially accurate remain `commercialReady: false` and live in the
+   `Validation` tier.
+
 
 Gates apply to Core releases as well:
 

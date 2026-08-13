@@ -125,17 +125,22 @@ function major(v?: string): number {
 }
 
 /**
- * Step 1 + 2 of the cumulative gate: runtime status and version/signature.
- * Health (step 3) is evaluated by `classifyWithHealth`.
+ * Cumulative gate for Production classification.
+ * Structural checks run first; commercial readiness is the last gate.
+ * A pack can only lose a tier, never rescue a failed structural check.
  */
 export function classify(rec: InstalledPack): { tier: PackTier; blockers: string[] } {
   const m = rec.pack.manifest;
   const blockers: string[] = [];
 
-  if (rec.status !== "installed") blockers.push(`runtime status is "${rec.status}"`);
-  if (major(m.version) < 1) blockers.push(`pack version ${m.version} is pre-1.0`);
-  if (!m.interfaceVersion) blockers.push("manifest.interfaceVersion missing");
-  if (!m.signatureBlock?.author?.keyId) blockers.push("pack is not signed");
+  if (rec.status !== "installed") blockers.push(`structural: runtime status is "${rec.status}"`);
+  if (major(m.version) < 1) blockers.push(`structural: pack version ${m.version} is pre-1.0`);
+  if (!m.interfaceVersion) blockers.push("structural: manifest.interfaceVersion missing");
+  if (!m.signatureBlock?.author?.keyId) blockers.push("structural: pack is not signed");
+
+  // H20 — commercial readiness is independent of structural health and is shown
+  // as a non-urgent compliance blocker rather than an infra failure.
+  if (m.commercialReady !== true) blockers.push("regulatory correction pending");
 
   return { tier: blockers.length === 0 ? "production" : "beta", blockers };
 }
@@ -153,9 +158,10 @@ export async function classifyWithHealth(
     health = "error";
   }
   const blockers = [...base.blockers];
-  if (health !== "ok") blockers.push(`health check is "${health}"`);
+  if (health !== "ok") blockers.push(`structural: health check is "${health}"`);
   return { tier: blockers.length === 0 ? "production" : "beta", blockers, health };
 }
+
 
 function toEntry(
   rec: InstalledPack,

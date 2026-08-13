@@ -8,14 +8,20 @@ import { selectAvailablePacks } from "@/lib/packs/selectors";
  * runtime) shows "0 packs in production" — these tests fail first.
  */
 describe("landing coverage data", () => {
-  it("reports the installed jurisdictions as production", async () => {
+  it("reports only commercial-ready packs as production", async () => {
     const catalog = await listCatalogWithHealth();
     const production = catalog.filter((p) => p.tier === "production").map((p) => p.code);
+    const ph = catalog.find((p) => p.code === "PH");
 
     expect(production.length).toBeGreaterThan(0);
     expect(production).toContain("ID");
-    expect(production).toContain("PH");
+    // H20: PH is structurally sound but not yet commercially ready.
+    expect(production).not.toContain("PH");
+    expect(ph?.blockers).toEqual(
+      expect.arrayContaining([expect.stringContaining("regulatory correction pending")]),
+    );
   });
+
 
   it("keeps the coverage counter consistent with the selection surface", async () => {
     const catalog = await listCatalogWithHealth();

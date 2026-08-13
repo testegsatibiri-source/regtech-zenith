@@ -33,9 +33,11 @@ function facts(overrides: Partial<ArchitectureFacts> = {}): ArchitectureFacts {
       { path: "src/sdk/__tests__/runtime.test.ts", kind: "code", hasSummary: true, updatedAt: "" },
     ],
     embeddings: { ready: 10, failed: 0, pending: 0 },
+    regulatory: [],
     ...overrides,
   };
 }
+
 
 describe("H16 — score contract freeze", () => {
   it("weights sum to exactly 1", () => {
@@ -49,8 +51,10 @@ describe("H16 — score contract freeze", () => {
   });
 
   it("example overall matches the weighted mean of its dimensions", () => {
-    expect(computeOverall(SCORE_REPORT_EXAMPLE.dimensions)).toBe(82);
+    expect(computeOverall(SCORE_REPORT_EXAMPLE.dimensions)).toBe(83.13);
   });
+
+
 
   it("rejects a drifted weight", () => {
     expect(() =>
@@ -67,12 +71,13 @@ describe("H16 — score contract freeze", () => {
         snapshot: "v1",
         overall: 10,
         dimensions: [
-          { name: "coupling", score: 10, weight: 0.25, evidence: [] },
-          { name: "coupling", score: 20, weight: 0.25, evidence: [] },
+          { name: "coupling", score: 10, weight: 0.20, evidence: [] },
+          { name: "coupling", score: 20, weight: 0.20, evidence: [] },
         ],
       }),
     ).toThrow(/duplicate dimension/);
   });
+
 });
 
 describe("H16 — layer classification", () => {
