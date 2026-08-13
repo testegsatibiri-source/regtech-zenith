@@ -48,8 +48,10 @@ const manifest: CountryManifest = {
   // Only ship languages that actually have translated copy (audit finding #6).
   supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
+  commercialReady: false,
   signatureBlock: PH_SIGNATURE_BLOCK as SignatureBlock,
 };
+
 
 const tax: TaxProvider = {
   version: "1.0.0",
