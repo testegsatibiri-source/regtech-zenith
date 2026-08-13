@@ -8,14 +8,18 @@ This plan replaces the previous audit ordering with a risk-ordered sprint, plus 
 
 Phase 1 only, plus the two guardrails that stop the same mistake repeating.
 
-### 1. DEBT-022 + a fourth classification criterion
+### 1. DEBT-022 + a fourth classification criterion (product gate, not a doc field)
+
+All four of your guardrails are viable as written and none of them cost extra work at this size — they mostly constrain the rule rather than add surface.
 
 - Register **DEBT-022** in `docs/tech-debt.md` (P0): "`production` tier measures structural health, not regulatory correctness."
-- Add a `commercialReady` declaration to the pack manifest (SDK-level, optional field, defaults to `false`) — a pack asserts it only when its engines are backed by real statutory tables, not simplified models.
-- `classify()` gains a fourth cumulative step: not commercially ready ⇒ tier `beta` ("Validation"), with an explicit blocker string. PH drops to Validation until Phase 1 lands; Indonesia declares `true` and stays Production.
-- ADR-0035 documents the criterion so the next pack (MY/VN/TH) cannot be promoted structurally.
+- Add `commercialReady?: boolean` to the pack manifest. **Optional in the type, mandatory for Production in the rule**: `undefined` and `false` both resolve to not-ready. There is no "assume true" path.
+- `classify()` gains a fourth cumulative step, evaluated *after* the structural ones, so it can only ever remove a tier, never rescue a pack that fails status/version/interface/signature. Blocker string: "commercial readiness not established". PH drops to Validation for the duration of the sprint; Indonesia declares `true` and stays Production.
+- `commercialReady` is a **signed declaration**: it lives inside the canonical manifest bytes the signature covers, so flipping it invalidates the existing signature and forces a re-sign. A developer cannot move `false → true` and reach Production without the ruleset bump, the statutory tests and a new signature.
+- ADR-0035 freezes the rule for all future packs and states explicitly that **passing tests are not statutory correctness** — the two signals stay separate by design.
 
-This is deliberately the first item: it is cheaper now than after more packs ship.
+This is deliberately the first item: cheaper now than after more packs ship.
+
 
 ### 2. Phase 1 — payroll correctness (the only financially blocking work)
 
