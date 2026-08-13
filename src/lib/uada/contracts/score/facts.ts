@@ -21,4 +21,19 @@ export interface ArchitectureFacts {
   edges: GraphEdge[];
   documents: ArchitectureDocumentFact[];
   embeddings: { ready: number; failed: number; pending: number };
+  /**
+   * H20 — Regulatory accuracy facts. One entry per installed country pack.
+   * `commercialReady` is the pack's self-declaration; `simplified` is a Core
+   * audit flag set when a pack is known to use clamped/simplified statutory
+   * tables instead of stepped tables or official rates.
+   */
+  regulatory: {
+    country: string;
+    version: string;
+    rulesetVersion: string;
+    commercialReady?: boolean;
+    simplified?: boolean;
+    flags: string[];
+  }[];
 }
+
