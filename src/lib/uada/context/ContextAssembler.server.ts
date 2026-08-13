@@ -1,7 +1,10 @@
 // H14 — ContextAssembler (server-only). ADR-0029 — Context Assembly Principle.
 // The ONLY component that touches KnowledgeStore, GraphStore or MemoryStore.
 // Deterministic: same request + same snapshot => byte-identical bundle.
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { CountryRuntime } from "@/sdk";
+import "@/sdk/bootstrap";
+import { classify } from "@/lib/packs/catalog";
+
 import type {
   ContextBundle,
   ContextMetrics,
