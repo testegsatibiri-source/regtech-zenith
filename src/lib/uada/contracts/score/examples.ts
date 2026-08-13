@@ -1,28 +1,28 @@
-// H16.0 — Reference example of the Architecture Score payload.
+// H16.0 / H20 — Reference example of the Architecture Score payload.
 // Kept next to the contract on purpose: engine, database rows, UI and tests all
 // assert against this exact shape so they cannot drift apart.
 import type { ScoreReport } from "@/lib/uada/contracts/score";
 
 export const SCORE_REPORT_EXAMPLE: ScoreReport = {
   snapshot: "2026-07-31-h15",
-  overall: 82,
+  overall: 83,
   dimensions: [
     {
       name: "coupling",
       score: 76,
-      weight: 0.25,
+      weight: 0.20,
       evidence: ["3 cross-boundary edges"],
     },
     {
       name: "boundary_integrity",
       score: 88,
-      weight: 0.25,
+      weight: 0.20,
       evidence: ["1 pack importing core internals", "0 UI importing .server modules"],
     },
     {
       name: "documentation_coverage",
       score: 83.5,
-      weight: 0.2,
+      weight: 0.15,
       evidence: ["30 ADRs indexed", "83.5% of engines documented"],
     },
     {
@@ -37,7 +37,14 @@ export const SCORE_REPORT_EXAMPLE: ScoreReport = {
       weight: 0.15,
       evidence: ["71 test files", "72% of engines with a matching test"],
     },
+    {
+      name: "regulatory_accuracy",
+      score: 90,
+      weight: 0.15,
+      evidence: ["2 packs installed", "1 pack not commercial-ready", "1 pack using simplified engines"],
+    },
   ],
   previousOverall: 79.5,
-  delta: 2.5,
+  delta: 3.5,
 };
+
