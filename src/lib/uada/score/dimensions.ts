@@ -160,6 +160,33 @@ function testDimension(facts: ArchitectureFacts): ScoreDimension {
   };
 }
 
+function regulatoryAccuracyDimension(facts: ArchitectureFacts): ScoreDimension {
+  const packs = facts.regulatory;
+  if (packs.length === 0) {
+    return {
+      name: "regulatory_accuracy",
+      weight: SCORE_WEIGHTS.regulatory_accuracy,
+      score: 100,
+      evidence: ["no country packs installed"],
+    };
+  }
+  const notReady = packs.filter((p) => p.commercialReady !== true);
+  const simplified = packs.filter((p) => p.simplified === true);
+  const score = clamp(100 - (notReady.length / packs.length) * 100);
+  const evidence = [
+    `${packs.length} pack(s) installed`,
+    `${notReady.length} pack(s) not commercial-ready`,
+    `${simplified.length} pack(s) using simplified engines`,
+    ...notReady.map((p) => `${p.country} v${p.version}: regulatory correction pending`),
+  ];
+  return {
+    name: "regulatory_accuracy",
+    weight: SCORE_WEIGHTS.regulatory_accuracy,
+    score,
+    evidence,
+  };
+}
+
 export function computeDimensions(facts: ArchitectureFacts): ScoreDimension[] {
   return [
     couplingDimension(facts),
@@ -167,8 +194,10 @@ export function computeDimensions(facts: ArchitectureFacts): ScoreDimension[] {
     documentationDimension(facts),
     freshnessDimension(facts),
     testDimension(facts),
+    regulatoryAccuracyDimension(facts),
   ];
 }
+
 
 export function computeScoreReport(
   facts: ArchitectureFacts,
