@@ -8,14 +8,18 @@ This plan replaces the previous audit ordering with a risk-ordered sprint, plus 
 
 Phase 1 only, plus the two guardrails that stop the same mistake repeating.
 
-### 1. DEBT-022 + a fourth classification criterion
+### 1. DEBT-022 + a fourth classification criterion (product gate, not a doc field)
+
+All four of your guardrails are viable as written and none of them cost extra work at this size — they mostly constrain the rule rather than add surface.
 
 - Register **DEBT-022** in `docs/tech-debt.md` (P0): "`production` tier measures structural health, not regulatory correctness."
-- Add a `commercialReady` declaration to the pack manifest (SDK-level, optional field, defaults to `false`) — a pack asserts it only when its engines are backed by real statutory tables, not simplified models.
-- `classify()` gains a fourth cumulative step: not commercially ready ⇒ tier `beta` ("Validation"), with an explicit blocker string. PH drops to Validation until Phase 1 lands; Indonesia declares `true` and stays Production.
-- ADR-0035 documents the criterion so the next pack (MY/VN/TH) cannot be promoted structurally.
+- Add `commercialReady?: boolean` to the pack manifest. **Optional in the type, mandatory for Production in the rule**: `undefined` and `false` both resolve to not-ready. There is no "assume true" path.
+- `classify()` gains a fourth cumulative step, evaluated *after* the structural ones, so it can only ever remove a tier, never rescue a pack that fails status/version/interface/signature. Blocker string: "commercial readiness not established". PH drops to Validation for the duration of the sprint; Indonesia declares `true` and stays Production.
+- `commercialReady` is a **signed declaration**: it lives inside the canonical manifest bytes the signature covers, so flipping it invalidates the existing signature and forces a re-sign. A developer cannot move `false → true` and reach Production without the ruleset bump, the statutory tests and a new signature.
+- ADR-0035 freezes the rule for all future packs and states explicitly that **passing tests are not statutory correctness** — the two signals stay separate by design.
 
-This is deliberately the first item: it is cheaper now than after more packs ship.
+This is deliberately the first item: cheaper now than after more packs ship.
+
 
 ### 2. Phase 1 — payroll correctness (the only financially blocking work)
 
@@ -26,16 +30,27 @@ This is deliberately the first item: it is cheaper now than after more packs shi
 
 ### 3. Regulatory-accuracy signal in the UADA Score Engine
 
-Add a **`regulatoryAccuracy`** dimension to `src/lib/uada/score/dimensions.ts` and its weight in the score contract. It scores each installed pack on declared-vs-modelled statutory tables (real table vs. simplified approximation) and on open P0 regulatory debts, so "31/31 green" can no longer mask a wrong SSS table. Existing dimension weights are rebalanced; contract examples updated per ADR-0031's freeze rules.
+Add a **`regulatoryAccuracy`** dimension to `src/lib/uada/score/dimensions.ts` and its weight in the score contract, kept **separate from health and test coverage**. It scores each installed pack on modelled-vs-real statutory tables (real table vs. simplified approximation) and on open P0 regulatory debts, so "31/31 green" can no longer mask a wrong SSS table. Existing weights are rebalanced; contract examples updated per ADR-0031's freeze rules.
+
+### Execution order inside H20
+
+`commercialReady` + classifier → SSS → PD 851 → ₱90k tax exemption → params/ruleset bump → re-sign → PH back to Production → UADA `regulatoryAccuracy`. Phases 2 and 3 do not open until this cycle closes.
 
 ## Deferred, in your order
 
-- **Phase 2 (calendar)** and **Phase 3 (contracts + regional wage orders)** run in parallel after H20 — compliance/deadline risk, no direct financial error.
-- **Phase 5 split**: the locale fix (`/packs/ph` → English) ships inside H20 since it is cosmetic and independent. **Enabling the public PH calculator is blocked until Phase 1 closes** — exposing an interactive tool with wrong SSS and tax increases exposure.
+- **Phase 2 (calendar)** and **Phase 3 (contracts + regional wage orders)** start only after the H20 cycle closes, then run in parallel — compliance/deadline risk, no direct financial error.
+- **Phase 5 split**: the locale fix (`/packs/ph` → English) ships inside H20 since it is cosmetic and independent. **The public PH calculator stays blocked until PH is back at Production** — the capability is gated on tier, not on a hand-edited flag, so the public UI can never be more optimistic than the compliance engine.
 - **Phase 4 (heuristic depth)** last; it is Indonesia-parity, not correctness.
 
 ## Technical notes
 
-Files in scope: `src/packs/philippines/params.ts`, `engines/{benefits,thirteenth,tax}.ts`, `index.ts`, `signature.ts`; `src/sdk/manifest.ts` (optional `commercialReady`), `src/lib/packs/catalog.ts` (`classify`), `src/lib/uada/score/dimensions.ts` + `contracts/score/*`; `src/routes/packs.$country.tsx` (locale); `docs/tech-debt.md`, new `docs/adr/ADR-0035-commercial-readiness-criterion.md`.
+Files in scope: `src/packs/philippines/params.ts`, `engines/{benefits,thirteenth,tax}.ts`, `index.ts`, `signature.ts`; `src/sdk/manifest.ts` (`commercialReady`) and the canonical-manifest projection used for signing; `src/lib/packs/catalog.ts` (`classify`); `src/lib/packs/calculators.ts` (tier-gated); `src/lib/uada/score/dimensions.ts` + `contracts/score/*`; `src/routes/packs.$country.tsx` (locale); `docs/tech-debt.md`, new `docs/adr/ADR-0035-commercial-readiness-criterion.md`.
 
-New tests: stepped-MSC boundary cases against published SSS rows, PD 851 earned-base cases (mid-year raise, unpaid leave, partial year), ₱90k exemption boundary, a catalog invariant that a pack without `commercialReady` can never classify as Production, and a score-engine case where all tests pass but a simplified table still lowers `regulatoryAccuracy`.
+New tests:
+- Stepped-MSC boundary cases against published SSS rows; PD 851 earned-base cases (mid-year raise, unpaid leave, partial year); ₱90k exemption boundary.
+- Catalog invariant: a pack with `commercialReady` absent or `false` can never classify as Production.
+- Promotion lifecycle: PH `false` ⇒ Validation; `true` + refreshed signature ⇒ Production.
+- Tamper case: `commercialReady: true` with a stale signature over the old manifest bytes ⇒ **not** Production.
+- Structural precedence: `commercialReady: true` on a pack failing status/version/interface ⇒ still Validation.
+- Score-engine case: all tests green but a simplified statutory table still lowers `regulatoryAccuracy`.
+
