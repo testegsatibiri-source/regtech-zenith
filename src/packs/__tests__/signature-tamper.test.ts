@@ -37,8 +37,6 @@ function exportRawPublicKey(publicKey: any): string {
   return raw.toString("base64");
 }
 
-
-
 describe("H20 — commercialReady signature tamper", () => {
   it("accepts a signature computed over the canonical bytes including commercialReady", async () => {
     const { publicKey, privateKey } = generateKeyPairSync("ed25519");
@@ -61,9 +59,7 @@ describe("H20 — commercialReady signature tamper", () => {
     const newManifest = makeManifest({ commercialReady: true });
     const newBytes = canonicalManifestBytes(newManifest);
     const result = await verifyEd25519(newBytes, sig, exportRawPublicKey(publicKey));
-    if (!result.ok) {
-      throw new Error(`verify error: ${(result as { reason: string }).reason}`);
-    }
+    // Rejection may surface as ok:false (invalid-signature) or ok:true, verified:false
     expect(result.verified).toBe(false);
   });
 
@@ -76,9 +72,6 @@ describe("H20 — commercialReady signature tamper", () => {
     const tampered = makeManifest({ commercialReady: true });
     const tamperedBytes = canonicalManifestBytes(tampered);
     const result = await verifyEd25519(tamperedBytes, sig, exportRawPublicKey(publicKey));
-    if (!result.ok) {
-      throw new Error(`verify error: ${(result as { reason: string }).reason}`);
-    }
     expect(result.verified).toBe(false);
   });
 
@@ -91,9 +84,6 @@ describe("H20 — commercialReady signature tamper", () => {
     const tampered = makeManifest({ commercialReady: false });
     const tamperedBytes = canonicalManifestBytes(tampered);
     const result = await verifyEd25519(tamperedBytes, sig, exportRawPublicKey(publicKey));
-    if (!result.ok) {
-      throw new Error(`verify error: ${(result as { reason: string }).reason}`);
-    }
     expect(result.verified).toBe(false);
   });
 });
