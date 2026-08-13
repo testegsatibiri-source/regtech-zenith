@@ -10,6 +10,7 @@ export interface CanonicalSignable {
   version: string;
   rulesetVersion: string;
   interfaceVersion?: string;
+  commercialReady?: boolean;
 }
 
 export function canonicalSignable(m: CountryManifest): CanonicalSignable {
@@ -20,8 +21,10 @@ export function canonicalSignable(m: CountryManifest): CanonicalSignable {
     version: m.version,
     rulesetVersion: m.rulesetVersion,
     interfaceVersion: m.interfaceVersion,
+    commercialReady: m.commercialReady,
   };
 }
+
 
 export function canonicalManifestBytes(m: CountryManifest): Uint8Array {
   return new TextEncoder().encode(JSON.stringify(canonicalSignable(m)));
