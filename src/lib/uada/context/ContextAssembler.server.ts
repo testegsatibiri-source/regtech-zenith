@@ -4,6 +4,8 @@
 import { CountryRuntime } from "@/sdk";
 import "@/sdk/bootstrap";
 import { classify } from "@/lib/packs/catalog";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 
 import type {
   ContextBundle,
