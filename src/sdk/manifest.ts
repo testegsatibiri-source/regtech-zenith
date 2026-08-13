@@ -80,9 +80,18 @@ export interface CountryManifest {
   requiresCore: string;
 
   /**
+   * H20 — Commercial readiness gate. Declares that the pack's calculation engines
+   * are backed by real statutory tables, not simplified models. Optional in the
+   * type for retro-compatibility; mandatory for classification as Production.
+   * Signed as part of the canonical manifest bytes.
+   */
+  commercialReady?: boolean;
+
+  /**
    * H11-Freeze — Country Pack Interface contract this pack was built against.
    * Optional today; enforced by the validator when present. Once
    * PACK_INTERFACE_ENFORCE is on, packs without a compatible value are rejected.
    */
   interfaceVersion?: string;
+
 }
