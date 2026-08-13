@@ -56,8 +56,10 @@ const manifest: CountryManifest = {
   features: ["ter-2024", "thr", "bpjs", "ump-2026"],
   supportedLanguages: ["id", "en"],
   requiresCore: ">=2.0.0",
+  commercialReady: true,
   signatureBlock: ID_SIGNATURE_BLOCK as SignatureBlock,
 };
+
 
 // ---- Providers ----
 
