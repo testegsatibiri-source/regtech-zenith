@@ -5,8 +5,9 @@ import type { ScoreReport } from "@/lib/uada/contracts/score";
 
 export const SCORE_REPORT_EXAMPLE: ScoreReport = {
   snapshot: "2026-07-31-h15",
-  overall: 83,
+  overall: 83.13,
   dimensions: [
+
     {
       name: "coupling",
       score: 76,
