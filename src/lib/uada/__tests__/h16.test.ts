@@ -70,12 +70,13 @@ describe("H16 — score contract freeze", () => {
         snapshot: "v1",
         overall: 10,
         dimensions: [
-          { name: "coupling", score: 10, weight: 0.25, evidence: [] },
-          { name: "coupling", score: 20, weight: 0.25, evidence: [] },
+          { name: "coupling", score: 10, weight: 0.20, evidence: [] },
+          { name: "coupling", score: 20, weight: 0.20, evidence: [] },
         ],
       }),
     ).toThrow(/duplicate dimension/);
   });
+
 });
 
 describe("H16 — layer classification", () => {
