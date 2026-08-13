@@ -16,7 +16,9 @@ All four of your guardrails are viable as written and none of them cost extra wo
 - Add `commercialReady?: boolean` to the pack manifest. **Optional in the type, mandatory for Production in the rule**: `undefined` and `false` both resolve to not-ready. There is no "assume true" path.
 - `classify()` gains a fourth cumulative step, evaluated *after* the structural ones, so it can only ever remove a tier, never rescue a pack that fails status/version/interface/signature. Blocker string: "commercial readiness not established". PH drops to Validation for the duration of the sprint; Indonesia declares `true` and stays Production.
 - `commercialReady` is a **signed declaration**: it lives inside the canonical manifest bytes the signature covers, so flipping it invalidates the existing signature and forces a re-sign. A developer cannot move `false → true` and reach Production without the ruleset bump, the statutory tests and a new signature.
+- The blocker message rendered in the UI must be explicit: **"structural: <reason>"** for status/version/interface/signature failures, and **"regulatory correction pending"** for commercial-readiness gaps. An operator in `/country-packs` should see a non-urgent label for the latter, not a red infra failure.
 - ADR-0035 freezes the rule for all future packs and states explicitly that **passing tests are not statutory correctness** — the two signals stay separate by design.
+
 
 This is deliberately the first item: cheaper now than after more packs ship.
 
