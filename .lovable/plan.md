@@ -29,6 +29,8 @@ This is deliberately the first item: cheaper now than after more packs ship.
 - **13th month (PD 851)**: change the legal base to *total basic salary actually earned in the calendar year ÷ 12*. New input accepts earned-salary history; the current `monthlySalary × months` call stays as a documented convenience wrapper so nothing breaks.
 - **Tax**: apply the ₱90,000 annual exemption for 13th month and other benefits; remove the now-dead `upTo` fields from the bracket rows.
 - Bump `PH_PARAMS.version` and `rulesetVersion`, re-sign the pack, and only then flip `commercialReady` to `true` so the catalog promotes PH back to Production automatically.
+- **Manual release checklist (ADR-0035)**: before a signer sets `commercialReady: true`, the release owner must verify that the committed `params.ts` no longer contains simplified placeholders (MSC clamp, dead `upTo`, or PD-851 approximation). This is not fully automatable from the manifest alone, but it closes the gap where a current signature could sit on unfinished Phase 1 work. A checklist item is added to the release template in `docs/governance/release-process.md`.
+
 
 ### 3. Regulatory-accuracy signal in the UADA Score Engine
 
