@@ -33,9 +33,11 @@ function facts(overrides: Partial<ArchitectureFacts> = {}): ArchitectureFacts {
       { path: "src/sdk/__tests__/runtime.test.ts", kind: "code", hasSummary: true, updatedAt: "" },
     ],
     embeddings: { ready: 10, failed: 0, pending: 0 },
+    regulatory: [],
     ...overrides,
   };
 }
+
 
 describe("H16 — score contract freeze", () => {
   it("weights sum to exactly 1", () => {
