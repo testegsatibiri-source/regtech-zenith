@@ -117,7 +117,7 @@ Anything not tagged is not tracked — either tag it or delete it.
 - **DEBT-016 · Verify `manifest.signature.checksum`.** Compute canonical hash, reject on mismatch, establish publisher key store.
 - **DEBT-020 · i18n `en-PH` / `fil` locale.** Manifest advertises languages, UI copy missing.
 - **DEBT-021 · `/country-packs` UI is ID-centric in copy.** Renders PH correctly but labels assume Indonesia terms.
-- **DEBT-022 · PH Payroll Correctness — commercial readiness gap.** PH pack v1.0.0 is structurally valid but uses simplified engines (SSS clamped, 13th month base on monthly salary, missing ₱90k tax exemption). It is intentionally gated to `Validation` tier via `commercialReady: false`. Fix Phase 1 (SSS stepped tables, PD 851 earned base, TRAIN exemption) and bump to `commercialReady: true` before any commercial PH calculator or API surface.
+- **DEBT-022 · PH Payroll Correctness — commercial readiness gap.** PH pack v1.0.0 is structurally valid but uses simplified engines (SSS clamped, 13th month base on monthly salary, missing ₱90k tax exemption). It is intentionally gated to `Validation` tier via `commercialReady: false`. Fix Phase 1 (SSS stepped tables, PD 851 earned base, TRAIN exemption) and bump to `commercialReady: true` before any commercial PH calculator or API surface. **Sub-tasks tracked under Sprint H21:** SSS stepped table (P1a), 13th-month earned base (P1b), ₱90k exemption + de minimis (P1c), regional minimum wage (P1d).
 
 
 ### P3 — Backlog
