@@ -75,15 +75,28 @@ describe("H20 — commercialReady signature tamper", () => {
     expect(result.verified).toBe(false);
   });
 
-  it("rejects a manifest whose commercialReady was flipped from true to false", async () => {
+  it("rejects a manifest whose rulesetVersion was bumped without re-signing", async () => {
     const { publicKey, privateKey } = generateKeyPairSync("ed25519");
-    const manifest = makeManifest({ commercialReady: true });
+    const manifest = makeManifest({ commercialReady: false, rulesetVersion: "XX-2024.0" });
     const bytes = canonicalManifestBytes(manifest);
     const sig = signBytes(bytes, privateKey);
 
-    const tampered = makeManifest({ commercialReady: false });
+    const tampered = makeManifest({ commercialReady: false, rulesetVersion: "XX-2024.1" });
+    const tamperedBytes = canonicalManifestBytes(tampered);
+    const result = await verifyEd25519(tamperedBytes, sig, exportRawPublicKey(publicKey));
+    expect(result.verified).toBe(false);
+  });
+
+  it("rejects a manifest whose rulesetVersion was bumped but commercialReady stayed false", async () => {
+    const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+    const manifest = makeManifest({ commercialReady: false, rulesetVersion: "XX-2024.0" });
+    const bytes = canonicalManifestBytes(manifest);
+    const sig = signBytes(bytes, privateKey);
+
+    const tampered = makeManifest({ commercialReady: false, rulesetVersion: "XX-2024.1" });
     const tamperedBytes = canonicalManifestBytes(tampered);
     const result = await verifyEd25519(tamperedBytes, sig, exportRawPublicKey(publicKey));
     expect(result.verified).toBe(false);
   });
 });
+

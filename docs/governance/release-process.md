@@ -55,10 +55,12 @@ be signed by an "Approve Release" role (see
    `commercialReady: true` declaration with a simplified engine is a release
    blocker and is considered a signing-material integrity issue. Packs that are
    not yet commercially accurate remain `commercialReady: false` and live in the
-   `Validation` tier.
+    `Validation` tier.
+5. **Statutory source evidence (H21).** For any pack whose `rulesetVersion` changes in a release, the release approver MUST attach a citation (URL, circular number, or DOF/BIR/SSS/DOLE reference) for each table, cap, or bracket that changed. A rulesetVersion bump without a source citation is a release blocker, and the pack must remain `commercialReady: false`.
 
 
 Gates apply to Core releases as well:
+
 
 - Full `bun test` green.
 - `bunx tsgo --noEmit` green.

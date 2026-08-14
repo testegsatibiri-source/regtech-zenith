@@ -1,5 +1,6 @@
-// Philippines CountryPack — v1.0.0 (PH-2024.1), promoted to production in H17.
+// Philippines CountryPack — v1.1.0 (PH-2024.2), statutory correction in H21.
 //   • interfaceVersion 1.0.0 (frozen contract)
+//   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
 // Architectural validation of the SDK: implemented with ZERO edits outside
 // this folder (see docs/tech-debt.md DEBT-018 for findings).
@@ -33,7 +34,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.0.0",
+  version: "1.1.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -54,17 +55,17 @@ const manifest: CountryManifest = {
 
 
 const tax: TaxProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   calculate: calculatePhTax,
 };
 
 const benefits: BenefitsProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   calculate: calculatePhBenefits,
 };
 
 const thirteenth: ThirteenthProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   calculate: calculatePhThirteenth,
 };
 

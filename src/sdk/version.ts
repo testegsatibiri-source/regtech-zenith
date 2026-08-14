@@ -1,5 +1,5 @@
 // H5/H6 — Core version + minimal semver range check + capability version check.
-export const CORE_VERSION = "2.1.0";
+export const CORE_VERSION = "2.2.0";
 
 function parse(v: string): [number, number, number] {
   const [a = "0", b = "0", c = "0"] = v.replace(/^[^\d]*/, "").split(".");

@@ -1,6 +1,7 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-08-13 (Sprint H20 — PH Commercial-Readiness Gate)._
+_Last audit: 2026-08-14 (Sprint H20 — PH Commercial-Readiness Gate; H21 — PH Statutory Accuracy audit initiated)._
+
 
 ## H11 delivered
 
@@ -116,7 +117,11 @@ Anything not tagged is not tracked — either tag it or delete it.
 - **DEBT-016 · Verify `manifest.signature.checksum`.** Compute canonical hash, reject on mismatch, establish publisher key store.
 - **DEBT-020 · i18n `en-PH` / `fil` locale.** Manifest advertises languages, UI copy missing.
 - **DEBT-021 · `/country-packs` UI is ID-centric in copy.** Renders PH correctly but labels assume Indonesia terms.
-- **DEBT-022 · PH Payroll Correctness — commercial readiness gap.** PH pack v1.0.0 is structurally valid but uses simplified engines (SSS clamped, 13th month base on monthly salary, missing ₱90k tax exemption). It is intentionally gated to `Validation` tier via `commercialReady: false`. Fix Phase 1 (SSS stepped tables, PD 851 earned base, TRAIN exemption) and bump to `commercialReady: true` before any commercial PH calculator or API surface.
+- **DEBT-022 · PH Payroll Correctness — commercial readiness gap.** PH pack v1.1.0 (PH-2024.2) now implements Phase 1 fiscal corrections: SSS RA 11199 stepped table (P1a), 13th-month PD 851 earned base via `annualGrossEarned` (P1b), and BIR ₱90k tax exemption ceiling via `nonTaxableBenefits`/`cumulativeTaxableBenefits` (P1c). NCR regional minimum wage is parameterized (P1d). However, `commercialReady` remains `false` until Phase 2 (statutory identifiers) and Phase 3 (calendar deadline digit logic) close. **Status:** Phase 1 done; Phase 2/3 open.
+- **DEBT-023 · Filing immutability vs. retroactive ruleset change.** Filing artifacts (Alphalist DAT, SSS R-3, PhilHealth RF-1, Pag-IBIG MCRF, 2316 PDF) are generated from a specific `rulesetVersion`. If a pack is corrected after an employer already submitted a filing, the original filing must not be silently regenerated/replaced; instead it is marked `stale` and the UI offers an amended/corrected filing path. Introduced in Sprint H21 as prerequisite for the PH FilingProvider. Must be documented in the release checklist and in the filing UI before Fase 4 begins.
+
+
+
 
 
 ### P3 — Backlog
