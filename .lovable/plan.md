@@ -76,6 +76,16 @@ Fase 4 — Camada de filings
 Fase 5 — Promoção comercial
 - Reavaliar `commercialReady` do pack PH somente após Fases 1–2, com evidência documental (ADR-0035 / release checklist).
 
+## Entregas documentais da Fase 1 (formato H20)
+
+A Fase 1 abre como sprint **H21 — PH Statutory Accuracy**, com os mesmos artefatos que o H20 usou:
+- `docs/adr/ADR-0036-ph-statutory-tables.md` — decisão de manter tabelas estatutárias (SSS MSC, isenção ₱90k, base PD 851) como parâmetros versionados dentro do pack, com `rulesetVersion` bumpado a cada mudança legal.
+- Atualização de `docs/tech-debt.md`: fechar DEBT-022 conforme cada item for corrigido e abrir DEBT-023 (imutabilidade de filings).
+- Item de release checklist exigindo evidência da fonte publicada (circular SSS / RR do BIR) por tabela alterada.
+- Nova assinatura Ed25519 do pack ao final, quando `commercialReady` mudar.
+
+
+
 ## Notas técnicas
 
 Arquivos envolvidos: `src/packs/philippines/params.ts`, `engines/benefits.ts`, `engines/tax.ts`, `engines/thirteenth.ts`, `engines/calendar.ts`, `index.ts`, novo `engines/filings/*`; `src/sdk/providers/FilingProvider.ts` + export no `src/sdk/index.ts`; migração para colunas de identificadores estatutários e tabela de filings; nova rota autenticada de Filings. Nenhuma mudança em Core além do novo provider opcional e da migração.
