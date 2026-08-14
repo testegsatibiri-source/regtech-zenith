@@ -62,13 +62,16 @@ Fase 1 — Correção fiscal (pré-requisito de tudo)
 Fase 2 — Dados estatutários
 - Campos de empregador e de funcionário (TIN, SSS, PhilHealth, Pag-IBIG) com validação de formato e regra de compliance "identificadores completos".
 
-Fase 3 — Precisão do calendário
+Fase 3 — Precisão do calendário (depende da Fase 2)
 - Último dia real do mês, ajuste de fim de semana, feriados PH, prazos por dígito final do employer number.
+- Gate explícito: o cálculo por dígito final e seus testes de fronteira só entram depois que o employer number real existir no cadastro (Fase 2). Antes disso, o calendário mantém o dia fixo atual — nada de fixture fictícia de employer number decidindo prazo legal. Os testes de fronteira que não dependem do identificador (fim de mês, fim de semana, feriado) podem ser escritos na Fase 3 normalmente.
 
 Fase 4 — Camada de filings
 - Novo `FilingProvider` no SDK (capability opcional, sem quebrar interface v1).
 - Geradores PH: 1601-C, Alphalist 1604-C DAT, 2316 PDF, SSS R-3, PhilHealth RF-1, Pag-IBIG MCRF.
 - Tela de Filings: gerar, baixar, marcar como submetido, anexar comprovante, trilha de auditoria.
+- Pré-requisito documental: registrar **DEBT-023 — filing immutability vs. retroactive ruleset change** antes de escrever código da fase. Todo filing gerado carimba `rulesetVersion` + checksum do artefato; se o pack for corrigido depois, o filing submetido não é reescrito — o sistema marca como `stale` e oferece um filing de correção (amended return), que é o instrumento que BIR/SSS de fato aceitam. Sem esse débito registrado, a Fase 4 não começa.
+
 
 Fase 5 — Promoção comercial
 - Reavaliar `commercialReady` do pack PH somente após Fases 1–2, com evidência documental (ADR-0035 / release checklist).
