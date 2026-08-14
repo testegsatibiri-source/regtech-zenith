@@ -21,7 +21,7 @@ We will keep all statutory tables (SSS MSC, PhilHealth caps, BIR tax brackets, 1
 
 ### SSS MSC
 
-Replace the clamped MSC (4,000–30,000) with the RA 11199 stepped table. The engine will look up the employee salary in the table and return the exact MSC, employee share, employer share, and EC. The table is stored as an array of records in `PH_PARAMS.sss.table` keyed by `year`.
+Replace the clamped MSC (4,000–30,000) with the RA 11199 stepped table. The engine looks up the employee salary in the descending table and returns the exact MSC, employee share, employer share, and EC. The table is stored as a frozen array of records in `PH_PARAMS.sss.table` and validated by a new conformance test suite that asserts exact contributions at salary boundaries (e.g. ₱10,000, ₱15,000, ₱30,000, ₱35,000).
 
 ### 13th month pay (PD 851)
 
@@ -31,11 +31,17 @@ The legally correct base is:
 thirteenth = (total_basic_earned_in_calendar_year + total_overtime_premium + total_night_differential_premium) / 12
 ```
 
-For the current pack, the engine will expose an optional `annualGrossEarned` input; if omitted, it falls back to the current `monthlySalary` behaviour and emits a warning flag. When the payroll/filings module has accumulated real annual earnings, the caller must pass `annualGrossEarned` to reach the statutory base.
+The `ThirteenthProvider` interface was extended with optional `annualGrossEarned`. If omitted, the engine falls back to `monthlySalary` and emits `fallbackToMonthly: true`. When the payroll/filings module has accumulated real annual earnings, the caller must pass `annualGrossEarned` to reach the statutory base.
 
 ### BIR ₱90,000 exemption
 
-The withholding engine will accept a `benefits` object (13th month, de minimis, other benefits) and apply the exemption ceiling before computing taxable compensation. Until the benefits catalog is explicit, the engine treats the whole `monthlyGross` as taxable and documents that non-wage benefits must be passed separately for accurate withholding.
+The withholding engine accepts two optional inputs on `TaxCalcInput`:
+
+- `nonTaxableBenefits`: amount of 13th month / de minimis / other benefits already known to be exempt this period.
+- `cumulativeTaxableBenefits`: amount of benefits already used against the annual ceiling so the engine can clamp the remaining exemption.
+
+This allows the caller to apply the ₱90,000 ceiling without requiring a full benefits catalog; the engine subtracts the permitted exemption from taxable compensation before bracket lookup.
+
 
 ### Regional minimum wage
 
