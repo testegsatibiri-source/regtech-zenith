@@ -33,7 +33,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.0.0",
+  version: "1.1.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -54,17 +54,17 @@ const manifest: CountryManifest = {
 
 
 const tax: TaxProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   calculate: calculatePhTax,
 };
 
 const benefits: BenefitsProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   calculate: calculatePhBenefits,
 };
 
 const thirteenth: ThirteenthProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   calculate: calculatePhThirteenth,
 };
 
