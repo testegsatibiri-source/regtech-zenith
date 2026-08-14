@@ -1,5 +1,6 @@
-// Philippines CountryPack — v1.0.0 (PH-2024.1), promoted to production in H17.
+// Philippines CountryPack — v1.1.0 (PH-2024.2), statutory correction in H21.
 //   • interfaceVersion 1.0.0 (frozen contract)
+//   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
 // Architectural validation of the SDK: implemented with ZERO edits outside
 // this folder (see docs/tech-debt.md DEBT-018 for findings).
