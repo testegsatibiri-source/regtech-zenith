@@ -1,6 +1,7 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-08-13 (Sprint H20 — PH Commercial-Readiness Gate)._
+_Last audit: 2026-08-14 (Sprint H20 — PH Commercial-Readiness Gate; H21 — PH Statutory Accuracy audit initiated)._
+
 
 ## H11 delivered
 
