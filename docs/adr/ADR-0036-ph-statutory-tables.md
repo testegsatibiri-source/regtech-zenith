@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed (Sprint H21 — PH Statutory Accuracy).
+Accepted (implemented in Sprint H21-PH-1). Pack manifest bumped to v1.1.0 / ruleset `PH-2024.2`. `commercialReady` remains `false` until Phase 2 (statutory identifiers) and Phase 3 (calendar digit deadlines) close.
+
 
 ## Context
 
