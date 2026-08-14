@@ -83,6 +83,8 @@ A Fase 1 abre como sprint **H21 — PH Statutory Accuracy**, com os mesmos artef
 - Atualização de `docs/tech-debt.md`: fechar DEBT-022 conforme cada item for corrigido e abrir DEBT-023 (imutabilidade de filings).
 - Item de release checklist exigindo evidência da fonte publicada (circular SSS / RR do BIR) por tabela alterada.
 - Nova assinatura Ed25519 do pack ao final, quando `commercialReady` mudar.
+- Regressão de assinatura: reaproveitar o teste de adulteração do H20 (`src/packs/__tests__/signature-tamper.test.ts`) para garantir que um manifesto com `rulesetVersion` bumpado mas sem re-assinatura não passe para `Production`. Se o teste não cobrir essa variação, adicionar um caso novo.
+
 
 
 
