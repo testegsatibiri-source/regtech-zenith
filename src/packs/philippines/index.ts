@@ -225,6 +225,11 @@ function health(): HealthReport {
     { name: "interface.version.present", ok: !!manifest.interfaceVersion },
     { name: "signature.author.present", ok: !!manifest.signatureBlock?.author?.keyId },
     { name: "signature.countersign.present", ok: !!manifest.signatureBlock?.countersign?.keyId },
+    {
+      name: "identifiers.specs.non-empty",
+      ok: PH_EMPLOYEE_IDENTIFIERS.length === 4
+        && validatePhEmployeeIdentifiers({}).issues.length === 4,
+    },
   ];
   try {
     tax.calculate({ monthlyGross: 30_000, maritalStatus: "single", hasNpwp: true });
