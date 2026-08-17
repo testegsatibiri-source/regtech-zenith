@@ -24,6 +24,10 @@ import { calculatePhThirteenth } from "./engines/thirteenth";
 import { buildPhPayslip } from "./engines/payroll";
 import { validatePhContract, phCoverage } from "./engines/contracts";
 import { phCalendarTemplates } from "./engines/calendar";
+import {
+  validatePhEmployeeIdentifiers,
+  PH_EMPLOYEE_IDENTIFIERS,
+} from "./engines/identifiers";
 
 const PROVIDES: Capability[] = [
   "payroll", "tax", "benefits", "thirteenth",
