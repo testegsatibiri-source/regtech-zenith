@@ -24,6 +24,10 @@ import { calculatePhThirteenth } from "./engines/thirteenth";
 import { buildPhPayslip } from "./engines/payroll";
 import { validatePhContract, phCoverage } from "./engines/contracts";
 import { phCalendarTemplates } from "./engines/calendar";
+import {
+  validatePhEmployeeIdentifiers,
+  PH_EMPLOYEE_IDENTIFIERS,
+} from "./engines/identifiers";
 
 const PROVIDES: Capability[] = [
   "payroll", "tax", "benefits", "thirteenth",
@@ -118,10 +122,32 @@ const phRules: ComplianceRule[] = [
       };
     },
   },
+  {
+    // H21 Phase 2 — statutory identifiers are a hard prerequisite for BIR/SSS/
+    // PhilHealth/Pag-IBIG remittance files. A malformed number is rejected at
+    // upload, so format is scored, not just presence.
+    code: "PH-STAT-IDS",
+    title: "Statutory identifiers registered (TIN, SSS, PhilHealth, Pag-IBIG)",
+    severity: "high",
+    weight: 8,
+    evaluate: (emp) => {
+      const v = validatePhEmployeeIdentifiers(emp.country_metadata ?? null);
+      const invalid = v.issues.filter((i) => i.reason === "invalid");
+      if (v.complete) {
+        return { passed: true, message: `All ${PH_EMPLOYEE_IDENTIFIERS.length} statutory identifiers present and well-formed` };
+      }
+      return {
+        passed: false,
+        message: invalid.length > 0
+          ? invalid.map((i) => i.message).join("; ")
+          : `Missing: ${v.issues.map((i) => i.label).join(", ")}`,
+      };
+    },
+  },
 ];
 
 const rules: RuleProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   rules: () => phRules,
 };
 
@@ -146,11 +172,45 @@ const phHeuristics: AuditHeuristic[] = [
       };
     },
   },
+  {
+    code: "PH-STAT-IDS-COVERAGE",
+    title: "Workforce statutory identifiers complete (filing prerequisite)",
+    severity: "high",
+    evaluate: (ctx) => {
+      const incomplete = ctx.employees.filter((e) => !validatePhEmployeeIdentifiers(
+        (e.country_metadata as Record<string, unknown> | null) ?? null,
+      ).complete);
+      return {
+        passed: incomplete.length === 0,
+        message: incomplete.length === 0
+          ? "Every employee has a TIN, SSS, PhilHealth and Pag-IBIG number on file"
+          : `${incomplete.length} employee(s) missing or malformed statutory identifiers — BIR/SSS remittance files cannot be generated`,
+        impact: incomplete.length,
+      };
+    },
+  },
+  {
+    code: "PH-STAT-IDS-FORMAT",
+    title: "Registered identifiers match the published number formats",
+    severity: "medium",
+    evaluate: (ctx) => {
+      const malformed = ctx.employees.filter((e) => validatePhEmployeeIdentifiers(
+        (e.country_metadata as Record<string, unknown> | null) ?? null,
+      ).issues.some((i) => i.reason === "invalid"));
+      return {
+        passed: malformed.length === 0,
+        message: malformed.length === 0
+          ? "No malformed statutory identifiers detected"
+          : `${malformed.length} employee(s) hold identifiers with an invalid digit length`,
+        impact: malformed.length,
+      };
+    },
+  },
 ];
 
 
 const audit: AuditProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   heuristics: () => phHeuristics,
 };
 
@@ -165,6 +225,11 @@ function health(): HealthReport {
     { name: "interface.version.present", ok: !!manifest.interfaceVersion },
     { name: "signature.author.present", ok: !!manifest.signatureBlock?.author?.keyId },
     { name: "signature.countersign.present", ok: !!manifest.signatureBlock?.countersign?.keyId },
+    {
+      name: "identifiers.specs.non-empty",
+      ok: PH_EMPLOYEE_IDENTIFIERS.length === 4
+        && validatePhEmployeeIdentifiers({}).issues.length === 4,
+    },
   ];
   try {
     tax.calculate({ monthlyGross: 30_000, maritalStatus: "single", hasNpwp: true });

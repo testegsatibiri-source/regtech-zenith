@@ -51,6 +51,28 @@ export const createCompany = createServerFn({ method: "POST" })
   });
 
 
+// H21 Phase 2 — employer statutory registry (TIN/RDO/SSS/PhilHealth/Pag-IBIG
+// employer numbers). Stored as opaque per-jurisdiction JSON so Core stays
+// country-agnostic; the active Country Pack owns the keys and their formats.
+const statutorySchema = z.object({
+  companyId: z.string().uuid(),
+  statutory_metadata: z.record(z.string(), z.string().trim().max(64)),
+});
+
+export const updateCompanyStatutory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => statutorySchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
+      .from("companies")
+      .update({ statutory_metadata: data.statutory_metadata })
+      .eq("id", data.companyId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
 // ---------- Employees ----------
 export const listEmployees = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

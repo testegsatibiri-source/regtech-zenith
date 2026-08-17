@@ -22,6 +22,8 @@ export interface PackTerminology {
   bonus: string;
   /** Country metadata inputs shown on the employee form. */
   identifiers: IdentifierField[];
+  /** Employer registration inputs shown on the company registry page. */
+  employerIdentifiers: IdentifierField[];
   /** Obligation category labels for the regulatory calendar. */
   categories: { tax: string; social: string; labor: string; other: string };
 }
@@ -36,6 +38,10 @@ const GENERIC: PackTerminology = {
     { key: "national_id", label: "National ID" },
     { key: "tax_id", label: "Tax ID" },
     { key: "social_security_id", label: "Social security ID" },
+  ],
+  employerIdentifiers: [
+    { key: "tax_id", label: "Employer tax ID" },
+    { key: "social_security_id", label: "Employer social security ID" },
   ],
   categories: { tax: "Tax", social: "Social security", labor: "Labor", other: "Other" },
 };
@@ -53,6 +59,11 @@ const BY_COUNTRY: Record<string, PackTerminology> = {
       { key: "bpjs_kesehatan", label: "BPJS Kesehatan" },
       { key: "bpjs_ketenagakerjaan", label: "BPJS Ketenagakerjaan" },
     ],
+    employerIdentifiers: [
+      { key: "npwp", label: "NPWP Perusahaan" },
+      { key: "bpjs_kesehatan", label: "BPJS Kesehatan employer no." },
+      { key: "bpjs_ketenagakerjaan", label: "BPJS Ketenagakerjaan employer no." },
+    ],
     categories: { tax: "Tax (DJP)", social: "BPJS", labor: "Labor (Kemnaker)", other: "Other" },
   },
   PH: {
@@ -67,6 +78,13 @@ const BY_COUNTRY: Record<string, PackTerminology> = {
       { key: "philhealth", label: "PhilHealth number" },
       { key: "pagibig", label: "Pag-IBIG number" },
     ],
+    employerIdentifiers: [
+      { key: "tin", label: "Employer TIN (9 or 12 digits, incl. branch code)" },
+      { key: "rdo", label: "BIR RDO code (3 digits)" },
+      { key: "sss", label: "SSS employer number (10 digits)" },
+      { key: "philhealth", label: "PhilHealth employer number / PEN (12 digits)" },
+      { key: "pagibig", label: "Pag-IBIG employer ID (12 digits)" },
+    ],
     categories: { tax: "Tax (BIR)", social: "SSS / PhilHealth", labor: "Labor (DOLE)", other: "Other" },
   },
   MY: {
@@ -80,6 +98,11 @@ const BY_COUNTRY: Record<string, PackTerminology> = {
       { key: "tax_no", label: "Income tax no." },
       { key: "epf", label: "EPF number" },
       { key: "socso", label: "SOCSO number" },
+    ],
+    employerIdentifiers: [
+      { key: "tax_no", label: "Employer income tax no. (E number)" },
+      { key: "epf", label: "EPF employer number" },
+      { key: "socso", label: "SOCSO employer number" },
     ],
     categories: { tax: "Tax (LHDN)", social: "EPF / SOCSO", labor: "Labor (JTKSM)", other: "Other" },
   },
