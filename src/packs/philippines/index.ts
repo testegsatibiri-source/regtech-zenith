@@ -172,11 +172,45 @@ const phHeuristics: AuditHeuristic[] = [
       };
     },
   },
+  {
+    code: "PH-STAT-IDS-COVERAGE",
+    title: "Workforce statutory identifiers complete (filing prerequisite)",
+    severity: "high",
+    evaluate: (ctx) => {
+      const incomplete = ctx.employees.filter((e) => !validatePhEmployeeIdentifiers(
+        (e.country_metadata as Record<string, unknown> | null) ?? null,
+      ).complete);
+      return {
+        passed: incomplete.length === 0,
+        message: incomplete.length === 0
+          ? "Every employee has a TIN, SSS, PhilHealth and Pag-IBIG number on file"
+          : `${incomplete.length} employee(s) missing or malformed statutory identifiers — BIR/SSS remittance files cannot be generated`,
+        impact: incomplete.length,
+      };
+    },
+  },
+  {
+    code: "PH-STAT-IDS-FORMAT",
+    title: "Registered identifiers match the published number formats",
+    severity: "medium",
+    evaluate: (ctx) => {
+      const malformed = ctx.employees.filter((e) => validatePhEmployeeIdentifiers(
+        (e.country_metadata as Record<string, unknown> | null) ?? null,
+      ).issues.some((i) => i.reason === "invalid"));
+      return {
+        passed: malformed.length === 0,
+        message: malformed.length === 0
+          ? "No malformed statutory identifiers detected"
+          : `${malformed.length} employee(s) hold identifiers with an invalid digit length`,
+        impact: malformed.length,
+      };
+    },
+  },
 ];
 
 
 const audit: AuditProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   heuristics: () => phHeuristics,
 };
 
