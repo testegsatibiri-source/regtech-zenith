@@ -75,7 +75,8 @@ describe("[PH] pack-specific", () => {
     const annual = templates.find((t) => t.code === "BIR-2316")!.occurrences(2025);
     expect(monthly).toHaveLength(12);
     expect(annual).toHaveLength(1);
-    expect(annual[0].due_date).toBe("2026-01-31");
+    // H21 P3: 31 Jan 2026 is a Saturday → rolled to the next business day.
+    expect(annual[0].due_date).toBe("2026-02-02");
   });
 
   it("Contract rejects probation > 6 months", () => {
