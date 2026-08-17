@@ -305,6 +305,7 @@ export type Database = {
           name: string
           owner_id: string
           score_cache: Json | null
+          statutory_metadata: Json
           tax_id: string | null
           updated_at: string
         }
@@ -317,6 +318,7 @@ export type Database = {
           name: string
           owner_id: string
           score_cache?: Json | null
+          statutory_metadata?: Json
           tax_id?: string | null
           updated_at?: string
         }
@@ -329,6 +331,7 @@ export type Database = {
           name?: string
           owner_id?: string
           score_cache?: Json | null
+          statutory_metadata?: Json
           tax_id?: string | null
           updated_at?: string
         }
