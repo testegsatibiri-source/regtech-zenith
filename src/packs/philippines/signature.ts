@@ -1,22 +1,24 @@
-// H17 — Dual-signature block for the Philippines pack v1.0.0.
-// Signatures were generated over the canonical manifest bytes (now including
-// the H20 commercialReady field); kept in a separate module so validators/tests
-// can import without pulling the pack.
+// H21 Phase 3 — Dual-signature block for the Philippines pack v1.2.0 (PH-2024.3).
+// Signatures are computed over the canonical manifest bytes
+// (country, name, currency, version, rulesetVersion, interfaceVersion,
+// commercialReady) — see @/packs/indonesia/params/canonical-manifest.
+// Any ruleset or commercialReady bump invalidates them and REQUIRES re-signing
+// (regression guarded by src/packs/__tests__/signature-tamper.test.ts).
 import type { SignatureBlock } from "@/sdk/manifest";
 
 export const PH_SIGNATURE_BLOCK: SignatureBlock = {
   author: {
     publisher: "uboard-ph",
-    keyId: "865aa02c49c9c83e9d0f6e1767e6209c",
+    keyId: "4e81a7599927b5ff6c1988566bc6eae8",
     algorithm: "Ed25519",
-    signature: "4YoeCdN/XbhdZDZ9WSWhxFpgdyDZN60gSvvn579VuYsjhz1xyYZLG6ZfL69AbcSrrNy3jnqK0aULipL61x9qAw==",
-    ts: "2026-08-13T01:02:19Z",
+    signature: "X3+z+C56lnsOYpshqj7qjQ6T6m2AB2wMuxwnqxj58Kc4jOgKH994fmmLiZbrShFEpwaKj2aRT6a7RUb9vAAQAQ==",
+    ts: "2026-08-17T00:00:00Z",
   },
   countersign: {
     publisher: "platform-cto-ph",
-    keyId: "e32e5dcca6ea0d1c18ac27043eb6ae6e",
+    keyId: "6eb0e2a0d8ab9fa7f979f57727f51f4b",
     algorithm: "Ed25519",
-    signature: "85FXunvGSe8b3qgqsvhTmCCZI9b94rvm1KfMz3kQntNH66sV58WgHlwFJCmVfGcYo0J+FoKsD5lYRKxa0ZVwDA==",
-    ts: "2026-08-13T01:02:19Z",
+    signature: "aoCAbk93EDhCqFojO1/Pd0lzxLL1mSUYtl6kx64ZoT/gqP+HPwC5SZUPbbu92UQth/5YNbTqaUw4HM8x2R/hAQ==",
+    ts: "2026-08-17T00:00:00Z",
   },
 };

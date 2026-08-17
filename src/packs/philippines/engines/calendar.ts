@@ -1,5 +1,10 @@
 // PH obligation templates — BIR / SSS / PhilHealth / Pag-IBIG.
-import type { ObligationTemplate } from "@/sdk";
+import type { ObligationTemplate, CalendarSubject, ObligationOccurrence } from "@/sdk";
+import {
+  resolvePhMonthlyDeadline,
+  resolvePhAnnualDeadline,
+  phSubjectFrom,
+} from "./deadlines";
 
 interface Template {
   code: string;
@@ -69,6 +74,11 @@ function iso(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
+
+function lastDay(y: number, m: number): number {
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
 export function phCalendarTemplates(): ObligationTemplate[] {
   return TEMPLATES.map<ObligationTemplate>((t) => ({
     code: t.code,
@@ -77,25 +87,38 @@ export function phCalendarTemplates(): ObligationTemplate[] {
     cadence: t.cadence,
     severity: "high",
     legalBasis: t.legalBasis,
-    occurrences: (year: number) => {
+    occurrences: (year: number, subject?: CalendarSubject): ObligationOccurrence[] => {
+      const s = phSubjectFrom(subject?.statutoryMetadata, subject?.legalName);
       if (t.cadence === "monthly") {
-        const list: { period_start: string; period_end: string; due_date: string }[] = [];
+        const list: ObligationOccurrence[] = [];
         for (let m = 1; m <= 12; m++) {
-          const dueMonth = m === 12 ? 1 : m + 1;
-          const dueYear = m === 12 ? year + 1 : year;
+          const r = resolvePhMonthlyDeadline(t.code, year, m, s);
           list.push({
             period_start: iso(year, m, 1),
-            period_end: iso(year, m, 28),
-            due_date: iso(dueYear, dueMonth, t.monthlyDueDay ?? 15),
+            period_end: iso(year, m, lastDay(year, m)),
+            due_date: r.dueDate,
+            ...(r.statutoryDate ? { statutory_date: r.statutoryDate } : {}),
+            resolution: r.status,
+            rule: r.rule,
+            ...(r.reason ? { reason: r.reason } : {}),
           });
         }
         return list;
       }
       if (t.cadence === "annual") {
+        const r = resolvePhAnnualDeadline(
+          year + 1,
+          t.annualMonth ?? 1,
+          t.annualDay ?? 31,
+          t.legalBasis ?? "Annual statutory filing",
+        );
         return [{
           period_start: iso(year, 1, 1),
           period_end: iso(year, 12, 31),
-          due_date: iso(year + 1, t.annualMonth ?? 1, t.annualDay ?? 31),
+          due_date: r.dueDate,
+          ...(r.statutoryDate ? { statutory_date: r.statutoryDate } : {}),
+          resolution: r.status,
+          rule: r.rule,
         }];
       }
       return [];

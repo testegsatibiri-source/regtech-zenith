@@ -1,4 +1,4 @@
-// Philippines CountryPack — v1.1.0 (PH-2024.2), statutory correction in H21.
+// Philippines CountryPack — v1.2.0 (PH-2024.3), statutory correction in H21.
 //   • interfaceVersion 1.0.0 (frozen contract)
 //   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
@@ -38,7 +38,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.1.0",
+  version: "1.2.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -79,7 +79,7 @@ const payroll: PayrollProvider = {
 };
 
 const calendar: CalendarProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   templates: () => phCalendarTemplates(),
 };
 
@@ -221,6 +221,20 @@ function health(): HealthReport {
     { name: "params.loaded", ok: !!PH_PARAMS && Object.keys(PH_PARAMS).length > 0 },
     { name: "ruleset.version.present", ok: !!manifest.rulesetVersion },
     { name: "calendar.templates.non-empty", ok: (calendar.templates()?.length ?? 0) > 0 },
+    {
+      // H21 Phase 3 — staggered deadlines must resolve from the employer registry.
+      name: "calendar.deadlines.staggered",
+      ok: (() => {
+        const sss = calendar.templates().find((t) => t.code === "SSS-R5");
+        if (!sss) return false;
+        const withId = sss.occurrences(2026, {
+          statutoryMetadata: { sss: "0312345673" },
+          legalName: "Acme Manila Inc.",
+        })[0];
+        const without = sss.occurrences(2026, {})[0];
+        return withId?.resolution === "resolved" && without?.resolution === "needs_review";
+      })(),
+    },
     { name: "rules.non-empty", ok: (rules.rules()?.length ?? 0) > 0 },
     { name: "interface.version.present", ok: !!manifest.interfaceVersion },
     { name: "signature.author.present", ok: !!manifest.signatureBlock?.author?.keyId },

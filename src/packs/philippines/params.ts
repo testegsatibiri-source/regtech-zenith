@@ -64,7 +64,7 @@ const SSS_2024_TABLE = [
 ] as const;
 
 export const PH_PARAMS = {
-  version: "2024.2", // bumped from 2024.1 after SSS stepped table + 13th base
+  version: "2024.3", // bumped from 2024.2 after staggered statutory deadlines (H21 P3)
   currency: "PHP",
 
   // BIR Withholding Tax on Compensation — Monthly (TRAIN Law, effective 2023+).
