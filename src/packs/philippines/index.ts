@@ -122,10 +122,32 @@ const phRules: ComplianceRule[] = [
       };
     },
   },
+  {
+    // H21 Phase 2 — statutory identifiers are a hard prerequisite for BIR/SSS/
+    // PhilHealth/Pag-IBIG remittance files. A malformed number is rejected at
+    // upload, so format is scored, not just presence.
+    code: "PH-STAT-IDS",
+    title: "Statutory identifiers registered (TIN, SSS, PhilHealth, Pag-IBIG)",
+    severity: "high",
+    weight: 8,
+    evaluate: (emp) => {
+      const v = validatePhEmployeeIdentifiers(emp.country_metadata ?? null);
+      const invalid = v.issues.filter((i) => i.reason === "invalid");
+      if (v.complete) {
+        return { passed: true, message: `All ${PH_EMPLOYEE_IDENTIFIERS.length} statutory identifiers present and well-formed` };
+      }
+      return {
+        passed: false,
+        message: invalid.length > 0
+          ? invalid.map((i) => i.message).join("; ")
+          : `Missing: ${v.issues.map((i) => i.label).join(", ")}`,
+      };
+    },
+  },
 ];
 
 const rules: RuleProvider = {
-  version: "1.0.0",
+  version: "1.1.0",
   rules: () => phRules,
 };
 
