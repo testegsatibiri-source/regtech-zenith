@@ -32,7 +32,7 @@ export const seedObligations = createServerFn({ method: "POST" })
     // this company's jurisdiction — never from a hardcoded Indonesian catalog.
     const { data: company, error: cErr } = await context.supabase
       .from("companies")
-      .select("country_code")
+      .select("country_code, legal_name, name, statutory_metadata")
       .eq("id", data.companyId)
       .maybeSingle();
     if (cErr) throw new Error(cErr.message);
@@ -44,8 +44,15 @@ export const seedObligations = createServerFn({ method: "POST" })
       throw new Error(`Country Pack ${countryCode} provides no regulatory calendar`);
     }
 
+    // H21 Phase 3 — staggered statutory deadlines are resolved from the
+    // employer registry (statutory_metadata + registered name).
+    const subject = {
+      statutoryMetadata: (company?.statutory_metadata ?? null) as Record<string, unknown> | null,
+      legalName: company?.legal_name ?? company?.name ?? null,
+    };
+
     const rows = templates.flatMap((tpl) =>
-      tpl.occurrences(data.year).map((occ) => ({
+      tpl.occurrences(data.year, subject).map((occ) => ({
         company_id: data.companyId,
         country_code: countryCode,
         code: tpl.code,
@@ -56,7 +63,13 @@ export const seedObligations = createServerFn({ method: "POST" })
         due_date: occ.due_date,
         period_label: periodLabelFrom(tpl.cadence, occ.period_start),
         status: "pending",
-        notes: null as string | null,
+        notes: [
+          occ.rule,
+          occ.statutory_date && occ.statutory_date !== occ.due_date
+            ? `Statutory date ${occ.statutory_date} rolled to the next business day`
+            : null,
+          occ.resolution === "needs_review" ? `⚠ ${occ.reason ?? "Needs review"}` : null,
+        ].filter(Boolean).join(" · ") || null,
       })),
     );
 
