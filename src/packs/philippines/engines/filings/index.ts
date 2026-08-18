@@ -106,10 +106,10 @@ function periodTag(req: FilingRequest): string {
 // ---------------------------------------------------------------- generators
 
 function bir1601c(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
-  const totalGross = req.employees.reduce((s, e) => s + e.gross, 0);
-  const totalTax = req.employees.reduce((s, e) => s + e.taxWithheld, 0);
+  const totalGross = req.employees.reduce((s: number, e: FilingEmployeeRecord) => s + e.gross, 0);
+  const totalTax = req.employees.reduce((s: number, e: FilingEmployeeRecord) => s + e.taxWithheld, 0);
   const totalStat = req.employees.reduce(
-    (s, e) => s + Object.values(e.employeeContributions ?? {}).reduce((a, b) => a + Number(b || 0), 0),
+    (s: number, e: FilingEmployeeRecord) => s + Object.values(e.employeeContributions ?? {}).reduce((a: number, b) => a + Number(b || 0), 0),
     0,
   );
   const taxable = Math.max(0, totalGross - totalStat);
@@ -152,11 +152,11 @@ function alphalist1604c(req: FilingRequest): { content: string; rows: number; to
   let gross = 0;
   let tax = 0;
   let thirteenth = 0;
-  const detail = req.employees.map((e) => {
+  const detail = req.employees.map((e: FilingEmployeeRecord) => {
     const { last, first, middle } = splitName(e.fullName);
     const empTin = digits(e.identifiers?.["tin"]);
-    const nonTaxable = Object.values(e.employeeContributions ?? {}).reduce((a, b) => a + Number(b || 0), 0)
-      + Math.min(e.thirteenthMonth ?? 0, PH_PARAMS.thirteenthMonth.taxExemptCeiling);
+    const nonTaxable = Object.values(e.employeeContributions ?? {}).reduce((a: number, b) => a + Number(b || 0), 0)
+      + Math.min(e.thirteenthMonth ?? 0, PH_PARAMS.birExemptBenefitsCeiling);
     gross += e.gross;
     tax += e.taxWithheld;
     thirteenth += e.thirteenthMonth ?? 0;
@@ -193,7 +193,7 @@ function sssR3(req: FilingRequest): { content: string; rows: number; totals: Rec
   let ee = 0;
   let emp = 0;
   let ec = 0;
-  const detail = req.employees.map((r) => {
+  const detail = req.employees.map((r: FilingEmployeeRecord) => {
     const { last, first, middle } = splitName(r.fullName);
     const sss = digits(r.identifiers?.["sss"]);
     const eeAmt = contrib(r, "employeeContributions", "sss");
@@ -229,7 +229,7 @@ function sssR3(req: FilingRequest): { content: string; rows: number; totals: Rec
 function philhealthRf1(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
   let ee = 0;
   let er = 0;
-  const rows = req.employees.map((r) => {
+  const rows = req.employees.map((r: FilingEmployeeRecord) => {
     const { last, first, middle } = splitName(r.fullName);
     const eeAmt = contrib(r, "employeeContributions", "philhealth");
     const erAmt = contrib(r, "employerContributions", "philhealth");
@@ -267,7 +267,7 @@ function philhealthRf1(req: FilingRequest): { content: string; rows: number; tot
 function pagibigMcrf(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
   let ee = 0;
   let er = 0;
-  const rows = req.employees.map((r) => {
+  const rows = req.employees.map((r: FilingEmployeeRecord) => {
     const { last, first, middle } = splitName(r.fullName);
     const eeAmt = contrib(r, "employeeContributions", "pagibig");
     const erAmt = contrib(r, "employerContributions", "pagibig");
