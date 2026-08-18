@@ -67,7 +67,7 @@ describe("PH filing provider (H21 Phase 4)", () => {
     const a = generatePhFiling(req("BIR-1604C-ALPHALIST"));
     const lines = a.content.trim().split("\n");
     expect(lines[0]!.startsWith("HDR,1604C,S7.1,123456789,000")).toBe(true);
-    expect(lines[1]!.startsWith("D7.1,111222333,000,DELA CRUZ,JUAN")).toBe(true);
+    expect(lines[1]!.startsWith("D7.1,111222333,000,CRUZ,JUAN,DELA")).toBe(true);
     expect(lines[2]).toBe("CTR,1,30000.00,1350.00");
     expect(a.rowCount).toBe(1);
   });
