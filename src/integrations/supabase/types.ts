@@ -1457,6 +1457,109 @@ export type Database = {
         }
         Relationships: []
       }
+      statutory_filings: {
+        Row: {
+          amends_filing_id: string | null
+          artifact_checksum: string
+          artifact_content: string
+          artifact_filename: string
+          artifact_format: string
+          company_id: string
+          country_code: string
+          created_at: string
+          form_code: string
+          form_title: string
+          id: string
+          pack_version: string
+          period_month: number | null
+          period_year: number
+          row_count: number
+          ruleset_version: string
+          run_id: string | null
+          status: string
+          submission_notes: string | null
+          submission_reference: string | null
+          submitted_at: string | null
+          totals: Json
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          amends_filing_id?: string | null
+          artifact_checksum: string
+          artifact_content: string
+          artifact_filename: string
+          artifact_format: string
+          company_id: string
+          country_code: string
+          created_at?: string
+          form_code: string
+          form_title: string
+          id?: string
+          pack_version: string
+          period_month?: number | null
+          period_year: number
+          row_count?: number
+          ruleset_version: string
+          run_id?: string | null
+          status?: string
+          submission_notes?: string | null
+          submission_reference?: string | null
+          submitted_at?: string | null
+          totals?: Json
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          amends_filing_id?: string | null
+          artifact_checksum?: string
+          artifact_content?: string
+          artifact_filename?: string
+          artifact_format?: string
+          company_id?: string
+          country_code?: string
+          created_at?: string
+          form_code?: string
+          form_title?: string
+          id?: string
+          pack_version?: string
+          period_month?: number | null
+          period_year?: number
+          row_count?: number
+          ruleset_version?: string
+          run_id?: string | null
+          status?: string
+          submission_notes?: string | null
+          submission_reference?: string | null
+          submitted_at?: string | null
+          totals?: Json
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "statutory_filings_amends_filing_id_fkey"
+            columns: ["amends_filing_id"]
+            isOneToOne: false
+            referencedRelation: "statutory_filings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "statutory_filings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "statutory_filings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trust_policies: {
         Row: {
           allow_experimental: boolean

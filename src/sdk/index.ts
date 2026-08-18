@@ -29,6 +29,14 @@ export type {
 } from "./providers/CalendarProvider";
 export type { ContractProvider, ContractLike, ContractFinding } from "./providers/ContractProvider";
 export type { RuleProvider } from "./providers/RuleProvider";
+export type {
+  FilingProvider,
+  FilingForm,
+  FilingRequest,
+  FilingArtifact,
+  FilingEmployeeRecord,
+  FilingEmployer,
+} from "./providers/FilingProvider";
 export type { AuditProvider, AuditHeuristic, AuditContext } from "./providers/AuditProvider";
 // H10 additions
 export type { ConfigProvider, ConfigContext, ConfigValue } from "./config";

@@ -14,6 +14,7 @@ import type { CalendarProvider } from "@/sdk";
 import type { ContractProvider } from "@/sdk";
 import type { RuleProvider, ComplianceRule } from "@/sdk/providers/RuleProvider";
 import type { AuditProvider, AuditHeuristic } from "@/sdk";
+import type { FilingProvider } from "@/sdk";
 
 import type { SignatureBlock } from "@/sdk/manifest";
 import { PH_SIGNATURE_BLOCK } from "./signature";
@@ -28,17 +29,18 @@ import {
   validatePhEmployeeIdentifiers,
   PH_EMPLOYEE_IDENTIFIERS,
 } from "./engines/identifiers";
+import { PH_FILING_FORMS, generatePhFiling } from "./engines/filings";
 
 const PROVIDES: Capability[] = [
   "payroll", "tax", "benefits", "thirteenth",
-  "calendar", "contracts", "audit", "rules",
+  "calendar", "contracts", "audit", "rules", "filings",
 ];
 
 const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.2.0",
+  version: "1.3.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -209,12 +211,21 @@ const phHeuristics: AuditHeuristic[] = [
 ];
 
 
+// H21 Phase 4 — statutory filing exports (BIR/SSS/PhilHealth/Pag-IBIG).
+// Generation only: these agencies expose no employer API, so transmission and
+// the official receipt are recorded by the Core (DEBT-023).
+const filings: FilingProvider = {
+  version: "1.0.0",
+  forms: () => PH_FILING_FORMS,
+  generate: (req) => generatePhFiling(req),
+};
+
 const audit: AuditProvider = {
   version: "1.1.0",
   heuristics: () => phHeuristics,
 };
 
-const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit };
+const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit, filings };
 
 function health(): HealthReport {
   const checks: { name: string; ok: boolean; message?: string }[] = [
@@ -236,6 +247,7 @@ function health(): HealthReport {
       })(),
     },
     { name: "rules.non-empty", ok: (rules.rules()?.length ?? 0) > 0 },
+    { name: "filings.forms.non-empty", ok: (filings.forms()?.length ?? 0) === 5 },
     { name: "interface.version.present", ok: !!manifest.interfaceVersion },
     { name: "signature.author.present", ok: !!manifest.signatureBlock?.author?.keyId },
     { name: "signature.countersign.present", ok: !!manifest.signatureBlock?.countersign?.keyId },

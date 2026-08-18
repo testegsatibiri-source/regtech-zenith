@@ -14,4 +14,5 @@ export const EXPECTED_INTERFACES: Record<Capability, string> = {
   contracts: "1.0",
   audit: "1.0",
   rules: "1.0",
+  filings: "1.0",
 };

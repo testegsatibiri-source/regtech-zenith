@@ -26,6 +26,7 @@ const CAP_TO_KEY: Record<Capability, keyof Providers | null> = {
   contracts: "contracts",
   rules: "rules",
   audit: "audit",
+  filings: "filings",
   // Capabilities without a dedicated provider slot yet
   overtime: null,
   leave: null,

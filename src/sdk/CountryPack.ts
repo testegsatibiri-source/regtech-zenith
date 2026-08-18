@@ -9,6 +9,7 @@ import type { CalendarProvider } from "./providers/CalendarProvider";
 import type { ContractProvider } from "./providers/ContractProvider";
 import type { RuleProvider } from "./providers/RuleProvider";
 import type { AuditProvider } from "./providers/AuditProvider";
+import type { FilingProvider } from "./providers/FilingProvider";
 
 export interface Providers {
   tax?: TaxProvider;
@@ -19,6 +20,8 @@ export interface Providers {
   contracts?: ContractProvider;
   rules?: RuleProvider;
   audit?: AuditProvider;
+  /** H21 Phase 4 — optional statutory filing exports. */
+  filings?: FilingProvider;
 }
 
 export interface HealthCheck {
