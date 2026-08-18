@@ -118,17 +118,17 @@ export const generateFiling = createServerFn({ method: "POST" })
         identifiers: (it.employee_id ? metaById.get(it.employee_id) : {}) ?? {},
         gross: Number(it.gross),
         taxWithheld: Number(it.tax),
-        employeeContributions: b
+        employeeContributions: (b
           ? { sss: b.employee.sss ?? 0, philhealth: b.employee.philhealth ?? 0, pagibig: b.employee.pagibig ?? 0 }
-          : { total: Number(it.bpjs_employee) },
-        employerContributions: b
+          : { total: Number(it.bpjs_employee) }) as Record<string, number>,
+        employerContributions: (b
           ? {
             sss: b.employer.sss ?? 0,
             ec: (b.employer as Record<string, number>).ec ?? 0,
             philhealth: b.employer.philhealth ?? 0,
             pagibig: b.employer.pagibig ?? 0,
           }
-          : { total: Number(it.bpjs_employer) },
+          : { total: Number(it.bpjs_employer) }) as Record<string, number>,
         net: Number(it.net),
       };
     });
