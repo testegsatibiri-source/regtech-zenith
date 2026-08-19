@@ -10,6 +10,7 @@ import type { ContractProvider } from "./providers/ContractProvider";
 import type { RuleProvider } from "./providers/RuleProvider";
 import type { AuditProvider } from "./providers/AuditProvider";
 import type { FilingProvider } from "./providers/FilingProvider";
+import type { SeparationProvider } from "./providers/SeparationProvider";
 
 export interface Providers {
   tax?: TaxProvider;
@@ -22,7 +23,10 @@ export interface Providers {
   audit?: AuditProvider;
   /** H21 Phase 4 — optional statutory filing exports. */
   filings?: FilingProvider;
+  /** H22 Phase A — optional offboarding / final pay (PH first). */
+  separation?: SeparationProvider;
 }
+
 
 export interface HealthCheck {
   name: string;
