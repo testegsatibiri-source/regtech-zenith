@@ -15,4 +15,6 @@ export const EXPECTED_INTERFACES: Record<Capability, string> = {
   audit: "1.0",
   rules: "1.0",
   filings: "1.0",
+  separation: "1.0",
 };
+

@@ -37,7 +37,20 @@ export type {
   FilingEmployeeRecord,
   FilingEmployer,
 } from "./providers/FilingProvider";
+export type {
+  SeparationProvider,
+  SeparationGround,
+  SeparationPayInput,
+  SeparationPayOutput,
+  SeparationNotice,
+  SeparationRequirementsInput,
+  FinalPayInput,
+  FinalPayOutput,
+  FinalPayComponent,
+  LeaveAccrualSnapshot,
+} from "./providers/SeparationProvider";
 export type { AuditProvider, AuditHeuristic, AuditContext } from "./providers/AuditProvider";
+
 // H10 additions
 export type { ConfigProvider, ConfigContext, ConfigValue } from "./config";
 export { ConfigService, StaticConfigProvider, ConfigMissing } from "./config";

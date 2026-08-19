@@ -27,10 +27,12 @@ const CAP_TO_KEY: Record<Capability, keyof Providers | null> = {
   rules: "rules",
   audit: "audit",
   filings: "filings",
+  separation: "separation",
   // Capabilities without a dedicated provider slot yet
   overtime: null,
   leave: null,
 };
+
 
 export function validatePack(pack: CountryPack): ValidationReport {
   const errors: string[] = [];
