@@ -36,6 +36,8 @@ Documentos gerados (reutilizando as primitivas de `engines/filings/layouts.ts`):
 
 Dados: nova tabela `employee_separations` (empresa, funcionário, causa, datas de notificação, status do fluxo twin-notice, final pay calculado, prazos) com RLS + GRANTs, e tabela `hr_documents` para os artefatos gerados.
 
+Boundary test obrigatório: `computeFinalPay()` deve aceitar `leaveAccrual: null` (LeaveProvider ainda não implementado) e **sinalizar incompletude** (`complete: false`, item `missingLeaveProvider`) em vez de retornar um valor final. Após a Fase B, o teste oposto garante que SIL não usada apareça no cálculo. Isso evita o erro sistemático silencioso que o H20 corrigiu no payroll fiscal.
+
 Compliance/audit: novas regras no `RuleProvider`/`AuditProvider` do pack — `PH-ART297-TWIN-NOTICE` (desligamento por just cause sem as duas notificações registradas), `PH-LA0620-FINALPAY` (final pay em aberto além de 30 dias), `PH-COE-3DAYS`.
 
 UI: rota autenticada `/separations` — abrir desligamento, conduzir o fluxo twin-notice com prazos, calcular e liberar final pay, baixar COE.
@@ -79,7 +81,7 @@ Entrega documental + controles, sem esperar as fases:
 
 ## Governança
 
-Cada fase que alterar comportamento estatutário do pack bumpa `rulesetVersion` e exige **re-assinatura Ed25519** — o teste de adulteração (`src/packs/__tests__/signature-tamper.test.ts`) já bloqueia bump sem re-assinatura. `commercialReady` do pack PH continua `false` até, no mínimo, o fim da Fase A + Fase B (maternidade/paternidade), com evidência em ADR e release checklist.
+Cada fase que alterar comportamento estatutário do pack bumpa `rulesetVersion` e exige **re-assinatura Ed25519** — o teste de adulteração (`src/packs/__tests__/signature-tamper.test.ts`) já bloqueia bump sem re-assinatura. `commercialReady` do pack PH continua `false` até, no mínimo, o fim da Fase A + Fase B (maternidade/paternidade), com evidência em ADR e release checklist. **Nota de release**: `commercialReady=true` não cobre o cadastro de dependentes (Fase C), que continua sendo pré-requisito parcial da isenção fiscal por dependente. A documentação de release deve listar essa limitação explicitamente até a Fase C fechar.
 
 ## Notas técnicas
 
