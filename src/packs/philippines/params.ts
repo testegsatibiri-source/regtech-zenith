@@ -120,6 +120,15 @@ export const PH_PARAMS = {
   // Probation / regularization (Labor Code Art. 296)
   probationMaxMonths: 6,
 
+  // Offboarding / final pay (Labor Code Arts. 297–299; DOLE LA 06-20).
+  separation: {
+    finalPayDeadlineDays: 30, // DOLE Labor Advisory 06-20
+    coeDeadlineDays: 3, // Art. 102 — 3 days of request
+    nteResponseDays: 5, // minimum calendar days to answer NTE
+    doleAdvanceNoticeDays: 30, // authorized-cause advance notice
+    resignationNoticeDays: 30, // Art. 285 minimum notice
+  },
+
   // 13th month (PD 851)
   thirteenthDueMonth: 12,
   thirteenthDueDay: 24,
