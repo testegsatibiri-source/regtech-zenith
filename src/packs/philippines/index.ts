@@ -1,4 +1,4 @@
-// Philippines CountryPack — v1.2.0 (PH-2024.3), statutory correction in H21.
+// Philippines CountryPack — v1.4.0 (PH-2024.4), H22 offboarding + final pay.
 //   • interfaceVersion 1.0.0 (frozen contract)
 //   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
@@ -15,6 +15,7 @@ import type { ContractProvider } from "@/sdk";
 import type { RuleProvider, ComplianceRule } from "@/sdk/providers/RuleProvider";
 import type { AuditProvider, AuditHeuristic } from "@/sdk";
 import type { FilingProvider } from "@/sdk";
+import type { SeparationProvider } from "@/sdk";
 
 import type { SignatureBlock } from "@/sdk/manifest";
 import { PH_SIGNATURE_BLOCK } from "./signature";
@@ -30,11 +31,18 @@ import {
   PH_EMPLOYEE_IDENTIFIERS,
 } from "./engines/identifiers";
 import { PH_FILING_FORMS, generatePhFiling } from "./engines/filings";
+import {
+  phGrounds,
+  phComputeSeparationPay,
+  phComputeFinalPay,
+  phProcessRequirements,
+} from "./engines/separation";
 
 const PROVIDES: Capability[] = [
   "payroll", "tax", "benefits", "thirteenth",
-  "calendar", "contracts", "audit", "rules", "filings",
+  "calendar", "contracts", "audit", "rules", "filings", "separation",
 ];
+
 
 const manifest: CountryManifest = {
   country: "PH",
