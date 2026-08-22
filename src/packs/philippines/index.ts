@@ -105,7 +105,7 @@ const separation: SeparationProvider = {
   grounds: () => phGrounds(),
   computeSeparationPay: (input) => phComputeSeparationPay(input),
   computeFinalPay: (input, ctx) =>
-    phComputeFinalPay(input, ctx?.config?.rulesetVersion ?? `PH-${PH_PARAMS.version}`),
+    phComputeFinalPay(input, ctx?.rulesetVersion ?? `PH-${PH_PARAMS.version}`),
   processRequirements: (input) => phProcessRequirements(input),
 };
 
