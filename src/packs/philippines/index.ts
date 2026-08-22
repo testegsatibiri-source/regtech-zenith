@@ -373,7 +373,7 @@ function health(): HealthReport {
     const pay = separation.computeSeparationPay({
       monthlySalary: 30_000,
       monthsOfService: 24,
-      ground: grounds.find((g) => g.code === "retrenchment")!,
+      ground: grounds.find((g) => g.code === "PH-LC-298-AUTHORIZED")!,
     });
     checks.push({
       name: "separation.computeSeparationPay.smoke",
@@ -390,7 +390,7 @@ function health(): HealthReport {
           separationDate: "2026-05-01",
         },
         separation: {
-          ground: grounds.find((g) => g.code === "resignation")!,
+          ground: grounds.find((g) => g.code === "PH-LC-285-CONSTRUCTIVE")!,
           monthlySalaryForStatutory: 30_000,
           ytdAnnualGrossEarned: 360_000,
           finalPeriodDaysWorked: 22,
@@ -409,7 +409,7 @@ function health(): HealthReport {
         : `Expected incomplete (no leave accrual): ${final.missing.join("; ")}`,
     });
     const req = separation.processRequirements({
-      ground: grounds.find((g) => g.code === "serious-misconduct")!,
+      ground: grounds.find((g) => g.code === "PH-LC-297-JUST-CAUSE")!,
       separationDate: "2026-05-01",
     });
     checks.push({
