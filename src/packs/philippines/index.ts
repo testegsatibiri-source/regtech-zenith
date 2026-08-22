@@ -266,6 +266,26 @@ const phHeuristics: AuditHeuristic[] = [
       };
     },
   },
+  // H22 Phase A — separation provider is present and exposes all grounds.
+  // This is a capability-presence check; it does not penalize active employers.
+  {
+    code: "PH-SEPARATION-CAPABLE",
+    title: "Offboarding engine exposes all Labor Code separation grounds",
+    severity: "low",
+    evaluate: (ctx) => {
+      const grounds = separation.grounds();
+      const just = grounds.filter((g) => g.category === "just_cause").length;
+      const authorized = grounds.filter((g) => g.category === "authorized_cause").length;
+      const ok = just >= 4 && authorized >= 3;
+      return {
+        passed: ok,
+        message: ok
+          ? `Offboarding engine loaded: ${just} just-cause and ${authorized} authorized-cause grounds`
+          : "Offboarding engine is missing required separation grounds",
+        impact: ok ? 0 : 1,
+      };
+    },
+  },
 ];
 
 
