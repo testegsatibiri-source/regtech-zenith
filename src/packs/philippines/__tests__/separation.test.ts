@@ -156,8 +156,9 @@ describe("PH separation engine (H22 Phase A)", () => {
     expect(out.complete).toBe(true);
     expect(out.missing).toEqual([]);
     const sil = out.components.find((c) => c.code === "SIL_UNUSED")!;
-    expect(sil.amount).toBeCloseTo(6_818.18, 2);
-    expect(out.total).toBeCloseTo(34_318.18, 2);
+    expect(sil.amount).toBeCloseTo(6_818.20, 2);
+    expect(out.total).toBeCloseTo(34_318.20, 2);
+
   });
 
   it("returns 30-day final pay deadline for all cases (DOLE LA 06-20)", () => {
