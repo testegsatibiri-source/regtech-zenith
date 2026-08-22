@@ -380,32 +380,47 @@ function health(): HealthReport {
       ok: pay.eligible && pay.amount > 0,
       message: pay.eligible ? undefined : "Separation pay unexpectedly not eligible",
     });
-    const final = separation.computeFinalPay({
-      employee: { base_salary: 30_000 },
-      separationDate: "2026-05-01",
-      monthlySalary: 30_000,
-      monthsOfService: 12,
-      ground: grounds.find((g) => g.code === "resignation")!,
-      thirteenthAmount: 30_000 / 12,
-    });
+    const final = separation.computeFinalPay(
+      {
+        employee: {
+          employeeId: "emp-000",
+          fullName: "Smoke Test",
+          baseSalary: 30_000,
+          joinDate: "2025-05-01",
+          separationDate: "2026-05-01",
+        },
+        separation: {
+          ground: grounds.find((g) => g.code === "resignation")!,
+          monthlySalaryForStatutory: 30_000,
+          ytdAnnualGrossEarned: 360_000,
+          finalPeriodDaysWorked: 22,
+          finalPeriodDays: 22,
+          leaveAccrual: null,
+        },
+        thirteenthAmount: 30_000,
+      },
+      { country: "PH", rulesetVersion: `PH-${PH_PARAMS.version}`, siblings: {} },
+    );
     checks.push({
       name: "separation.computeFinalPay.smoke",
-      ok: final.totalGross >= 0,
-      message: final.warnings.length > 0 ? final.warnings.join("; ") : undefined,
+      ok: final.total >= 0 && !final.complete,
+      message: final.complete
+        ? undefined
+        : `Expected incomplete (no leave accrual): ${final.missing.join("; ")}`,
     });
     const req = separation.processRequirements({
-      employee: { base_salary: 30_000 },
       ground: grounds.find((g) => g.code === "serious-misconduct")!,
       separationDate: "2026-05-01",
     });
     checks.push({
       name: "separation.processRequirements.smoke",
-      ok: req.notices.length >= 2,
-      message: req.notices.length >= 2 ? undefined : "Twin Notice not produced for just-cause case",
+      ok: req.length >= 2,
+      message: req.length >= 2 ? undefined : "Twin Notice not produced for just-cause case",
     });
   } catch (err) {
     checks.push({ name: "separation.grounds.non-empty", ok: false, message: (err as Error).message });
   }
+
   const failing = checks.filter((c) => !c.ok);
   const status: HealthReport["status"] = failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
   return { status, checks };
