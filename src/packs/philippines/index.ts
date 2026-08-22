@@ -271,7 +271,7 @@ const phHeuristics: AuditHeuristic[] = [
   {
     code: "PH-SEPARATION-CAPABLE",
     title: "Offboarding engine exposes all Labor Code separation grounds",
-    severity: "low",
+    severity: "info",
     evaluate: (ctx) => {
       const grounds = separation.grounds();
       const just = grounds.filter((g) => g.category === "just_cause").length;
