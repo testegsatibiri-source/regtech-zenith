@@ -11,6 +11,7 @@ export const CAPABILITIES = [
   "audit",
   "rules",
   "filings",
+  "separation",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
