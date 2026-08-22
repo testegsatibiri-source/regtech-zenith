@@ -303,7 +303,7 @@ const audit: AuditProvider = {
   heuristics: () => phHeuristics,
 };
 
-const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit, filings };
+const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit, filings, separation };
 
 function health(): HealthReport {
   const checks: { name: string; ok: boolean; message?: string }[] = [
@@ -363,6 +363,48 @@ function health(): HealthReport {
     checks.push({ name: "contracts.validate.smoke", ok: true });
   } catch (err) {
     checks.push({ name: "contracts.validate.smoke", ok: false, message: (err as Error).message });
+  }
+  try {
+    const grounds = separation.grounds();
+    checks.push({
+      name: "separation.grounds.non-empty",
+      ok: grounds.length >= 4 && grounds.every((g) => g.monthsPerYear >= 0),
+    });
+    const pay = separation.computeSeparationPay({
+      monthlySalary: 30_000,
+      monthsOfService: 24,
+      ground: grounds.find((g) => g.code === "retrenchment")!,
+    });
+    checks.push({
+      name: "separation.computeSeparationPay.smoke",
+      ok: pay.eligible && pay.amount > 0,
+      message: pay.eligible ? undefined : "Separation pay unexpectedly not eligible",
+    });
+    const final = separation.computeFinalPay({
+      employee: { base_salary: 30_000 },
+      separationDate: "2026-05-01",
+      monthlySalary: 30_000,
+      monthsOfService: 12,
+      ground: grounds.find((g) => g.code === "resignation")!,
+      thirteenthAmount: 30_000 / 12,
+    });
+    checks.push({
+      name: "separation.computeFinalPay.smoke",
+      ok: final.totalGross >= 0,
+      message: final.warnings.length > 0 ? final.warnings.join("; ") : undefined,
+    });
+    const req = separation.processRequirements({
+      employee: { base_salary: 30_000 },
+      ground: grounds.find((g) => g.code === "serious-misconduct")!,
+      separationDate: "2026-05-01",
+    });
+    checks.push({
+      name: "separation.processRequirements.smoke",
+      ok: req.notices.length >= 2,
+      message: req.notices.length >= 2 ? undefined : "Twin Notice not produced for just-cause case",
+    });
+  } catch (err) {
+    checks.push({ name: "separation.grounds.non-empty", ok: false, message: (err as Error).message });
   }
   const failing = checks.filter((c) => !c.ok);
   const status: HealthReport["status"] = failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
