@@ -48,7 +48,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.3.0",
+  version: "1.4.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -59,7 +59,7 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig"],
+  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig", "offboarding"],
   // Only ship languages that actually have translated copy (audit finding #6).
   supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
