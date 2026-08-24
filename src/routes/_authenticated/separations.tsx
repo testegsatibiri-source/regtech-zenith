@@ -241,6 +241,7 @@ function SeparationsPage() {
           </CardContent>
         </Card>
       </div>
+      )}
     </div>
   );
 }
