@@ -45,9 +45,11 @@ function ShellInner({ children }: { children: ReactNode }) {
     { to: "/calendar", label: "Calendar", icon: CalendarClock },
     { to: "/contracts", label: "Contracts", icon: FileSignature },
     { to: "/filings", label: "Filings", icon: FileDown },
+    { to: "/separations", label: "Separations", icon: UserX },
     { to: "/audit", label: "AI Audit", icon: Sparkles },
     { to: "/company", label: "Employer registry", icon: Building2 },
   ];
+
 
 
   async function signOut() {
