@@ -24,9 +24,10 @@ export const listSeparationGrounds = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ country: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    const pack = CountryRuntime.get(data.country);
-    if (!pack) throw new Error(`Country pack ${data.country} not installed`);
-    if (!pack.providers.separation) throw new Error("Separation provider not available");
+    // Separation is an optional capability: countries without an offboarding
+    // engine return an empty list instead of failing the page.
+    const pack = CountryRuntime.find(data.country);
+    if (!pack?.providers.separation) return [];
     const ctx = CountryRuntime.contextFor(data.country);
     return pack.providers.separation.grounds(ctx).map((g) => ({
       code: g.code,
