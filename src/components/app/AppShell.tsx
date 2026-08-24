@@ -1,7 +1,8 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles, CalendarClock, FileSignature, FileDown } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles, CalendarClock, FileSignature, FileDown, UserX } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { CompanyProvider, useCompany } from "@/lib/companyContext";
