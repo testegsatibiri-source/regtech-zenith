@@ -4,7 +4,25 @@ _Last audit: 2026-08-24 (Sprint H22 Phase A — PH Offboarding & Final Pay compl
 
 
 
+## H22 delivered (PH HR Track — Phase A)
+
+| Area | Item | Status |
+|------|------|--------|
+| SDK | `src/sdk/providers/SeparationProvider.ts` — pure contract for grounds, separation pay, final pay, requirements | ✅ |
+| SDK | `Capability` adds `separation`; `EXPECTED_INTERFACES` and `validator.ts` wired | ✅ |
+| Pack PH | `src/packs/philippines/engines/separation.ts` — Arts. 297, 298, 299 grounds, Twin Notice, DOLE 30-day advance, Final Pay deadline | ✅ |
+| Pack PH | `params.ts` separation constants + version bump to v1.4.0 / PH-2024.4 | ✅ |
+| Pack PH | Re-signed manifest (`signature.ts`) + DB key rotation for `uboard-ph` / `platform-cto-ph` | ✅ |
+| Core | `src/lib/separation.functions.ts` — `listSeparationGrounds`, `computeFinalPay` server functions with RLS auth | ✅ |
+| UI | `/separations` route + AppShell nav item for final-pay calculation | ✅ |
+| QA | `src/packs/philippines/__tests__/separation.test.ts` — 156 tests passing | ✅ |
+
+**H22 Phase B preview (next sprint):** Statutory leave (SIL, maternity RA 11210, paternity, solo parent) as `LeaveProvider` so `FinalPay` can resolve leave accrual natively instead of taking a manual snapshot.
+
+
+
 ## H11 delivered
+
 
 | Area | Item | Status |
 |------|------|--------|
