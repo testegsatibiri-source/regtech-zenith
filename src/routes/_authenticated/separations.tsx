@@ -65,6 +65,8 @@ function SeparationsPage() {
   const grounds = groundsQuery.data ?? [];
   const selected = grounds.find((g) => g.code === groundCode);
 
+  const unsupported = groundsQuery.isSuccess && grounds.length === 0;
+
   if (!companyId) return <p className="text-muted-foreground">Create a company first.</p>;
 
   async function onSubmit(e: React.FormEvent) {
