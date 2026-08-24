@@ -52,9 +52,11 @@ export const computeFinalPay = createServerFn({ method: "POST" })
     if (!membership) throw new Error("Company not found");
     if (membership.owner_id !== userId) throw new Error("Forbidden");
 
-    const pack = CountryRuntime.get(membership.country_code);
+    const pack = CountryRuntime.find(membership.country_code);
     if (!pack) throw new Error(`Country pack ${membership.country_code} not installed`);
-    if (!pack.providers.separation) throw new Error("Separation provider not available");
+    if (!pack.providers.separation) {
+      throw new Error(`Offboarding is not available for ${membership.country_code} yet`);
+    }
 
     const ctx = CountryRuntime.contextFor(membership.country_code);
     const ground = pack.providers.separation.grounds(ctx).find((g) => g.code === data.groundCode);
