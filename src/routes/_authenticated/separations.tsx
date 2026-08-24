@@ -114,6 +114,20 @@ function SeparationsPage() {
         </div>
       </div>
 
+      {unsupported ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-warning" /> Not available for {activePack.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            This country pack does not ship an offboarding / final pay engine yet. Switch to a
+            country pack that provides the separation capability (e.g. Philippines) to compute
+            final pay and statutory notice requirements.
+          </CardContent>
+        </Card>
+      ) : (
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
