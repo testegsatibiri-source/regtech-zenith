@@ -49,6 +49,18 @@ export type {
   FinalPayComponent,
   LeaveAccrualSnapshot,
 } from "./providers/SeparationProvider";
+export type {
+  LeaveProvider,
+  LeaveType,
+  LeaveCategory,
+  LeaveSubject,
+  LeaveEntitlementInput,
+  LeaveEntitlement,
+  LeaveConversionInput,
+  LeaveConversionOutput,
+  SalaryDifferentialInput,
+  SalaryDifferentialOutput,
+} from "./providers/LeaveProvider";
 export type { AuditProvider, AuditHeuristic, AuditContext } from "./providers/AuditProvider";
 
 // H10 additions

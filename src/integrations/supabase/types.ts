@@ -710,6 +710,132 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_balances: {
+        Row: {
+          company_id: string
+          converted_days: number
+          created_at: string
+          employee_id: string
+          entitled_days: number
+          id: string
+          leave_code: string
+          notes: string | null
+          updated_at: string
+          used_days: number
+          year: number
+        }
+        Insert: {
+          company_id: string
+          converted_days?: number
+          created_at?: string
+          employee_id: string
+          entitled_days?: number
+          id?: string
+          leave_code: string
+          notes?: string | null
+          updated_at?: string
+          used_days?: number
+          year: number
+        }
+        Update: {
+          company_id?: string
+          converted_days?: number
+          created_at?: string
+          employee_id?: string
+          entitled_days?: number
+          id?: string
+          leave_code?: string
+          notes?: string | null
+          updated_at?: string
+          used_days?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          days: number
+          decided_at: string | null
+          decided_by: string | null
+          employee_id: string
+          end_date: string
+          id: string
+          leave_code: string
+          metadata: Json
+          paid: boolean
+          reason: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          days?: number
+          decided_at?: string | null
+          decided_by?: string | null
+          employee_id: string
+          end_date: string
+          id?: string
+          leave_code: string
+          metadata?: Json
+          paid?: boolean
+          reason?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          days?: number
+          decided_at?: string | null
+          decided_by?: string | null
+          employee_id?: string
+          end_date?: string
+          id?: string
+          leave_code?: string
+          metadata?: Json
+          paid?: boolean
+          reason?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metrics_events: {
         Row: {
           id: number

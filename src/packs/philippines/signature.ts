@@ -1,4 +1,4 @@
-// H22 Phase A — Dual-signature block for the Philippines pack v1.4.0 (PH-2024.4).
+// H22 Phase B — Dual-signature block for the Philippines pack v1.5.0 (PH-2024.5).
 // Signatures are computed over the canonical manifest bytes
 // (country, name, currency, version, rulesetVersion, interfaceVersion,
 // commercialReady) — see @/packs/indonesia/params/canonical-manifest.
@@ -9,16 +9,16 @@ import type { SignatureBlock } from "@/sdk/manifest";
 export const PH_SIGNATURE_BLOCK: SignatureBlock = {
   author: {
     publisher: "uboard-ph",
-    keyId: "ead45d8f7d2068cbdb1c1708ade9dd231523a426c39c5fcc84718a4444f0babd",
+    keyId: "4151e9a57e6ee64a5ce0511070419e63cccce6c193bb032031de19621b6baa79",
     algorithm: "Ed25519",
-    signature: "rfbQm4Y3N9URZGbkwG7qAtXMD/RC+JuRj1OC8Ve3Gf6h/QhNyjFeFtnrK6W5wWUR4KePVkqwhgqq/dJ+FiPkBw==",
-    ts: "2026-08-24T11:50:13Z",
+    signature: "mjTdKmhhkD/jmFcI/N5D07bnreqpTFgomlWEuru4SF9LnFS7NtRtmFYy5m2OF2Vd8ZnxGSntd07MgdXY89EBCQ==",
+    ts: "2026-08-25T01:32:34Z",
   },
   countersign: {
     publisher: "platform-cto-ph",
-    keyId: "40951ab0622cfe14259fc5c38bcf8c27ea618ea85e4273c7a6db9cb2e09e86b7",
+    keyId: "1a441188c852aa95a0a8785630070ced188d00ba51ccbfc07690208ecefa4ea0",
     algorithm: "Ed25519",
-    signature: "D3mEaxmkWKqwvMgwnUF+CgiOFf34/cX3fCMrTaif8yf5oQ5CFutPix0b9GnVRTM1n2u4eS8km3P0nvGBlxA/DA==",
-    ts: "2026-08-24T11:50:13Z",
+    signature: "qD8ycEfJRkw5EIfIv1kZJ0pWnVTIYLgo70Bw0MTXMddJjTaqZXBymAfEwSmT10BdqIPS+0KedpfxD7uc9tsODw==",
+    ts: "2026-08-25T01:32:34Z",
   },
 };
