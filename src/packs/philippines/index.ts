@@ -321,7 +321,7 @@ const audit: AuditProvider = {
   heuristics: () => phHeuristics,
 };
 
-const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit, filings, separation };
+const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit, filings, separation, leave };
 
 function health(): HealthReport {
   const checks: { name: string; ok: boolean; message?: string }[] = [
@@ -437,6 +437,41 @@ function health(): HealthReport {
     });
   } catch (err) {
     checks.push({ name: "separation.grounds.non-empty", ok: false, message: (err as Error).message });
+  }
+
+  // H22 Fase B — statutory leave smoke checks.
+  try {
+    const types = leave.types();
+    checks.push({
+      name: "leave.types.catalogue",
+      ok: types.some((t) => t.code === "PH-SIL") && types.some((t) => t.code === "PH-MATERNITY"),
+      message: "SIL (Art. 95) and Expanded Maternity (RA 11210) must be present",
+    });
+    const ent = leave.entitlement({
+      employee: {
+        employeeId: "emp-000",
+        fullName: "Smoke Test",
+        baseSalary: 30_000,
+        joinDate: "2024-01-01",
+        sex: "female",
+        maritalStatus: "married",
+      },
+      asOf: "2026-01-01",
+    });
+    const sil = ent.find((e) => e.code === "PH-SIL");
+    checks.push({
+      name: "leave.entitlement.sil",
+      ok: !!sil && sil.eligible && sil.entitledDays === PH_PARAMS.leave.silDays,
+      message: "SIL must grant 5 days after 1 year of service (Art. 95)",
+    });
+    const conv = leave.convert({ code: "PH-MATERNITY", unusedDays: 10, monthlySalary: 30_000 });
+    checks.push({
+      name: "leave.convert.parental-not-convertible",
+      ok: !conv.convertible && conv.amount === 0,
+      message: "Maternity leave must never convert to cash",
+    });
+  } catch (err) {
+    checks.push({ name: "leave.types.catalogue", ok: false, message: (err as Error).message });
   }
 
   const failing = checks.filter((c) => !c.ok);

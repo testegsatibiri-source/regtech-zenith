@@ -19,18 +19,18 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.4.0",
-  rulesetVersion: "PH-2024.4",
+  version: "1.5.0",
+  rulesetVersion: "PH-2024.5",
   interfaceVersion: "1.0.0",
-  engines: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation"],
-  provides: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation"],
+  engines: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation", "leave"],
+  provides: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation", "leave"],
   requires: [],
   events: {
     emits: ["PayrollCalculated@1", "PayrollFinalized@1", "TaxCalculated@1"],
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig", "offboarding"],
+  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig", "offboarding", "statutory-leave"],
   supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
   commercialReady: false,
@@ -62,7 +62,7 @@ const block = {
   },
 };
 
-console.log("// === PH v1.4.0 signature block ===");
+console.log("// === PH v1.5.0 signature block ===");
 console.log(JSON.stringify(block, null, 2));
 console.log("\n// === Trust store public keys (INSERT or UPDATE) ===");
 console.log(`-- author: uboard-ph, keyId=${block.author.keyId}`);
