@@ -64,7 +64,7 @@ const SSS_2024_TABLE = [
 ] as const;
 
 export const PH_PARAMS = {
-  version: "2024.4", // bumped from 2024.3 after H22 offboarding / final pay
+  version: "2024.5", // bumped from 2024.4 after H22 Fase B statutory leave
   currency: "PHP",
 
   // BIR Withholding Tax on Compensation — Monthly (TRAIN Law, effective 2023+).
@@ -127,6 +127,24 @@ export const PH_PARAMS = {
     nteResponseDays: 5, // minimum calendar days to answer NTE
     doleAdvanceNoticeDays: 30, // authorized-cause advance notice
     resignationNoticeDays: 30, // Art. 285 minimum notice
+  },
+
+  // Statutory leave (H22 Fase B).
+  // Art. 95 (SIL), RA 11210 (maternity), RA 8187 (paternity),
+  // RA 8972/RA 11861 (solo parent), RA 9262 (VAWC), RA 9710 (gynecological).
+  leave: {
+    silDays: 5,
+    maternityDays: 105,
+    maternitySoloParentDays: 120,
+    maternityMiscarriageDays: 60,
+    maternityTransferableDays: 7,
+    // RA 11210 IRR uses a 30-day month for the daily maternity rate.
+    maternityDailyDivisor: 30,
+    paternityDays: 7,
+    paternityMaxChildren: 4,
+    soloParentDays: 7,
+    vawcDays: 10,
+    gynecologicalDays: 60, // up to 2 months per 12-month period
   },
 
   // 13th month (PD 851)
