@@ -1,4 +1,4 @@
-// Philippines CountryPack — v1.4.0 (PH-2024.4), H22 offboarding + final pay.
+// Philippines CountryPack — v1.5.0 (PH-2024.5), H22 offboarding + statutory leave.
 //   • interfaceVersion 1.0.0 (frozen contract)
 //   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
@@ -16,6 +16,7 @@ import type { RuleProvider, ComplianceRule } from "@/sdk/providers/RuleProvider"
 import type { AuditProvider, AuditHeuristic } from "@/sdk";
 import type { FilingProvider } from "@/sdk";
 import type { SeparationProvider } from "@/sdk";
+import type { LeaveProvider } from "@/sdk";
 
 import type { SignatureBlock } from "@/sdk/manifest";
 import { PH_SIGNATURE_BLOCK } from "./signature";
@@ -37,10 +38,17 @@ import {
   phComputeFinalPay,
   phProcessRequirements,
 } from "./engines/separation";
+import {
+  phLeaveTypes,
+  phLeaveEntitlement,
+  phLeaveAccrual,
+  phLeaveConvert,
+  phSalaryDifferential,
+} from "./engines/leave";
 
 const PROVIDES: Capability[] = [
   "payroll", "tax", "benefits", "thirteenth",
-  "calendar", "contracts", "audit", "rules", "filings", "separation",
+  "calendar", "contracts", "audit", "rules", "filings", "separation", "leave",
 ];
 
 
@@ -48,7 +56,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.4.0",
+  version: "1.5.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -59,7 +67,7 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig", "offboarding"],
+  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig", "offboarding", "statutory-leave"],
   // Only ship languages that actually have translated copy (audit finding #6).
   supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
@@ -107,6 +115,16 @@ const separation: SeparationProvider = {
   computeFinalPay: (input, ctx) =>
     phComputeFinalPay(input, ctx?.rulesetVersion ?? `PH-${PH_PARAMS.version}`),
   processRequirements: (input) => phProcessRequirements(input),
+};
+
+// H22 Phase B — statutory leave (Art. 95, RA 11210, RA 8187, RA 8972, RA 9262, RA 9710).
+const leave: LeaveProvider = {
+  version: "1.0.0",
+  types: () => phLeaveTypes(),
+  entitlement: (input) => phLeaveEntitlement(input),
+  accrual: (input) => phLeaveAccrual(input),
+  convert: (input) => phLeaveConvert(input),
+  salaryDifferential: (input) => phSalaryDifferential(input),
 };
 
 // Minimum wage + 13th month rules (compliance score inputs).

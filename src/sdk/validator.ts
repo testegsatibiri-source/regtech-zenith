@@ -28,9 +28,9 @@ const CAP_TO_KEY: Record<Capability, keyof Providers | null> = {
   audit: "audit",
   filings: "filings",
   separation: "separation",
+  leave: "leave",
   // Capabilities without a dedicated provider slot yet
   overtime: null,
-  leave: null,
 };
 
 

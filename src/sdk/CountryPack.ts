@@ -11,6 +11,7 @@ import type { RuleProvider } from "./providers/RuleProvider";
 import type { AuditProvider } from "./providers/AuditProvider";
 import type { FilingProvider } from "./providers/FilingProvider";
 import type { SeparationProvider } from "./providers/SeparationProvider";
+import type { LeaveProvider } from "./providers/LeaveProvider";
 
 export interface Providers {
   tax?: TaxProvider;
@@ -25,6 +26,8 @@ export interface Providers {
   filings?: FilingProvider;
   /** H22 Phase A — optional offboarding / final pay (PH first). */
   separation?: SeparationProvider;
+  /** H22 Phase B — optional statutory leave (PH first). */
+  leave?: LeaveProvider;
 }
 
 
