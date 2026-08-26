@@ -76,13 +76,27 @@ export const computeFinalPay = createServerFn({ method: "POST" })
         ytdAnnualGrossEarned: data.baseSalary * Math.min(data.yearsOfService, 1) * 12,
         finalPeriodDaysWorked: data.finalPeriodDaysWorked,
         finalPeriodDays: data.finalPeriodDays,
+        // H22 Fase B — when the pack ships a LeaveProvider, the SIL accrual
+        // comes from it; the manual field is only an override.
         leaveAccrual: data.unusedLeaveDays
           ? {
               silUnusedDays: data.unusedLeaveDays,
               silDailyRate: data.baseSalary / 26,
               complete: true,
             }
-          : null,
+          : (pack.providers.leave?.accrual(
+              {
+                employee: {
+                  employeeId: data.employeeId,
+                  fullName: data.fullName,
+                  baseSalary: data.baseSalary,
+                  joinDate: data.joinDate,
+                },
+                asOf: data.separationDate,
+              },
+              ctx,
+            ) ?? null),
+
       },
       thirteenthAmount: data.thirteenthAmount,
       deductions: data.deductions ?? 0,
