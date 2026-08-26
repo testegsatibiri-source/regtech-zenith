@@ -1,6 +1,6 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-08-24 (Sprint H22 Phase A — PH Offboarding & Final Pay completed)._
+_Last audit: 2026-08-24 (Sprint H22 Phase B — PH Statutory Leave completed)._
 
 
 
@@ -17,7 +17,15 @@ _Last audit: 2026-08-24 (Sprint H22 Phase A — PH Offboarding & Final Pay compl
 | UI | `/separations` route + AppShell nav item for final-pay calculation | ✅ |
 | QA | `src/packs/philippines/__tests__/separation.test.ts` — 156 tests passing | ✅ |
 
-**H22 Phase B preview (next sprint):** Statutory leave (SIL, maternity RA 11210, paternity, solo parent) as `LeaveProvider` so `FinalPay` can resolve leave accrual natively instead of taking a manual snapshot.
+## H22 delivered (PH HR Track — Phase B)
+
+- `LeaveProvider` added to the SDK (`leave` capability now has a real provider slot; validator maps it).
+- PH engine `engines/leave.ts`: SIL (Art. 95), Expanded Maternity (RA 11210, 105/120 days + salary differential), Paternity (RA 8187, first 4 deliveries), Solo Parent (RA 8972/RA 11861), VAWC (RA 9262), Gynecological (RA 9710). Only SIL converts to cash.
+- Final pay now resolves the SIL accrual from the LeaveProvider; the Fase A incompleteness boundary is preserved for packs without a leave engine.
+- Core: `leave_balances` and `leave_requests` tables (RLS + GRANTs), `src/lib/leave.functions.ts`, route `/leave`.
+- Pack PH bumped to v1.5.0 / PH-2024.5 and re-signed (trust store updated).
+
+**H22 Phase C preview (next sprint):** 201 File — `employee_dependents`, `employee_job_history`, Solo Parent ID validity, and the `PH-201-FILE` completeness heuristic. `commercialReady` for PH stays `false` until Phase C closes the dependent-based tax exemption gap.
 
 
 
