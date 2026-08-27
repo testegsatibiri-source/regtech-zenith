@@ -42,6 +42,7 @@ function ShellInner({ children }: { children: ReactNode }) {
   const nav = [
     { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { to: "/employees", label: t("nav.employees"), icon: Users },
+    { to: "/personnel", label: "201 File", icon: FolderOpen },
     { to: "/payroll", label: t("nav.payroll"), icon: Calculator },
     { to: "/calendar", label: "Calendar", icon: CalendarClock },
     { to: "/contracts", label: "Contracts", icon: FileSignature },
