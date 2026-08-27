@@ -28,6 +28,7 @@ import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
 import { Route as PacksCountryRouteImport } from './routes/packs.$country'
 import { Route as AuthenticatedSeparationsRouteImport } from './routes/_authenticated/separations'
+import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedLeaveRouteImport } from './routes/_authenticated/leave'
 import { Route as AuthenticatedFilingsRouteImport } from './routes/_authenticated/filings'
@@ -144,6 +145,11 @@ const AuthenticatedSeparationsRoute =
     path: '/separations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPersonnelRoute = AuthenticatedPersonnelRouteImport.update({
+  id: '/personnel',
+  path: '/personnel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
   id: '/payroll',
   path: '/payroll',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/filings': typeof AuthenticatedFilingsRoute
   '/leave': typeof AuthenticatedLeaveRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/personnel': typeof AuthenticatedPersonnelRoute
   '/separations': typeof AuthenticatedSeparationsRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByTo {
   '/filings': typeof AuthenticatedFilingsRoute
   '/leave': typeof AuthenticatedLeaveRoute
   '/payroll': typeof AuthenticatedPayrollRoute
+  '/personnel': typeof AuthenticatedPersonnelRoute
   '/separations': typeof AuthenticatedSeparationsRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/_authenticated/filings': typeof AuthenticatedFilingsRoute
   '/_authenticated/leave': typeof AuthenticatedLeaveRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/_authenticated/personnel': typeof AuthenticatedPersonnelRoute
   '/_authenticated/separations': typeof AuthenticatedSeparationsRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/filings'
     | '/leave'
     | '/payroll'
+    | '/personnel'
     | '/separations'
     | '/packs/$country'
     | '/platform/audit'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/filings'
     | '/leave'
     | '/payroll'
+    | '/personnel'
     | '/separations'
     | '/packs/$country'
     | '/platform/audit'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/_authenticated/filings'
     | '/_authenticated/leave'
     | '/_authenticated/payroll'
+    | '/_authenticated/personnel'
     | '/_authenticated/separations'
     | '/packs/$country'
     | '/platform/audit'
@@ -649,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeparationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/personnel': {
+      id: '/_authenticated/personnel'
+      path: '/personnel'
+      fullPath: '/personnel'
+      preLoaderRoute: typeof AuthenticatedPersonnelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payroll': {
       id: '/_authenticated/payroll'
       path: '/payroll'
@@ -802,6 +821,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFilingsRoute: typeof AuthenticatedFilingsRoute
   AuthenticatedLeaveRoute: typeof AuthenticatedLeaveRoute
   AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
+  AuthenticatedPersonnelRoute: typeof AuthenticatedPersonnelRoute
   AuthenticatedSeparationsRoute: typeof AuthenticatedSeparationsRoute
   AuthenticatedCountryPacksCountryRoute: typeof AuthenticatedCountryPacksCountryRoute
   AuthenticatedCountryPacksIndexRoute: typeof AuthenticatedCountryPacksIndexRoute
@@ -817,6 +837,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFilingsRoute: AuthenticatedFilingsRoute,
   AuthenticatedLeaveRoute: AuthenticatedLeaveRoute,
   AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
+  AuthenticatedPersonnelRoute: AuthenticatedPersonnelRoute,
   AuthenticatedSeparationsRoute: AuthenticatedSeparationsRoute,
   AuthenticatedCountryPacksCountryRoute: AuthenticatedCountryPacksCountryRoute,
   AuthenticatedCountryPacksIndexRoute: AuthenticatedCountryPacksIndexRoute,

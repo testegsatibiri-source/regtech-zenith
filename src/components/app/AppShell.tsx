@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles, CalendarClock,
-  CalendarDays, FileSignature, FileDown, UserX } from "lucide-react";
+  CalendarDays, FileSignature, FileDown, UserX, FolderOpen } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useServerFn } from "@tanstack/react-start";
@@ -42,6 +42,7 @@ function ShellInner({ children }: { children: ReactNode }) {
   const nav = [
     { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { to: "/employees", label: t("nav.employees"), icon: Users },
+    { to: "/personnel", label: "201 File", icon: FolderOpen },
     { to: "/payroll", label: t("nav.payroll"), icon: Calculator },
     { to: "/calendar", label: "Calendar", icon: CalendarClock },
     { to: "/contracts", label: "Contracts", icon: FileSignature },

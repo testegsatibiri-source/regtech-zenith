@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -526,6 +526,126 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      employee_dependents: {
+        Row: {
+          birth_date: string | null
+          company_id: string
+          created_at: string
+          employee_id: string
+          full_name: string
+          id: string
+          is_pwd: boolean
+          is_qualified_dependent: boolean
+          is_student: boolean
+          notes: string | null
+          relationship: string
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          company_id: string
+          created_at?: string
+          employee_id: string
+          full_name: string
+          id?: string
+          is_pwd?: boolean
+          is_qualified_dependent?: boolean
+          is_student?: boolean
+          notes?: string | null
+          relationship?: string
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          full_name?: string
+          id?: string
+          is_pwd?: boolean
+          is_qualified_dependent?: boolean
+          is_student?: boolean
+          notes?: string | null
+          relationship?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_dependents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_dependents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_job_history: {
+        Row: {
+          base_salary: number
+          change_reason: string
+          company_id: string
+          created_at: string
+          department: string | null
+          effective_date: string
+          employee_id: string
+          employment_type: string | null
+          id: string
+          notes: string | null
+          position: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_salary?: number
+          change_reason?: string
+          company_id: string
+          created_at?: string
+          department?: string | null
+          effective_date: string
+          employee_id: string
+          employment_type?: string | null
+          id?: string
+          notes?: string | null
+          position?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_salary?: number
+          change_reason?: string
+          company_id?: string
+          created_at?: string
+          department?: string | null
+          effective_date?: string
+          employee_id?: string
+          employment_type?: string | null
+          id?: string
+          notes?: string | null
+          position?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_job_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_job_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employees: {
         Row: {
