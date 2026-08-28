@@ -8,6 +8,7 @@
 // lose and never enter the final pay conversion.
 
 import { PH_PARAMS } from "../params";
+import { validatePhSoloParentId } from "./identifiers";
 import type {
   LeaveConversionInput,
   LeaveConversionOutput,
@@ -118,6 +119,13 @@ export function phLeaveEntitlement(input: LeaveEntitlementInput): LeaveEntitleme
   const isFemale = employee.sex === "female";
   const isMale = employee.sex === "male";
   const married = (employee.maritalStatus ?? "").toLowerCase() === "married";
+  // RA 11861: solo-parent benefits require a *valid* Solo Parent ID, not a flag.
+  const soloParentId = validatePhSoloParentId(
+    (employee.countryMetadata as Record<string, unknown> | undefined) ?? {
+      solo_parent: employee.soloParent,
+    },
+    asOf,
+  );
 
   return PH_LEAVE_TYPES.map((t) => {
     let eligible = months >= t.minTenureMonths;
@@ -135,9 +143,11 @@ export function phLeaveEntitlement(input: LeaveEntitlementInput): LeaveEntitleme
         eligible = false;
         days = 0;
         reason = "Maternity leave applies to female employees (RA 11210)";
-      } else if (employee.soloParent) {
+      } else if (soloParentId.valid) {
         days = PH_PARAMS.leave.maternitySoloParentDays;
-        reason = `Solo parent: ${days} days under RA 11210 §3`;
+        reason = `Solo parent: ${days} days under RA 11210 §3 (${soloParentId.message})`;
+      } else if (employee.soloParent) {
+        reason = `${days} days under RA 11210 — solo-parent uplift withheld: ${soloParentId.message}`;
       }
     }
 
@@ -157,10 +167,10 @@ export function phLeaveEntitlement(input: LeaveEntitlementInput): LeaveEntitleme
       }
     }
 
-    if (t.code === "PH-SOLO-PARENT" && eligible && !employee.soloParent) {
+    if (t.code === "PH-SOLO-PARENT" && eligible && !soloParentId.valid) {
       eligible = false;
       days = 0;
-      reason = "Requires a valid Solo Parent ID on file (RA 8972 / RA 11861)";
+      reason = `Requires a valid Solo Parent ID on file — ${soloParentId.message}`;
     }
 
     if (t.code === "PH-GYNE" && eligible && !isFemale) {
