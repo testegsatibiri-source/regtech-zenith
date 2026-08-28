@@ -19,8 +19,8 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.5.0",
-  rulesetVersion: "PH-2024.5",
+  version: "1.6.0",
+  rulesetVersion: "PH-2024.6",
   interfaceVersion: "1.0.0",
   engines: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation", "leave"],
   provides: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation", "leave"],
@@ -62,7 +62,7 @@ const block = {
   },
 };
 
-console.log("// === PH v1.5.0 signature block ===");
+console.log("// === PH v1.6.0 signature block ===");
 console.log(JSON.stringify(block, null, 2));
 console.log("\n// === Trust store public keys (INSERT or UPDATE) ===");
 console.log(`-- author: uboard-ph, keyId=${block.author.keyId}`);

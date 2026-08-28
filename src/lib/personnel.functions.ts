@@ -235,6 +235,25 @@ export const getEmployeeDossier = createServerFn({ method: "POST" })
       },
     ];
 
+    // Solo Parent ID (RA 11861): only asserted when the employee claims the
+    // status — the ID is valid for one year and gates parental leave.
+    if (meta["solo_parent"]) {
+      const idNumber = String(meta["solo_parent_id"] ?? "").trim();
+      const expiry = String(meta["solo_parent_id_expiry"] ?? "").trim();
+      const today = new Date().toISOString().slice(0, 10);
+      const validExpiry = /^\d{4}-\d{2}-\d{2}$/.test(expiry) && expiry >= today;
+      checks.push({
+        code: "SOLO_PARENT_ID",
+        label: "Solo Parent ID valid",
+        passed: idNumber.length > 0 && validExpiry,
+        detail: !idNumber
+          ? "Solo-parent status claimed without an ID number (RA 8972 / RA 11861)"
+          : !validExpiry
+            ? `Solo Parent ID validity missing or expired (${expiry || "no date"}) — renew yearly`
+            : `ID ${idNumber}, valid until ${expiry}`,
+      });
+    }
+
     const passed = checks.filter((c) => c.passed).length;
     return {
       employee,
