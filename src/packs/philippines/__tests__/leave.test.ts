@@ -56,10 +56,63 @@ describe("PH entitlement rules", () => {
     expect(normal.entitledDays).toBe(105);
 
     const solo = phLeaveEntitlement({
-      employee: { ...base, sex: "female", soloParent: true },
+      employee: {
+        ...base,
+        sex: "female",
+        soloParent: true,
+        countryMetadata: {
+          solo_parent: true,
+          solo_parent_id: "SP-2026-0001",
+          solo_parent_id_expiry: "2027-01-01",
+        },
+      },
       asOf: "2026-06-01",
     }).find((e) => e.code === "PH-MATERNITY")!;
     expect(solo.entitledDays).toBe(120);
+  });
+
+  it("withholds solo-parent benefits without a valid Solo Parent ID (RA 11861)", () => {
+    // Flag only, no ID on file.
+    const flagOnly = phLeaveEntitlement({
+      employee: { ...base, sex: "female", soloParent: true, countryMetadata: { solo_parent: true } },
+      asOf: "2026-06-01",
+    });
+    expect(flagOnly.find((e) => e.code === "PH-MATERNITY")!.entitledDays).toBe(105);
+    expect(flagOnly.find((e) => e.code === "PH-SOLO-PARENT")!.eligible).toBe(false);
+
+    // Expired ID.
+    const expired = phLeaveEntitlement({
+      employee: {
+        ...base,
+        sex: "female",
+        soloParent: true,
+        countryMetadata: {
+          solo_parent: true,
+          solo_parent_id: "SP-2024-0009",
+          solo_parent_id_expiry: "2025-12-31",
+        },
+      },
+      asOf: "2026-06-01",
+    }).find((e) => e.code === "PH-SOLO-PARENT")!;
+    expect(expired.eligible).toBe(false);
+    expect(expired.reason).toMatch(/expired/i);
+
+    // Valid ID unlocks the 7-day parental leave.
+    const valid = phLeaveEntitlement({
+      employee: {
+        ...base,
+        sex: "female",
+        soloParent: true,
+        countryMetadata: {
+          solo_parent: true,
+          solo_parent_id: "SP-2026-0001",
+          solo_parent_id_expiry: "2027-01-01",
+        },
+      },
+      asOf: "2026-06-01",
+    }).find((e) => e.code === "PH-SOLO-PARENT")!;
+    expect(valid.eligible).toBe(true);
+    expect(valid.entitledDays).toBe(7);
   });
 
   it("limits paternity leave to married male employees, first 4 deliveries (RA 8187)", () => {
@@ -141,7 +194,7 @@ describe("Fase A ↔ Fase B boundary", () => {
           leaveAccrual: null,
         },
       },
-      "PH-2024.5",
+      "PH-2024.6",
     );
     expect(out.complete).toBe(false);
     expect(out.missing.join(" ")).toMatch(/LeaveProvider/);
@@ -168,7 +221,7 @@ describe("Fase A ↔ Fase B boundary", () => {
           leaveAccrual: accrual,
         },
       },
-      "PH-2024.5",
+      "PH-2024.6",
     );
     expect(out.complete).toBe(true);
     expect(out.components.find((c) => c.code === "SIL_UNUSED")?.amount).toBe(3600);
@@ -179,6 +232,6 @@ describe("pack registration", () => {
   it("advertises the leave capability and wires the provider", () => {
     expect(philippinesPack.supports("leave")).toBe(true);
     expect(philippinesPack.providers.leave).toBeDefined();
-    expect(philippinesPack.manifest.rulesetVersion).toBe("PH-2024.5");
+    expect(philippinesPack.manifest.rulesetVersion).toBe("PH-2024.6");
   });
 });
