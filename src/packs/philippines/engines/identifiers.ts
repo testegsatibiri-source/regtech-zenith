@@ -184,3 +184,60 @@ export function phFilingReadiness(input: {
     employeesMissing,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Solo Parent ID — H22 Phase C closing item.
+// RA 8972 as amended by RA 11861 §5: the Solo Parent ID is issued by the city
+// or municipal social welfare office and is valid for one (1) year, renewable.
+// Parental leave (7 days) and the 120-day maternity uplift are conditioned on a
+// *valid* (non-expired) ID, so the engine never grants them on a raw boolean.
+// ---------------------------------------------------------------------------
+
+export interface SoloParentIdStatus {
+  /** Employee record claims solo-parent status. */
+  claimed: boolean;
+  /** An ID number is on file. */
+  present: boolean;
+  /** Expiry date on file (ISO date), when captured. */
+  expiresOn: string | null;
+  expired: boolean;
+  /** Claimed AND present AND not expired. */
+  valid: boolean;
+  message: string;
+  legalBasis: string;
+}
+
+const SOLO_PARENT_BASIS = "RA 8972 §5 as amended by RA 11861";
+
+export function validatePhSoloParentId(
+  countryMetadata: Record<string, unknown> | null | undefined,
+  asOf?: string,
+): SoloParentIdStatus {
+  const meta = countryMetadata ?? {};
+  const claimed = Boolean(meta["solo_parent"]);
+  const idNumber = String(meta["solo_parent_id"] ?? "").trim();
+  const rawExpiry = String(meta["solo_parent_id_expiry"] ?? "").trim();
+  const expiresOn = /^\d{4}-\d{2}-\d{2}$/.test(rawExpiry) ? rawExpiry : null;
+  const today = asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)
+    ? asOf
+    : new Date().toISOString().slice(0, 10);
+  const present = idNumber.length > 0;
+  const expired = present && expiresOn !== null && expiresOn < today;
+
+  let message: string;
+  if (!claimed) message = "Employee is not registered as a solo parent";
+  else if (!present) message = `Solo Parent ID number is missing (${SOLO_PARENT_BASIS})`;
+  else if (!expiresOn) message = "Solo Parent ID validity date is missing — the ID must be renewed yearly";
+  else if (expired) message = `Solo Parent ID expired on ${expiresOn} — renew before granting parental leave`;
+  else message = `Solo Parent ID valid until ${expiresOn}`;
+
+  return {
+    claimed,
+    present,
+    expiresOn,
+    expired,
+    valid: claimed && present && expiresOn !== null && !expired,
+    message,
+    legalBasis: SOLO_PARENT_BASIS,
+  };
+}

@@ -235,6 +235,25 @@ export const getEmployeeDossier = createServerFn({ method: "POST" })
       },
     ];
 
+    // Solo Parent ID (RA 11861): only asserted when the employee claims the
+    // status — the ID is valid for one year and gates parental leave.
+    if (meta["solo_parent"]) {
+      const idNumber = String(meta["solo_parent_id"] ?? "").trim();
+      const expiry = String(meta["solo_parent_id_expiry"] ?? "").trim();
+      const today = new Date().toISOString().slice(0, 10);
+      const validExpiry = /^\d{4}-\d{2}-\d{2}$/.test(expiry) && expiry >= today;
+      checks.push({
+        code: "SOLO_PARENT_ID",
+        label: "Solo Parent ID valid",
+        passed: idNumber.length > 0 && validExpiry,
+        detail: !idNumber
+          ? "Solo-parent status claimed without an ID number (RA 8972 / RA 11861)"
+          : !validExpiry
+            ? `Solo Parent ID validity missing or expired (${expiry || "no date"}) — renew yearly`
+            : `ID ${idNumber}, valid until ${expiry}`,
+      });
+    }
+
     const passed = checks.filter((c) => c.passed).length;
     return {
       employee,
@@ -242,4 +261,46 @@ export const getEmployeeDossier = createServerFn({ method: "POST" })
       completeness: Math.round((passed / checks.length) * 100),
       complete: passed === checks.length,
     };
+  });
+
+// ---------------------------------------------- Solo Parent ID (RA 11861)
+
+const soloParentSchema = companyScope.extend({
+  soloParent: z.boolean(),
+  idNumber: z.string().trim().max(64).optional().nullable(),
+  expiresOn: z.string().trim().max(10).optional().nullable(),
+});
+
+/**
+ * Persists the Solo Parent ID on `employees.country_metadata`. The PH leave
+ * engine gates the 7-day parental leave and the 120-day maternity uplift on a
+ * non-expired ID, so the flag alone is never enough.
+ */
+export const updateSoloParentStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => soloParentSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: employee, error: readError } = await context.supabase
+      .from("employees")
+      .select("country_metadata")
+      .eq("id", data.employeeId)
+      .eq("company_id", data.companyId)
+      .maybeSingle();
+    if (readError) throw new Error(readError.message);
+    if (!employee) throw new Error("Employee not found");
+
+    const meta = {
+      ...((employee.country_metadata ?? {}) as Record<string, unknown>),
+      solo_parent: data.soloParent,
+      solo_parent_id: data.soloParent ? data.idNumber || null : null,
+      solo_parent_id_expiry: data.soloParent ? data.expiresOn || null : null,
+    };
+
+    const { error } = await context.supabase
+      .from("employees")
+      .update({ country_metadata: meta })
+      .eq("id", data.employeeId)
+      .eq("company_id", data.companyId);
+    if (error) throw new Error(error.message);
+    return { ok: true, metadata: meta };
   });

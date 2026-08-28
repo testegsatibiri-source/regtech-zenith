@@ -64,7 +64,7 @@ const SSS_2024_TABLE = [
 ] as const;
 
 export const PH_PARAMS = {
-  version: "2024.5", // bumped from 2024.4 after H22 Fase B statutory leave
+  version: "2024.6", // bumped from 2024.5 after H22 Fase C Solo Parent ID validation
   currency: "PHP",
 
   // BIR Withholding Tax on Compensation — Monthly (TRAIN Law, effective 2023+).

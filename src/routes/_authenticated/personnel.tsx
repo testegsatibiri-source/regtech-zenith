@@ -13,6 +13,7 @@ import {
   upsertJobHistory,
   deleteJobHistory,
   getEmployeeDossier,
+  updateSoloParentStatus,
 } from "@/lib/personnel.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ function PersonnelPage() {
   const saveHistoryFn = useServerFn(upsertJobHistory);
   const removeHistoryFn = useServerFn(deleteJobHistory);
   const dossierFn = useServerFn(getEmployeeDossier);
+  const soloParentFn = useServerFn(updateSoloParentStatus);
 
   const [employeeId, setEmployeeId] = useState("");
   const [depName, setDepName] = useState("");
@@ -67,6 +69,32 @@ function PersonnelPage() {
   const [jobDate, setJobDate] = useState("");
   const [jobReason, setJobReason] = useState<(typeof REASONS)[number]>("hire");
   const [busy, setBusy] = useState(false);
+  const [spEnabled, setSpEnabled] = useState(false);
+  const [spId, setSpId] = useState("");
+  const [spExpiry, setSpExpiry] = useState("");
+
+  async function saveSoloParent(e: React.FormEvent) {
+    e.preventDefault();
+    if (!companyId || !employeeId) return;
+    setBusy(true);
+    try {
+      await soloParentFn({
+        data: {
+          companyId,
+          employeeId,
+          soloParent: spEnabled,
+          idNumber: spId || null,
+          expiresOn: spExpiry || null,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["dossier", companyId, employeeId] });
+      toast.success("Solo Parent ID updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const employeesQuery = useQuery({
     queryKey: ["employees", companyId],
@@ -220,6 +248,33 @@ function PersonnelPage() {
                   </li>
                 ))}
               </ul>
+
+              <form onSubmit={saveSoloParent} className="space-y-3 rounded-lg border p-3">
+                <p className="text-sm font-medium">Solo Parent ID (RA 8972 / RA 11861)</p>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={spEnabled}
+                    onChange={(e) => setSpEnabled(e.target.checked)}
+                  />
+                  Employee is a registered solo parent
+                </label>
+                {spEnabled && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>ID number</Label>
+                      <Input value={spId} onChange={(e) => setSpId(e.target.value)} placeholder="SP-2026-0001" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Valid until</Label>
+                      <Input type="date" value={spExpiry} onChange={(e) => setSpExpiry(e.target.value)} />
+                    </div>
+                  </div>
+                )}
+                <Button type="submit" size="sm" disabled={busy}>
+                  Save solo parent status
+                </Button>
+              </form>
             </div>
           )}
         </CardContent>

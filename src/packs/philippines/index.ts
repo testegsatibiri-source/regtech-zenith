@@ -1,4 +1,4 @@
-// Philippines CountryPack — v1.5.0 (PH-2024.5), H22 offboarding + statutory leave.
+// Philippines CountryPack — v1.6.0 (PH-2024.6), H22 offboarding + leave + 201 File.
 //   • interfaceVersion 1.0.0 (frozen contract)
 //   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
@@ -56,7 +56,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.5.0",
+  version: "1.6.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
