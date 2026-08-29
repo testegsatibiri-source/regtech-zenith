@@ -1,6 +1,6 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-08-24 (Sprint H22 Phase B — PH Statutory Leave completed)._
+_Last audit: 2026-08-28 (Sprint H22 Phase C — PH 201 File + Solo Parent ID completed)._
 
 
 
@@ -25,7 +25,18 @@ _Last audit: 2026-08-24 (Sprint H22 Phase B — PH Statutory Leave completed)._
 - Core: `leave_balances` and `leave_requests` tables (RLS + GRANTs), `src/lib/leave.functions.ts`, route `/leave`.
 - Pack PH bumped to v1.5.0 / PH-2024.5 and re-signed (trust store updated).
 
-**H22 Phase C preview (next sprint):** 201 File — `employee_dependents`, `employee_job_history`, Solo Parent ID validity, and the `PH-201-FILE` completeness heuristic. `commercialReady` for PH stays `false` until Phase C closes the dependent-based tax exemption gap.
+## H22 delivered (PH HR Track — Phase C)
+
+- Core tables `employee_dependents` and `employee_job_history` (RLS + GRANTs) and `src/lib/personnel.functions.ts` (CRUD + `getEmployeeDossier`).
+- `PH-201-FILE` completeness checklist: statutory identifiers, hire date, contract, job/salary history, dependents and — when claimed — a valid Solo Parent ID.
+- `engines/identifiers.ts` gains `validatePhSoloParentId` (RA 8972 as amended by RA 11861: ID number + yearly validity).
+- `engines/leave.ts` now gates the 7-day parental leave AND the 120-day maternity uplift on a **non-expired** Solo Parent ID instead of a boolean flag.
+- `updateSoloParentStatus` server fn + `/personnel` UI to capture the ID number and expiry.
+- Pack PH bumped to v1.6.0 / PH-2024.6 and re-signed (trust store rotated); 170 tests passing.
+
+**H22 Phase D preview (next sprint):** Data Privacy Act (RA 10173) — consent register, retention policy and access log over the 201 File; plus the remaining DOLE reports. `commercialReady` for PH stays `false` until Phase 5 (pilot filing upload) and the privacy layer close.
+
+_Superseded preview:_ **H22 Phase C preview (next sprint):** 201 File — `employee_dependents`, `employee_job_history`, Solo Parent ID validity, and the `PH-201-FILE` completeness heuristic. `commercialReady` for PH stays `false` until Phase C closes the dependent-based tax exemption gap.
 
 
 
