@@ -49,6 +49,7 @@ function ShellInner({ children }: { children: ReactNode }) {
     { to: "/filings", label: "Filings", icon: FileDown },
     { to: "/leave", label: "Leave", icon: CalendarDays },
     { to: "/separations", label: "Separations", icon: UserX },
+    { to: "/privacy", label: "Data Privacy", icon: Lock },
     { to: "/audit", label: "AI Audit", icon: Sparkles },
     { to: "/company", label: "Employer registry", icon: Building2 },
   ];
