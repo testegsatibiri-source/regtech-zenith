@@ -527,6 +527,113 @@ export type Database = {
         }
         Relationships: []
       }
+      data_retention_policies: {
+        Row: {
+          active: boolean
+          category: string
+          company_id: string
+          created_at: string
+          id: string
+          legal_reference: string | null
+          notes: string | null
+          purge_action: string
+          retention_months: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          company_id: string
+          created_at?: string
+          id?: string
+          legal_reference?: string | null
+          notes?: string | null
+          purge_action?: string
+          retention_months: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          legal_reference?: string | null
+          notes?: string | null
+          purge_action?: string
+          retention_months?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_retention_policies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_consents: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_id: string
+          evidence_ref: string | null
+          granted: boolean
+          granted_at: string | null
+          id: string
+          legal_basis: string
+          notes: string | null
+          purpose: string
+          updated_at: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_id: string
+          evidence_ref?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          legal_basis?: string
+          notes?: string | null
+          purpose: string
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          evidence_ref?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          legal_basis?: string
+          notes?: string | null
+          purpose?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_consents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_consents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_dependents: {
         Row: {
           birth_date: string | null
@@ -1394,6 +1501,57 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personal_data_access_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          company_id: string
+          created_at: string
+          employee_id: string | null
+          id: string
+          metadata: Json
+          purpose: string | null
+          resource: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          company_id: string
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          metadata?: Json
+          purpose?: string | null
+          resource: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          company_id?: string
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          metadata?: Json
+          purpose?: string | null
+          resource?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_data_access_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_data_access_log_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
