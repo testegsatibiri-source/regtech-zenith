@@ -28,6 +28,7 @@ import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
 import { Route as PacksCountryRouteImport } from './routes/packs.$country'
 import { Route as AuthenticatedSeparationsRouteImport } from './routes/_authenticated/separations'
+import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
 import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
 import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedLeaveRouteImport } from './routes/_authenticated/leave'
@@ -145,6 +146,11 @@ const AuthenticatedSeparationsRoute =
     path: '/separations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPersonnelRoute = AuthenticatedPersonnelRouteImport.update({
   id: '/personnel',
   path: '/personnel',
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/leave': typeof AuthenticatedLeaveRoute
   '/payroll': typeof AuthenticatedPayrollRoute
   '/personnel': typeof AuthenticatedPersonnelRoute
+  '/privacy': typeof AuthenticatedPrivacyRoute
   '/separations': typeof AuthenticatedSeparationsRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
@@ -313,6 +320,7 @@ export interface FileRoutesByTo {
   '/leave': typeof AuthenticatedLeaveRoute
   '/payroll': typeof AuthenticatedPayrollRoute
   '/personnel': typeof AuthenticatedPersonnelRoute
+  '/privacy': typeof AuthenticatedPrivacyRoute
   '/separations': typeof AuthenticatedSeparationsRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
@@ -356,6 +364,7 @@ export interface FileRoutesById {
   '/_authenticated/leave': typeof AuthenticatedLeaveRoute
   '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
   '/_authenticated/personnel': typeof AuthenticatedPersonnelRoute
+  '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
   '/_authenticated/separations': typeof AuthenticatedSeparationsRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
@@ -399,6 +408,7 @@ export interface FileRouteTypes {
     | '/leave'
     | '/payroll'
     | '/personnel'
+    | '/privacy'
     | '/separations'
     | '/packs/$country'
     | '/platform/audit'
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/leave'
     | '/payroll'
     | '/personnel'
+    | '/privacy'
     | '/separations'
     | '/packs/$country'
     | '/platform/audit'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leave'
     | '/_authenticated/payroll'
     | '/_authenticated/personnel'
+    | '/_authenticated/privacy'
     | '/_authenticated/separations'
     | '/packs/$country'
     | '/platform/audit'
@@ -661,6 +673,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeparationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/privacy': {
+      id: '/_authenticated/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/personnel': {
       id: '/_authenticated/personnel'
       path: '/personnel'
@@ -822,6 +841,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaveRoute: typeof AuthenticatedLeaveRoute
   AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
   AuthenticatedPersonnelRoute: typeof AuthenticatedPersonnelRoute
+  AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
   AuthenticatedSeparationsRoute: typeof AuthenticatedSeparationsRoute
   AuthenticatedCountryPacksCountryRoute: typeof AuthenticatedCountryPacksCountryRoute
   AuthenticatedCountryPacksIndexRoute: typeof AuthenticatedCountryPacksIndexRoute
@@ -838,6 +858,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaveRoute: AuthenticatedLeaveRoute,
   AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
   AuthenticatedPersonnelRoute: AuthenticatedPersonnelRoute,
+  AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
   AuthenticatedSeparationsRoute: AuthenticatedSeparationsRoute,
   AuthenticatedCountryPacksCountryRoute: AuthenticatedCountryPacksCountryRoute,
   AuthenticatedCountryPacksIndexRoute: AuthenticatedCountryPacksIndexRoute,
