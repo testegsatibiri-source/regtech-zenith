@@ -189,3 +189,17 @@ Anything not tagged is not tracked — either tag it or delete it.
 - `docs/governance/release-process.md`
 - `docs/governance/contribution-guide.md`
 - `docs/architecture/repository-strategy.md`
+
+---
+
+## H22 Phase D — Data Privacy (delivered)
+
+- Tables: `employee_consents` (purpose × legal basis × grant/withdraw evidence, unique per employee/purpose),
+  `personal_data_access_log` (append-only trail: actor, action, resource, purpose, metadata),
+  `data_retention_policies` (per-company category, retention months, legal reference, purge action).
+- `src/lib/privacy.functions.ts`: consent register, access-trail append/read, retention CRUD with a default
+  PH-oriented schedule (BIR 10y, DOLE 3y, NPC applicant-data proportionality) and `getPrivacyReadiness`
+  (consent 50% / retention 30% / trail 20%).
+- `/privacy` route + nav entry; consent changes self-log to the access trail.
+- Remaining for PH `commercialReady = true`: automated purge job for expired categories, DOLE reports
+  (Rule 1020, RKS Form 5) and the Phase 5 filing pilot with a real employer.
