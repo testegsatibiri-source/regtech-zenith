@@ -88,6 +88,15 @@ Fora do escopo de código (decisão do negócio): residência de dados na Indon�
 
 `commercialReady` do pack ID permanece `false` até o fim das Fases A0, A, B, C **e D**. Não há caminho de liberação antecipada por decisão de produto: a única exceção admitida é um **parecer jurídico explícito e registrado** confirmando que operar sem criptografia de campo sobre NIK/NPWP/conta bancária é aceitável no interim — e esse parecer entra como artefato versionado em `docs/governance/`, referenciado pelo ADR que altera o gate, não como flag no código.
 
+### Requisito de contraparte do parecer jurídico
+
+O parecer que autorize qualquer liberação antecipada da Fase D deve ser emitido por **advogado licenciado na Indonésia com prática concentrada em UU PDP (Lei 27/2022) e proteção de dados pessoais**, não por generalista de compliance ou privacidade regional. O motivo: a Lei 27/2022 classifica NIK e NPWP como dados de identificação nacional com regras de tratamento mais estritas do que dados pessoais genéricos; um parecer genérico não cobre a interpretação local de "dados pessoal sensível", base legal, retenção e transferência internacional sob essa lei. O artefato versionado deve conter:
+
+- Identificação do profissional/escritório, número da licença (PKPA / PERADI quando aplicável) e data.
+- Análise específica de NIK e NPWP armazenados em `country_metadata` sem criptografia de campo.
+- Posição sobre residência de dados, transferência internacional e prazo de notificação de incidente.
+- Conclusão vinculante e escopo temporal (válido até qual data / condição de revisão).
+
 Isso amplia o ADR-0035: `commercialReady` deixa de significar apenas "as tabelas estatutárias são reais" e passa a significar "as tabelas estatutárias são reais **e** o tratamento dos dados pessoais é legalmente defensável na jurisdição". Um ADR-0038 registra essa extensão do critério.
 
 ## Detalhes técnicos
