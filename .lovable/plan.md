@@ -71,9 +71,12 @@ Aceito a inversão: UMP/UMK errado atinge todo funcionário em toda folha, enqua
 8. `SeparationProvider` para ID: pesangon, uang penghargaan masa kerja, uang penggantian hak, por motivo de desligamento (tabelas do PP 35/2021).
 9. Histórico encadeado de renovações PKWT com conversão automática para PKWTT.
 
-**Fase D — UU PDP e criptografia**
-10. Mapear a camada de privacidade existente para a UU 27/2022 (bases legais ID, registro de incidente com prazo de 72h, direitos do titular: exportar/corrigir/apagar).
-11. Criptografia em nível de campo para NIK, NPWP e conta bancária, com chave separada do banco.
+**Fase D — UU PDP e criptografia (co-bloqueante do gate comercial)**
+
+Aceito a segunda objeção: armazenar NIK, NPWP e conta bancária em texto em `country_metadata`, com a UU PDP em fiscalização ativa desde 2024, é exposição legal presente para qualquer empregador com funcionários reais no pack — não é feature pendente.
+
+10. Mapear a camada de privacidade existente para a UU 27/2022: bases legais ID por categoria de dado, DPO nomeado, registro formal de incidente com prazo de 72h, direitos do titular (exportar/corrigir/apagar).
+11. Criptografia em nível de campo para NIK, NPWP e conta bancária, com chave gerenciada separadamente do banco.
 12. Job de purge automatizado das categorias de retenção vencidas.
 
 **Fase E — Saídas oficiais**
@@ -81,9 +84,15 @@ Aceito a inversão: UMP/UMK errado atinge todo funcionário em toda folha, enqua
 
 Fora do escopo de código (decisão do negócio): residência de dados na Indonésia, ISO 27001, pentest com relatório e RPO/RTO contratuais.
 
+## Gate de commercialReady (revisado)
+
+`commercialReady` do pack ID permanece `false` até o fim das Fases A0, A, B, C **e D**. Não há caminho de liberação antecipada por decisão de produto: a única exceção admitida é um **parecer jurídico explícito e registrado** confirmando que operar sem criptografia de campo sobre NIK/NPWP/conta bancária é aceitável no interim — e esse parecer entra como artefato versionado em `docs/governance/`, referenciado pelo ADR que altera o gate, não como flag no código.
+
+Isso amplia o ADR-0035: `commercialReady` deixa de significar apenas "as tabelas estatutárias são reais" e passa a significar "as tabelas estatutárias são reais **e** o tratamento dos dados pessoais é legalmente defensável na jurisdição". Um ADR-0038 registra essa extensão do critério.
+
 ## Detalhes técnicos
 
 - Novos contratos entram como capabilities opcionais no SDK (`overtime` já existe como capability declarada mas sem provider real; `separation` já tem contrato pronto usado pelo PH).
 - Toda mudança de parâmetro sobe versão do ruleset e obriga re-assinatura Ed25519 + rotação no Trust Store; a suíte de adulteração do H20 cobre isso.
 - Novos parâmetros nascem em `src/packs/indonesia/params/*` com `legalBasis` e `sourceStatus`, nunca como constante no engine.
-- `commercialReady` do pack ID permanece `false` até o fim da Fase C.
+- O tratamento `sourceStatus: "needs-review"` do TER B/C é mantido como padrão do projeto para qualquer tabela não reconciliada bracket a bracket — é o mecanismo que evitou no pack ID o que aconteceu no PH antes do H20.
