@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Users, Calculator, ShieldCheck, LogOut, Plus, Building2, Sparkles, CalendarClock,
-  CalendarDays, FileSignature, FileDown, UserX, FolderOpen } from "lucide-react";
+  CalendarDays, FileSignature, FileDown, UserX, FolderOpen, Lock as LockIcon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useServerFn } from "@tanstack/react-start";
