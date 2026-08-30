@@ -49,16 +49,23 @@ Resposta honesta ponto a ponto, verificada no código, seguida do plano de evolu
 
 ## Plano H23 — Paridade regulatória do Country Pack Indonésia
 
-**Fase A — Motor de folha (bloqueante)**
-1. Reconciliar TER B e TER C bracket a bracket contra PP 58/2023 lampiran B/C; virar `sourceStatus: "official"` só com teste golden.
-2. Motor de lembur: `OvertimeProvider` no SDK + engine ID com 1/173, multiplicadores dia útil/feriado e regimes 5x8 e 6x7.
-3. Reconciliação anual PPh 21 (bulanan × tahunan) com apuração de dezembro e ajuste.
-4. Mover parâmetros BPJS de `ID_PARAMS` para parâmetros datados no ConfigService; adicionar JKP.
+**Fase A0 — Dado salarial defasado (em paralelo com a Fase A, começa imediatamente)**
 
-**Fase B — Salário mínimo e THR**
-5. UMK por município/regência: estender o resolver de UMP para hierarquia província → kabupaten/kota, com fallback explícito e flag de staleness.
-6. Atualizar a tabela UMP para os valores 2026 e remover as marcas `stale`.
-7. THR por religião: calendário de Natal, Nyepi, Waisak, Imlek além de Idul Fitri; a data de vencimento passa a depender da religião declarada do funcionário.
+Aceito a inversão: UMP/UMK errado atinge todo funcionário em toda folha, enquanto pesangon é evento pontual e auditável depois do fato. É dado, não lógica nova — não há motivo para esperar a Fase B.
+
+1. Atualizar a tabela UMP para os valores 2026 (Kepmenaker) e eliminar todas as marcas `stale` (DEBT-024).
+2. UMK por município/regência: hierarquia província → kabupaten/kota no resolver, com fallback explícito e flag de staleness visível na folha, não só em dashboard.
+3. Alerta de bloqueio: enquanto qualquer província/município usado por um funcionário ativo estiver `stale`, a folha exibe aviso de risco e a regra `ID-UMR-01` é reportada como não-conclusiva em vez de "aprovada".
+
+**Fase A — Motor de folha (bloqueante)**
+4. Reconciliar TER B e TER C bracket a bracket contra PP 58/2023 lampiran B/C; virar `sourceStatus: "official"` só com teste golden.
+5. Motor de lembur: `OvertimeProvider` no SDK + engine ID com 1/173, multiplicadores dia útil/feriado e regimes 5x8 e 6x7.
+6. Reconciliação anual PPh 21 (bulanan × tahunan) com apuração de dezembro e ajuste.
+7. Mover parâmetros BPJS de `ID_PARAMS` para parâmetros datados no ConfigService; adicionar JKP.
+
+**Fase B — THR por religião**
+8. Calendário de Natal, Nyepi, Waisak e Imlek além de Idul Fitri; a data de vencimento do THR passa a depender da religião declarada do funcionário, com marcação `needs_review` quando o ano não estiver semeado.
+
 
 **Fase C — Rescisão e contratos**
 8. `SeparationProvider` para ID: pesangon, uang penghargaan masa kerja, uang penggantian hak, por motivo de desligamento (tabelas do PP 35/2021).
