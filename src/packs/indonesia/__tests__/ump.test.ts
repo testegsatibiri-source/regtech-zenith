@@ -1,5 +1,5 @@
 // H23-A0 — UMP epistemic honesty: non-official sources must not report conclusive compliance.
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { UMP_2026, UMP_FALLBACK } from "@/packs/indonesia/params/ump-2026";
 import { evaluateEmployee } from "@/lib/engines/compliance";
 
