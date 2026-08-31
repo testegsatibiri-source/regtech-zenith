@@ -1,7 +1,17 @@
-// H11.1a — UMP (provincial minimum wage) 2026, exposed via ConfigService.
-// Values marked `stale: true` fall back to the 2024 figure and carry a DEBT
-// tag (DEBT-024) so the platform surfaces the freshness gap in dashboards.
+// H11.1a / H23-A0 — UMP (provincial minimum wage) 2026, exposed via ConfigService.
+//
+// Values below are derived from the Kemnaker announcement as reported by
+// CNN Indonesia on 2026-01-11 ("Daftar Lengkap UMP 2026 di 38 Provinsi").
+// They are rounded to the nearest hundred-thousand IDR as published by the
+// media. The authoritative source for each province is the respective
+// Gubernatorial Decree (SK Gubernur); `sourceStatus: "media-report"` marks
+// this gap explicitly. A future reconciliation against the official decrees
+// will flip each entry to `sourceStatus: "official"` once the exact figure is
+// verified.
+//
 // The engine reads UMP by province via `ctx.config.resolve("id.wages.ump.<Province>")`.
+
+export type UmpSourceStatus = "official" | "media-report" | "stale";
 
 export interface UmpEntry {
   province: string;
@@ -9,6 +19,7 @@ export interface UmpEntry {
   effectiveYear: number;
   stale?: boolean;
   source?: string;
+  sourceStatus?: UmpSourceStatus;
 }
 
 const K = (province: string, amount: number, opts: Partial<UmpEntry> = {}): UmpEntry => ({
@@ -17,49 +28,54 @@ const K = (province: string, amount: number, opts: Partial<UmpEntry> = {}): UmpE
   effectiveYear: opts.effectiveYear ?? 2026,
   stale: opts.stale ?? false,
   source: opts.source ?? "Kepmenaker 2026",
+  sourceStatus: opts.sourceStatus ?? "official",
 });
 
-// Provinces where we shipped a 2024 figure historically. Marked stale until the
-// 2026 Kepmenaker table is fully ingested (DEBT-024).
+// Values from CNN Indonesia reporting of the Kemnaker 2026 announcement.
+// Rounded to hundred-thousand IDR as published; pending exact SK Gubernur.
 export const UMP_2026: UmpEntry[] = [
-  K("DKI Jakarta", 5_396_760),                                  // 2026 (est. +6.5% vs 2025)
-  K("Jawa Barat", 2_191_232, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Jawa Tengah", 2_169_349, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Jawa Timur", 2_305_985, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Banten", 2_905_119, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Bali", 2_996_561, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("DI Yogyakarta", 2_264_080, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Aceh", 3_685_616, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sumatera Utara", 2_992_559, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sumatera Barat", 2_991_722, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Riau", 3_508_776, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Kepulauan Riau", 3_402_492, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Jambi", 3_037_121, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sumatera Selatan", 3_456_874, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Bangka Belitung", 3_640_000, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Bengkulu", 2_507_079, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Lampung", 2_716_496, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Kalimantan Barat", 2_702_616, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Kalimantan Tengah", 3_261_616, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Kalimantan Selatan", 3_282_812, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Kalimantan Timur", 3_360_858, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Kalimantan Utara", 3_361_653, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sulawesi Utara", 3_545_000, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Gorontalo", 3_025_100, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sulawesi Tengah", 2_736_698, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sulawesi Selatan", 3_434_298, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sulawesi Barat", 2_914_958, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Sulawesi Tenggara", 2_885_964, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Maluku", 2_949_953, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Maluku Utara", 3_200_000, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Nusa Tenggara Barat", 2_444_067, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Nusa Tenggara Timur", 2_186_826, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Papua", 4_024_270, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
-  K("Papua Barat", 3_393_500, { source: "Kepmenaker 2024 (stale)", stale: true, effectiveYear: 2024 }),
+  K("DKI Jakarta", 5_720_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Jawa Barat", 2_310_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Jawa Tengah", 2_320_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Jawa Timur", 2_440_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Banten", 3_100_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Bali", 3_200_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("DI Yogyakarta", 2_410_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Aceh", 3_930_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sumatera Utara", 3_220_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sumatera Barat", 3_180_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Riau", 3_780_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Kepulauan Riau", 3_870_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Jambi", 3_470_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sumatera Selatan", 3_940_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Bangka Belitung", 4_030_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Bengkulu", 2_820_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Lampung", 3_040_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Kalimantan Barat", 3_050_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Kalimantan Tengah", 3_680_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Kalimantan Selatan", 3_720_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Kalimantan Timur", 3_760_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Kalimantan Utara", 3_770_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sulawesi Utara", 4_000_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Gorontalo", 3_400_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sulawesi Tengah", 3_170_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sulawesi Selatan", 3_920_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sulawesi Barat", 3_310_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Sulawesi Tenggara", 3_300_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Maluku", 3_330_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Maluku Utara", 3_510_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Nusa Tenggara Barat", 2_670_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Nusa Tenggara Timur", 2_450_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Papua", 4_430_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Papua Barat", 3_840_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Papua Selatan", 4_510_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Papua Tengah", 4_280_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Papua Pegunungan", 4_510_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("Papua Barat Daya", 3_760_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
 ];
 
-/** Fallback used when a province lookup fails. Keep the historical "Other" wage. */
-export const UMP_FALLBACK: UmpEntry = K("Other", 2_000_000, { source: "fallback", stale: false });
+/** Fallback used when a province lookup fails. */
+export const UMP_FALLBACK: UmpEntry = K("Other", 2_000_000, { source: "fallback", sourceStatus: "stale" });
 
 export function umpConfigKey(province: string): string {
   return `id.wages.ump.${province}`;
