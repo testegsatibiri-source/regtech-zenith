@@ -8,12 +8,24 @@ import { UMP_2026, UMP_FALLBACK } from "@/packs/indonesia/params/ump-2026";
 const UMP_BY_PROVINCE = new Map<string, number>(
   [...UMP_2026, UMP_FALLBACK].map((e) => [e.province, e.amount]),
 );
-function resolveUmp(province: string | undefined | null): { amount: number; province: string; stale: boolean } {
+function resolveUmp(
+  province: string | undefined | null,
+): { amount: number; province: string; stale: boolean; sourceStatus: import("@/packs/indonesia/params/ump-2026").UmpSourceStatus } {
   if (province && UMP_BY_PROVINCE.has(province)) {
     const entry = [...UMP_2026, UMP_FALLBACK].find((e) => e.province === province)!;
-    return { amount: entry.amount, province: entry.province, stale: !!entry.stale };
+    return {
+      amount: entry.amount,
+      province: entry.province,
+      stale: !!entry.stale,
+      sourceStatus: entry.sourceStatus ?? "stale",
+    };
   }
-  return { amount: UMP_FALLBACK.amount, province: "Other (fallback)", stale: false };
+  return {
+    amount: UMP_FALLBACK.amount,
+    province: "Other (fallback)",
+    stale: false,
+    sourceStatus: UMP_FALLBACK.sourceStatus ?? "stale",
+  };
 }
 
 const rules: ComplianceRule[] = [
@@ -25,12 +37,21 @@ const rules: ComplianceRule[] = [
     evaluate: (e) => {
       const meta = (e.country_metadata ?? {}) as Record<string, unknown>;
       const province = (meta.province as string | undefined) ?? null;
-      const { amount: ump, province: resolved, stale } = resolveUmp(province);
+      const { amount: ump, province: resolved, stale, sourceStatus } = resolveUmp(province);
       const ok = e.base_salary >= ump;
+      const conclusive = sourceStatus === "official";
+      if (!conclusive) {
+        return {
+          passed: false,
+          conclusive: false,
+          message: `UMP for ${resolved} (${ump.toLocaleString("id-ID")}) is ${sourceStatus}${stale ? "/stale" : ""}. Compliance check is non-conclusive until an official SK Gubernur is reconciled.`,
+        };
+      }
       return {
         passed: ok,
+        conclusive: true,
         message: ok
-          ? `Above ${resolved} UMP (${ump.toLocaleString("id-ID")})${stale ? " — using stale figure, DEBT-024" : ""}.`
+          ? `Above ${resolved} UMP (${ump.toLocaleString("id-ID")}).`
           : `Base salary below UMP for ${resolved} (${ump.toLocaleString("id-ID")}). Risk of Kemenaker sanction.`,
       };
     },

@@ -12,6 +12,7 @@ export interface Finding {
   title: string;
   severity: Severity;
   passed: boolean;
+  conclusive?: boolean;
   message: string;
   weight: number;
 }
@@ -50,12 +51,13 @@ export function scoreFindings(findings: Finding[]): number {
 export function evaluateEmployee(emp: EmployeeLike, code: CountryCode = "ID"): Finding[] {
   const { rules, params } = packView(code);
   return rules.map((r) => {
-    const { passed, message } = r.evaluate(emp, { params });
+    const { passed, message, conclusive } = r.evaluate(emp, { params });
     return {
       rule_code: r.code,
       title: r.title,
       severity: r.severity,
       passed,
+      conclusive,
       message,
       weight: r.weight,
     };
