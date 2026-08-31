@@ -1,6 +1,6 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-08-28 (Sprint H22 Phase C — PH 201 File + Solo Parent ID completed)._
+_Last audit: 2026-08-30 (H23-A0 — ID UMP 2026 epistemic update + ADR-0038 privacy extension)._
 
 
 
