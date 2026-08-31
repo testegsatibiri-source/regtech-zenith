@@ -177,6 +177,17 @@ Anything not tagged is not tracked — either tag it or delete it.
 
 ---
 
+## H23-A0 delivered (ID UMP 2026 epistemic update)
+
+- `src/packs/indonesia/params/ump-2026.ts` updated to 38 provinces with 2026 values reported by Kemnaker via CNN Indonesia.
+- Every entry carries `sourceStatus: "media-report"` because the exact SK Gubernur figures are still pending; `stale` flags removed.
+- `UmpSourceStatus` type added (`official | media-report | stale`) so the engine can distinguish precision levels.
+- `ComplianceRule.evaluate` and `Finding` now support an optional `conclusive` flag.
+- `ID-UMR-01` reports **non-conclusive** while the source is not `official`; score is not inflated by unverified data.
+- Test coverage: `src/packs/indonesia/__tests__/ump.test.ts` (4 tests) locks the epistemic contract.
+
+**Remaining for DEBT-024 close:** reconcile each provincial figure against the official Gubernatorial Decree and flip `sourceStatus` to `"official"` before Indonesia can advance past A0.
+
 ## Fast follow-ups (< 1 hour each)
 1. Build `/settings/api-keys` route (DEBT-003).
 2. Emit `PayrollFinalized@1` inside `finalizePayrollRun` (unlocks DEBT-007).
