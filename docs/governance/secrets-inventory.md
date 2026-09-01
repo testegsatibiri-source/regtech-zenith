@@ -41,6 +41,42 @@ keys) follow the same convention: `<PACK>_<PURPOSE>_<ENV>`, e.g.
 5. Revoke the old value at the source.
 6. Note the rotation date in the environment's audit log entry.
 
+## Actual runtime secrets in use today (platform-hosted)
+
+The table above is the target state. What the running application actually
+reads today, and where it lives, is:
+
+| Env var                     | Read by                                                                                  | Custody today            | Portability action |
+| --------------------------- | ---------------------------------------------------------------------------------------- | ------------------------ | ------------------ |
+| `LOVABLE_API_KEY`           | `src/lib/audit.functions.ts`, `src/lib/uada/**` (inference, embeddings, gateway provider)  | Platform secret vault    | Replace with provider key once the AI provider is centralised |
+| `SUPABASE_SERVICE_ROLE_KEY` | `src/integrations/supabase/client.server.ts` (privileged reads/writes)                     | Platform-managed backend | Reissue from the target Supabase project |
+| `SUPABASE_URL`              | server-side client bootstrap                                                               | `.env` (non-secret)      | Per-environment value |
+| `SUPABASE_PUBLISHABLE_KEY`  | server-side client bootstrap                                                               | `.env` (non-secret)      | Per-environment value |
+| `VITE_SUPABASE_*`           | browser client                                                                             | `.env` (non-secret)      | Per-environment value |
+| `LOVABLE_ENV`               | environment discrimination                                                                 | Platform-injected        | Map to `NODE_ENV`/`APP_ENV` when hosting elsewhere |
+
+### Country Pack signing keys (custody-critical)
+
+Pack manifests carry a dual Ed25519 signature; the Boot Health Gate refuses a
+pack whose signature does not verify against `public.pack_signing_keys`. The
+**public** keys are rows in that table. The **private** keys have no home in
+this repository by design — they must live in the secret vault:
+
+| Secret                       | Publisher          | Used by |
+| ---------------------------- | ------------------ | ------- |
+| `ID_PACK_KEY_AUTHOR`         | `uboard-id`        | `scripts/sign-id.ts` |
+| `ID_PACK_KEY_COUNTERSIGN`    | `platform-cto-id`  | `scripts/sign-id.ts` |
+| `PH_PACK_KEY_AUTHOR`         | `uboard-ph`        | `scripts/sign-ph.ts` |
+| `PH_PACK_KEY_COUNTERSIGN`    | `platform-cto-ph`  | `scripts/sign-ph.ts` |
+
+Format: base64-encoded PKCS#8 DER. Bootstrap a pair with
+`bun run scripts/sign-id.ts --new-keys` and store the output immediately —
+regenerating means rotating the trust-store rows for every published pack.
+
+**Known gap:** the Indonesia keys currently in `public.pack_signing_keys` were
+generated ad hoc and were never placed in custody. They must be re-bootstrapped
+into the vault (and the trust store rotated once) before launch.
+
 ## Forbidden
 
 - Committing any secret value to Git — even in a `.env.example`. Provide
