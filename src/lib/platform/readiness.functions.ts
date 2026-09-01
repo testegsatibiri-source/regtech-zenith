@@ -10,7 +10,12 @@ export const getReadiness = createServerFn({ method: "GET" })
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId);
-    const allowed = new Set(["platform_admin", "country_cto", "platform_operator", "platform_auditor"]);
+    const allowed = new Set([
+      "platform_admin",
+      "country_cto",
+      "platform_operator",
+      "platform_auditor",
+    ]);
     if (!(roles ?? []).some((r) => allowed.has(r.role))) {
       throw new Error("Forbidden");
     }

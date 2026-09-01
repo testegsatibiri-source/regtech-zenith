@@ -174,9 +174,9 @@ export function phFilingReadiness(input: {
 }): { ready: boolean; employerIssues: number; employeesMissing: number } {
   const employer = validatePhEmployerIdentifiers(input.employer);
   const employeesMissing = (input.employees ?? []).filter(
-    (e) => !validatePhEmployeeIdentifiers(
-      (e.country_metadata as Record<string, unknown> | null) ?? null,
-    ).complete,
+    (e) =>
+      !validatePhEmployeeIdentifiers((e.country_metadata as Record<string, unknown> | null) ?? null)
+        .complete,
   ).length;
   return {
     ready: employer.complete && employeesMissing === 0,
@@ -218,17 +218,18 @@ export function validatePhSoloParentId(
   const idNumber = String(meta["solo_parent_id"] ?? "").trim();
   const rawExpiry = String(meta["solo_parent_id_expiry"] ?? "").trim();
   const expiresOn = /^\d{4}-\d{2}-\d{2}$/.test(rawExpiry) ? rawExpiry : null;
-  const today = asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)
-    ? asOf
-    : new Date().toISOString().slice(0, 10);
+  const today =
+    asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf) ? asOf : new Date().toISOString().slice(0, 10);
   const present = idNumber.length > 0;
   const expired = present && expiresOn !== null && expiresOn < today;
 
   let message: string;
   if (!claimed) message = "Employee is not registered as a solo parent";
   else if (!present) message = `Solo Parent ID number is missing (${SOLO_PARENT_BASIS})`;
-  else if (!expiresOn) message = "Solo Parent ID validity date is missing — the ID must be renewed yearly";
-  else if (expired) message = `Solo Parent ID expired on ${expiresOn} — renew before granting parental leave`;
+  else if (!expiresOn)
+    message = "Solo Parent ID validity date is missing — the ID must be renewed yearly";
+  else if (expired)
+    message = `Solo Parent ID expired on ${expiresOn} — renew before granting parental leave`;
   else message = `Solo Parent ID valid until ${expiresOn}`;
 
   return {

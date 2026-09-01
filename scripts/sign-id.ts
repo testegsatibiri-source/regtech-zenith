@@ -21,7 +21,13 @@
 //
 // Generate a custody key pair once:
 //   bun run scripts/sign-id.ts --new-keys
-import { generateKeyPairSync, sign, createPrivateKey, createPublicKey, type KeyObject } from "node:crypto";
+import {
+  generateKeyPairSync,
+  sign,
+  createPrivateKey,
+  createPublicKey,
+  type KeyObject,
+} from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalManifestBytes } from "../src/packs/indonesia/params/canonical-manifest";
@@ -162,7 +168,9 @@ if (!custody) {
   console.log(`ID_PACK_KEY_AUTHOR=${exportPrivateKeyB64(authorPair.privateKey)}`);
   console.log(`ID_PACK_KEY_COUNTERSIGN=${exportPrivateKeyB64(counterPair.privateKey)}`);
   console.log("\n-- Trust store rotation (only needed when keys change):");
-  console.log(`UPDATE public.pack_signing_keys SET active = false WHERE publisher IN ('uboard-id','platform-cto-id');`);
+  console.log(
+    `UPDATE public.pack_signing_keys SET active = false WHERE publisher IN ('uboard-id','platform-cto-id');`,
+  );
   console.log(
     `INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'uboard-id', '${authorPub}', 'ed25519', ARRAY['sign']::text[], 'db', true, '${block.author.keyId}');`,
   );

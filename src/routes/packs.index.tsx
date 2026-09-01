@@ -14,9 +14,17 @@ export const Route = createFileRoute("/packs/")({
   head: () => ({
     meta: [
       { title: "Country Packs — Compliance coverage across SE Asia | UBoard Asia" },
-      { name: "description", content: "Global compliance core plus country packs for Indonesia, Philippines and more. See which packs are in production and what is on the roadmap." },
+      {
+        name: "description",
+        content:
+          "Global compliance core plus country packs for Indonesia, Philippines and more. See which packs are in production and what is on the roadmap.",
+      },
       { property: "og:title", content: "Country Packs — Compliance coverage across SE Asia" },
-      { property: "og:description", content: "One global core, independent country packs. Production, beta and roadmap coverage for Southeast Asia." },
+      {
+        property: "og:description",
+        content:
+          "One global core, independent country packs. Production, beta and roadmap coverage for Southeast Asia.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -35,13 +43,14 @@ function PacksCatalog() {
   const beta = packs.filter((p) => p.tier === "beta");
   const roadmap = packs.filter((p) => p.tier === "roadmap");
 
-
   return (
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-16">
         <header className="max-w-2xl">
-          <span className="text-sm font-semibold uppercase tracking-wider text-accent">Coverage</span>
+          <span className="text-sm font-semibold uppercase tracking-wider text-accent">
+            Coverage
+          </span>
           <h1 className="mt-2 font-display text-4xl font-bold">Country Packs</h1>
           <p className="mt-3 text-muted-foreground">
             The global core never changes when a law does. Every jurisdiction ships as an
@@ -49,24 +58,37 @@ function PacksCatalog() {
           </p>
         </header>
 
-        <Group title="Production" count={production.length} sub="Signed, version 1.0+ and passing live health checks.">
+        <Group
+          title="Production"
+          count={production.length}
+          sub="Signed, version 1.0+ and passing live health checks."
+        >
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {production.map((p) => <CountryPackCard key={p.code} pack={p} />)}
+            {production.map((p) => (
+              <CountryPackCard key={p.code} pack={p} />
+            ))}
           </div>
         </Group>
 
-        <Group title="Validation" count={beta.length} sub="Installed and running, not yet promoted to production.">
+        <Group
+          title="Validation"
+          count={beta.length}
+          sub="Installed and running, not yet promoted to production."
+        >
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {beta.map((p) => <CountryPackCard key={p.code} pack={p} />)}
+            {beta.map((p) => (
+              <CountryPackCard key={p.code} pack={p} />
+            ))}
           </div>
         </Group>
 
         <Group title="Roadmap" count={roadmap.length} sub="Planned jurisdictions.">
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {roadmap.map((p) => <RoadmapPackCard key={p.code} pack={p} />)}
+            {roadmap.map((p) => (
+              <RoadmapPackCard key={p.code} pack={p} />
+            ))}
           </div>
         </Group>
-
       </main>
       <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
         <div className="flex items-center justify-center gap-2 font-display font-semibold text-foreground">
@@ -77,7 +99,17 @@ function PacksCatalog() {
   );
 }
 
-function Group({ title, sub, count, children }: { title: string; sub: string; count: number; children: React.ReactNode }) {
+function Group({
+  title,
+  sub,
+  count,
+  children,
+}: {
+  title: string;
+  sub: string;
+  count: number;
+  children: React.ReactNode;
+}) {
   if (count === 0) return null;
   return (
     <section className="mt-12">

@@ -13,8 +13,7 @@ export function indexDocs(): DocDoc[] {
   const entries = collectManifest().filter((e) => e.kind === "doc" || e.kind === "migration");
   return entries.map((entry) => {
     const isAdr = /\/ADR-|\/adr-/i.test("/" + entry.path);
-    const kind: DocDoc["kind"] =
-      entry.kind === "migration" ? "migration" : isAdr ? "adr" : "doc";
+    const kind: DocDoc["kind"] = entry.kind === "migration" ? "migration" : isAdr ? "adr" : "doc";
     return {
       path: entry.path,
       kind,
@@ -27,7 +26,12 @@ export function indexDocs(): DocDoc[] {
 
 function firstHeading(content: string): string | null {
   const line = content.split("\n").find((l) => /^\s*#\s+/.test(l));
-  return line ? line.replace(/^\s*#\s+/, "").trim().slice(0, 200) : null;
+  return line
+    ? line
+        .replace(/^\s*#\s+/, "")
+        .trim()
+        .slice(0, 200)
+    : null;
 }
 
 function firstNonBlankLine(content: string, max: number): string {

@@ -17,18 +17,34 @@ export function SiteFooter({ packs = [] }: { packs?: CatalogEntry[] }) {
             <ShieldCheck className="h-4 w-4 text-accent" /> UBoard Asia
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Global payroll compliance infrastructure. One secure core, independent
-            signed country packs.
+            Global payroll compliance infrastructure. One secure core, independent signed country
+            packs.
           </p>
         </div>
 
         <div>
           <h3 className="text-sm font-semibold">Product</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li><a href="/#platform" className="hover:text-foreground">Global Core</a></li>
-            <li><a href="/#architecture" className="hover:text-foreground">Architecture &amp; trust</a></li>
-            <li><Link to="/packs" className="hover:text-foreground">Country Packs</Link></li>
-            <li><Link to="/api-docs" className="hover:text-foreground">API &amp; SDK</Link></li>
+            <li>
+              <a href="/#platform" className="hover:text-foreground">
+                Global Core
+              </a>
+            </li>
+            <li>
+              <a href="/#architecture" className="hover:text-foreground">
+                Architecture &amp; trust
+              </a>
+            </li>
+            <li>
+              <Link to="/packs" className="hover:text-foreground">
+                Country Packs
+              </Link>
+            </li>
+            <li>
+              <Link to="/api-docs" className="hover:text-foreground">
+                API &amp; SDK
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -46,7 +62,11 @@ export function SiteFooter({ packs = [] }: { packs?: CatalogEntry[] }) {
                 </Link>
               </li>
             ))}
-            <li><Link to="/packs" className="hover:text-foreground">All coverage</Link></li>
+            <li>
+              <Link to="/packs" className="hover:text-foreground">
+                All coverage
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

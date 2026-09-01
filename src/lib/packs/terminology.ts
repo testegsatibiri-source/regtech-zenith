@@ -85,7 +85,12 @@ const BY_COUNTRY: Record<string, PackTerminology> = {
       { key: "philhealth", label: "PhilHealth employer number / PEN (12 digits)" },
       { key: "pagibig", label: "Pag-IBIG employer ID (12 digits)" },
     ],
-    categories: { tax: "Tax (BIR)", social: "SSS / PhilHealth", labor: "Labor (DOLE)", other: "Other" },
+    categories: {
+      tax: "Tax (BIR)",
+      social: "SSS / PhilHealth",
+      labor: "Labor (DOLE)",
+      other: "Other",
+    },
   },
   MY: {
     minimumWage: "Minimum wage",
@@ -104,7 +109,12 @@ const BY_COUNTRY: Record<string, PackTerminology> = {
       { key: "epf", label: "EPF employer number" },
       { key: "socso", label: "SOCSO employer number" },
     ],
-    categories: { tax: "Tax (LHDN)", social: "EPF / SOCSO", labor: "Labor (JTKSM)", other: "Other" },
+    categories: {
+      tax: "Tax (LHDN)",
+      social: "EPF / SOCSO",
+      labor: "Labor (JTKSM)",
+      other: "Other",
+    },
   },
 };
 

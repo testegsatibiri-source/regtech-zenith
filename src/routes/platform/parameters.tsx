@@ -1,10 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getRuntimeParameters, listRegisterParameters, listPacks } from "@/lib/platform/api.functions";
+import {
+  getRuntimeParameters,
+  listRegisterParameters,
+  listPacks,
+} from "@/lib/platform/api.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/platform/parameters")({
@@ -41,15 +51,23 @@ function ParametersPage() {
         <div>
           <h1 className="font-display text-3xl font-bold">Regulatory Parameters</h1>
           <p className="text-muted-foreground">
-            <span className="font-semibold text-foreground">Source of Truth: Country Pack Runtime</span>
+            <span className="font-semibold text-foreground">
+              Source of Truth: Country Pack Runtime
+            </span>
             {" — "}the register is advisory (see ADR-0007).
           </p>
         </div>
         {active ? (
           <Select value={active} onValueChange={setCountry}>
-            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {countries.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         ) : null}
@@ -73,7 +91,9 @@ function ParametersPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Register history</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Register history</CardTitle>
+            </CardHeader>
             <CardContent>
               {(register ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground">No versioned entries.</p>
@@ -82,8 +102,12 @@ function ParametersPage() {
                   {(register ?? []).map((r) => (
                     <li key={r.id} className="flex items-center justify-between py-2">
                       <div>
-                        <div className="font-mono text-xs">{r.parameter_key} · v{r.version}</div>
-                        <div className="text-xs text-muted-foreground">checksum {r.checksum?.slice(0, 12)}…</div>
+                        <div className="font-mono text-xs">
+                          {r.parameter_key} · v{r.version}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          checksum {r.checksum?.slice(0, 12)}…
+                        </div>
                       </div>
                       <Badge variant="outline">{r.status}</Badge>
                     </li>

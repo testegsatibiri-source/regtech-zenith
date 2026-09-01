@@ -26,7 +26,10 @@ function levelForHop(hop: number): H14ImpactLevel {
 }
 
 function edgeConfidence(edge: GraphEdge): number {
-  const meta = (edge.metadata ?? {}) as { confidence?: number; source?: keyof typeof EDGE_SOURCE_CONFIDENCE };
+  const meta = (edge.metadata ?? {}) as {
+    confidence?: number;
+    source?: keyof typeof EDGE_SOURCE_CONFIDENCE;
+  };
   if (typeof meta.confidence === "number") return meta.confidence;
   if (meta.source && EDGE_SOURCE_CONFIDENCE[meta.source] != null) {
     return EDGE_SOURCE_CONFIDENCE[meta.source];
@@ -51,7 +54,9 @@ export const ImpactEngine = {
     const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
     const target = nodeById.get(opts.nodeId);
     if (!target) {
-      throw new Error(`impact: node ${opts.nodeId} not found in snapshot v${bundle.snapshotVersion}`);
+      throw new Error(
+        `impact: node ${opts.nodeId} not found in snapshot v${bundle.snapshotVersion}`,
+      );
     }
 
     // BFS over bundle.edges to compute per-node shortest-path hop + best confidence path.
@@ -121,9 +126,10 @@ export const ImpactEngine = {
       filesUsed: nodes.map((n) => n.node.path ?? n.node.label),
       model: "impact",
       evidence: bundle.evidence,
-      warnings: nodes.length === 0
-        ? [{ code: "no_impact_edges", message: "no outgoing edges from anchor within depth" }]
-        : undefined,
+      warnings:
+        nodes.length === 0
+          ? [{ code: "no_impact_edges", message: "no outgoing edges from anchor within depth" }]
+          : undefined,
     };
     await assertEvidenceComplete(resp, { minEvidence: 0 });
     return resp;

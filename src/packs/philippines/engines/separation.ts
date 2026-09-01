@@ -74,7 +74,12 @@ export function phGrounds(): SeparationGround[] {
 export function phComputeSeparationPay(input: SeparationPayInput): SeparationPayOutput {
   const { monthlySalary, monthsOfService, ground } = input;
   if (ground.monthsPerYear === 0) {
-    return { eligible: false, monthsDue: 0, amount: 0, reason: `${ground.title} does not carry separation pay` };
+    return {
+      eligible: false,
+      monthsDue: 0,
+      amount: 0,
+      reason: `${ground.title} does not carry separation pay`,
+    };
   }
   const years = Math.floor(monthsOfService / 12);
   const monthsDue = Math.max(1, years * ground.monthsPerYear);
@@ -120,28 +125,44 @@ export function phComputeFinalPay(input: FinalPayInput, rulesetVersion: string):
   // 1. Prorata salary for the final period.
   const dailyRate = separation.monthlySalaryForStatutory / PH_PARAMS.workingDaysPerMonth;
   const prorataSalary = Math.round(dailyRate * separation.finalPeriodDaysWorked * 100) / 100;
-  components.push({ code: "PRORATA_SALARY", label: "Prorata salary — final period", amount: prorataSalary });
+  components.push({
+    code: "PRORATA_SALARY",
+    label: "Prorata salary — final period",
+    amount: prorataSalary,
+  });
 
   // 2. 13th month pro-rata (PD 851). If caller already computed it, use it.
   // Otherwise we compute with the statutory monthly salary and completed months.
   const sepDate = new Date(employee.separationDate);
   const joinDate = new Date(employee.joinDate);
-  let completedMonths = (sepDate.getFullYear() - joinDate.getFullYear()) * 12 + (sepDate.getMonth() - joinDate.getMonth());
+  let completedMonths =
+    (sepDate.getFullYear() - joinDate.getFullYear()) * 12 +
+    (sepDate.getMonth() - joinDate.getMonth());
   if (sepDate.getDate() < joinDate.getDate()) completedMonths -= 1;
   completedMonths = Math.max(0, completedMonths);
-  const thirteenth = input.thirteenthAmount ??
+  const thirteenth =
+    input.thirteenthAmount ??
     Math.round((Math.min(completedMonths, 12) / 12) * separation.ytdAnnualGrossEarned * 100) / 100;
-  components.push({ code: "THIRTEENTH_PRORATA", label: "13th month pro-rata (PD 851)", amount: thirteenth });
+  components.push({
+    code: "THIRTEENTH_PRORATA",
+    label: "13th month pro-rata (PD 851)",
+    amount: thirteenth,
+  });
 
   // 3. SIL unused conversion (Art. 95). Fase A boundary: if leave provider is not
   // available, the calculation is explicitly incomplete.
   let silPayout = 0;
   if (separation.leaveAccrual === null) {
-    missing.push("LeaveProvider not available — SIL unused balance cannot be converted yet (Fase A)");
+    missing.push(
+      "LeaveProvider not available — SIL unused balance cannot be converted yet (Fase A)",
+    );
   } else if (!separation.leaveAccrual.complete) {
     missing.push(separation.leaveAccrual.missing ?? "Leave accrual incomplete");
   } else {
-    silPayout = Math.round(separation.leaveAccrual.silUnusedDays * separation.leaveAccrual.silDailyRate * 100) / 100;
+    silPayout =
+      Math.round(
+        separation.leaveAccrual.silUnusedDays * separation.leaveAccrual.silDailyRate * 100,
+      ) / 100;
     components.push({
       code: "SIL_UNUSED",
       label: `Service Incentive Leave unused — ${separation.leaveAccrual.silUnusedDays} day(s) (Art. 95)`,
@@ -161,7 +182,11 @@ export function phComputeFinalPay(input: FinalPayInput, rulesetVersion: string):
 
   const gross = components.reduce((s, c) => s + c.amount, 0);
   const total = Math.round((gross - deductions) * 100) / 100;
-  components.push({ code: "DEDUCTIONS", label: "Deductions / recoverable balances", amount: -deductions });
+  components.push({
+    code: "DEDUCTIONS",
+    label: "Deductions / recoverable balances",
+    amount: -deductions,
+  });
 
   const dueDate = toIsoDate(addCalendarDays(sepDate, 30)); // DOLE LA 06-20
 

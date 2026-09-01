@@ -19,23 +19,36 @@ export const Route = createFileRoute("/api/public/calculate-bpjs")({
       OPTIONS: async () => new Response(null, { status: 204, headers: API_CORS_HEADERS }),
       POST: async ({ request }) => {
         let raw: unknown;
-        try { raw = await request.json(); } catch { return jsonResponse({ error: "Invalid JSON body" }, 400, DEPRECATION_HEADERS); }
+        try {
+          raw = await request.json();
+        } catch {
+          return jsonResponse({ error: "Invalid JSON body" }, 400, DEPRECATION_HEADERS);
+        }
         const parsed = inputSchema.safeParse(raw);
-        if (!parsed.success) return jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422, DEPRECATION_HEADERS);
+        if (!parsed.success)
+          return jsonResponse(
+            { error: "Invalid input", details: parsed.error.flatten() },
+            422,
+            DEPRECATION_HEADERS,
+          );
 
         const pack = CountryRuntime.get("ID");
         const benefits = pack.providers.benefits!;
         const result = benefits.calculate({ salary: parsed.data.salary });
-        return jsonResponse({
-          schemaVersion: "1",
-          engine: "BPJS",
-          country: pack.manifest.country,
-          rulesetVersion: pack.manifest.rulesetVersion,
-          deprecated: true,
-          successor: "/api/public/v1/calculate-bpjs",
-          input: parsed.data,
-          result: { ...result, currency: pack.manifest.currency },
-        }, 200, DEPRECATION_HEADERS);
+        return jsonResponse(
+          {
+            schemaVersion: "1",
+            engine: "BPJS",
+            country: pack.manifest.country,
+            rulesetVersion: pack.manifest.rulesetVersion,
+            deprecated: true,
+            successor: "/api/public/v1/calculate-bpjs",
+            input: parsed.data,
+            result: { ...result, currency: pack.manifest.currency },
+          },
+          200,
+          DEPRECATION_HEADERS,
+        );
       },
     },
   },

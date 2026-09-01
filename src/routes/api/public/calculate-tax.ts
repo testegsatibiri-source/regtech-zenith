@@ -24,29 +24,42 @@ export const Route = createFileRoute("/api/public/calculate-tax")({
       OPTIONS: async () => new Response(null, { status: 204, headers: API_CORS_HEADERS }),
       POST: async ({ request }) => {
         let raw: unknown;
-        try { raw = await request.json(); } catch { return jsonResponse({ error: "Invalid JSON body" }, 400, DEPRECATION_HEADERS); }
+        try {
+          raw = await request.json();
+        } catch {
+          return jsonResponse({ error: "Invalid JSON body" }, 400, DEPRECATION_HEADERS);
+        }
         const parsed = inputSchema.safeParse(raw);
-        if (!parsed.success) return jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422, DEPRECATION_HEADERS);
+        if (!parsed.success)
+          return jsonResponse(
+            { error: "Invalid input", details: parsed.error.flatten() },
+            422,
+            DEPRECATION_HEADERS,
+          );
 
         const pack = CountryRuntime.get("ID");
         const tax = pack.providers.tax!;
         const result = tax.calculate(parsed.data);
-        return jsonResponse({
-          schemaVersion: "1",
-          engine: "PPh21-TER",
-          country: pack.manifest.country,
-          rulesetVersion: pack.manifest.rulesetVersion,
-          deprecated: true,
-          successor: "/api/public/v1/calculate-tax",
-          input: parsed.data,
-          result: {
-            terCategory: result.category,
-            effectiveRate: result.rate,
-            npwpSurcharge: result.surcharge,
-            tax: result.tax,
-            currency: pack.manifest.currency,
+        return jsonResponse(
+          {
+            schemaVersion: "1",
+            engine: "PPh21-TER",
+            country: pack.manifest.country,
+            rulesetVersion: pack.manifest.rulesetVersion,
+            deprecated: true,
+            successor: "/api/public/v1/calculate-tax",
+            input: parsed.data,
+            result: {
+              terCategory: result.category,
+              effectiveRate: result.rate,
+              npwpSurcharge: result.surcharge,
+              tax: result.tax,
+              currency: pack.manifest.currency,
+            },
           },
-        }, 200, DEPRECATION_HEADERS);
+          200,
+          DEPRECATION_HEADERS,
+        );
       },
     },
   },

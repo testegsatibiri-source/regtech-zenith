@@ -25,7 +25,11 @@ export const Route = createFileRoute("/sitemap.xml")({
             { path: `/packs/${slug}`, changefreq: "weekly" as const, priority: "0.9" },
           ];
           if (hasCalculator(p.code)) {
-            entries.push({ path: `/packs/${slug}/calculator`, changefreq: "monthly" as const, priority: "0.8" });
+            entries.push({
+              path: `/packs/${slug}/calculator`,
+              changefreq: "monthly" as const,
+              priority: "0.8",
+            });
           }
           return entries;
         });
@@ -37,7 +41,6 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/auth", changefreq: "yearly", priority: "0.3" },
         ];
 
-
         const urls = entries.map((e) =>
           [
             `  <url>`,
@@ -45,7 +48,9 @@ export const Route = createFileRoute("/sitemap.xml")({
             e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
             e.priority ? `    <priority>${e.priority}</priority>` : null,
             `  </url>`,
-          ].filter(Boolean).join("\n"),
+          ]
+            .filter(Boolean)
+            .join("\n"),
         );
 
         const xml = [

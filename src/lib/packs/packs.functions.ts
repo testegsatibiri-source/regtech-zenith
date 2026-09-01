@@ -10,9 +10,8 @@ export const getAvailableCountryPacks = createServerFn({ method: "GET" }).handle
 });
 
 export const getPacksPageData = createServerFn({ method: "GET" }).handler(async () => {
-  const { loadCatalogForRequest, loadCountryPacksForRequest } = await import(
-    "@/lib/packs/loader.server"
-  );
+  const { loadCatalogForRequest, loadCountryPacksForRequest } =
+    await import("@/lib/packs/loader.server");
   const [catalog, available] = await Promise.all([
     loadCatalogForRequest(),
     loadCountryPacksForRequest(),

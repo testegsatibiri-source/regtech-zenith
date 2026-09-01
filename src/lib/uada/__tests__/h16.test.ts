@@ -38,7 +38,6 @@ function facts(overrides: Partial<ArchitectureFacts> = {}): ArchitectureFacts {
   };
 }
 
-
 describe("H16 — score contract freeze", () => {
   it("weights sum to exactly 1", () => {
     const total = SCORE_DIMENSIONS.reduce((s, d) => s + SCORE_WEIGHTS[d], 0);
@@ -53,8 +52,6 @@ describe("H16 — score contract freeze", () => {
   it("example overall matches the weighted mean of its dimensions", () => {
     expect(computeOverall(SCORE_REPORT_EXAMPLE.dimensions)).toBe(83.13);
   });
-
-
 
   it("rejects a drifted weight", () => {
     expect(() =>
@@ -71,13 +68,12 @@ describe("H16 — score contract freeze", () => {
         snapshot: "v1",
         overall: 10,
         dimensions: [
-          { name: "coupling", score: 10, weight: 0.20, evidence: [] },
-          { name: "coupling", score: 20, weight: 0.20, evidence: [] },
+          { name: "coupling", score: 10, weight: 0.2, evidence: [] },
+          { name: "coupling", score: 20, weight: 0.2, evidence: [] },
         ],
       }),
     ).toThrow(/duplicate dimension/);
   });
-
 });
 
 describe("H16 — layer classification", () => {
@@ -131,9 +127,9 @@ describe("H16 — dimensions", () => {
 
   it("decays freshness with snapshot age", () => {
     const fresh = computeDimensions(facts()).find((d) => d.name === "knowledge_freshness")!;
-    const stale = computeDimensions(
-      facts({ snapshotCreatedAt: "2026-01-01T00:00:00.000Z" }),
-    ).find((d) => d.name === "knowledge_freshness")!;
+    const stale = computeDimensions(facts({ snapshotCreatedAt: "2026-01-01T00:00:00.000Z" })).find(
+      (d) => d.name === "knowledge_freshness",
+    )!;
     expect(fresh.score).toBe(100);
     expect(stale.score).toBeLessThan(fresh.score);
   });

@@ -18,9 +18,16 @@ export const Route = createFileRoute("/_authenticated/company")({
   head: () => ({
     meta: [
       { title: "Employer registry — UBoard Asia" },
-      { name: "description", content: "Register the statutory employer numbers required to file payroll remittances in your jurisdiction." },
+      {
+        name: "description",
+        content:
+          "Register the statutory employer numbers required to file payroll remittances in your jurisdiction.",
+      },
       { property: "og:title", content: "Employer registry — UBoard Asia" },
-      { property: "og:description", content: "Statutory employer identifiers that back every payroll filing." },
+      {
+        property: "og:description",
+        content: "Statutory employer identifiers that back every payroll filing.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
@@ -54,7 +61,9 @@ function CompanyRegistry() {
 
   if (!companyId) return <p className="text-muted-foreground">Create a company first.</p>;
 
-  const filled = t.employerIdentifiers.filter((f) => (values[f.key] ?? "").trim().length > 0).length;
+  const filled = t.employerIdentifiers.filter(
+    (f) => (values[f.key] ?? "").trim().length > 0,
+  ).length;
   const complete = filled === t.employerIdentifiers.length;
 
   async function submit() {
@@ -75,7 +84,8 @@ function CompanyRegistry() {
       <div>
         <h1 className="text-2xl font-bold">Employer registry</h1>
         <p className="text-muted-foreground">
-          Statutory employer numbers for {pack.name}. Every remittance file is rejected without them.
+          Statutory employer numbers for {pack.name}. Every remittance file is rejected without
+          them.
         </p>
       </div>
 
@@ -84,8 +94,16 @@ function CompanyRegistry() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Building2 className="h-4 w-4" /> {company?.name ?? "Company"}
           </CardTitle>
-          <Badge className={"border-0 " + (complete ? "bg-success/15 text-success" : "bg-warning/15 text-warning")}>
-            {complete ? <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> : <AlertTriangle className="mr-1 h-3.5 w-3.5" />}
+          <Badge
+            className={
+              "border-0 " + (complete ? "bg-success/15 text-success" : "bg-warning/15 text-warning")
+            }
+          >
+            {complete ? (
+              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+            ) : (
+              <AlertTriangle className="mr-1 h-3.5 w-3.5" />
+            )}
             {filled}/{t.employerIdentifiers.length} registered
           </Badge>
         </CardHeader>
@@ -102,7 +120,9 @@ function CompanyRegistry() {
             </div>
           ))}
           <div className="sm:col-span-2">
-            <Button onClick={submit} disabled={saving}>{saving ? "Saving…" : "Save registry"}</Button>
+            <Button onClick={submit} disabled={saving}>
+              {saving ? "Saving…" : "Save registry"}
+            </Button>
           </div>
         </CardContent>
       </Card>

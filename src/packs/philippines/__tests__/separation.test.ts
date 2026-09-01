@@ -120,7 +120,9 @@ describe("PH separation engine (H22 Phase A)", () => {
     expect(out.components.find((c) => c.code === "SEPARATION_PAY")!.amount).toBe(90_000);
     // SIL is missing so the result is incomplete, not a final settlement
     expect(out.complete).toBe(false);
-    expect(out.missing).toContain("LeaveProvider not available — SIL unused balance cannot be converted yet (Fase A)");
+    expect(out.missing).toContain(
+      "LeaveProvider not available — SIL unused balance cannot be converted yet (Fase A)",
+    );
     expect(out.total).toBe(117_500); // gross - deductions
     expect(out.dueDate).toBe("2026-06-14"); // 30 calendar days after 2026-05-15
     expect(out.rulesetVersion).toBe(rulesetVersion);
@@ -156,9 +158,8 @@ describe("PH separation engine (H22 Phase A)", () => {
     expect(out.complete).toBe(true);
     expect(out.missing).toEqual([]);
     const sil = out.components.find((c) => c.code === "SIL_UNUSED")!;
-    expect(sil.amount).toBeCloseTo(6_818.20, 2);
-    expect(out.total).toBeCloseTo(34_318.20, 2);
-
+    expect(sil.amount).toBeCloseTo(6_818.2, 2);
+    expect(out.total).toBeCloseTo(34_318.2, 2);
   });
 
   it("returns 30-day final pay deadline for all cases (DOLE LA 06-20)", () => {

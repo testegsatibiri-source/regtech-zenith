@@ -33,7 +33,6 @@ const CAP_TO_KEY: Record<Capability, keyof Providers | null> = {
   overtime: null,
 };
 
-
 export function validatePack(pack: CountryPack): ValidationReport {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -45,7 +44,8 @@ export function validatePack(pack: CountryPack): ValidationReport {
   }
   if (!m.name) errors.push("manifest.name required");
   if (!m.currency) errors.push("manifest.currency required");
-  if (!/^\d+\.\d+\.\d+/.test(m.version)) errors.push(`manifest.version must be semver (got "${m.version}")`);
+  if (!/^\d+\.\d+\.\d+/.test(m.version))
+    errors.push(`manifest.version must be semver (got "${m.version}")`);
   if (!/^[A-Z]{2}-\d{4}\.\d+$/.test(m.rulesetVersion) && m.rulesetVersion !== "MY-2024.0") {
     warnings.push(`manifest.rulesetVersion "${m.rulesetVersion}" does not match <CC>-YYYY.N`);
   }
@@ -63,7 +63,9 @@ export function validatePack(pack: CountryPack): ValidationReport {
       );
     }
   } else {
-    warnings.push(`manifest.interfaceVersion missing — assume ${PACK_INTERFACE_VERSION}; will be required in H12`);
+    warnings.push(
+      `manifest.interfaceVersion missing — assume ${PACK_INTERFACE_VERSION}; will be required in H12`,
+    );
   }
 
   // --- provides ↔ providers coherence ---
@@ -94,7 +96,9 @@ export function validatePack(pack: CountryPack): ValidationReport {
 
   // Warn on providers that aren't declared
   for (const key of Object.keys(pack.providers) as (keyof Providers)[]) {
-    const cap = (Object.entries(CAP_TO_KEY).find(([, v]) => v === key)?.[0]) as Capability | undefined;
+    const cap = Object.entries(CAP_TO_KEY).find(([, v]) => v === key)?.[0] as
+      | Capability
+      | undefined;
     if (cap && !provides.includes(cap)) {
       warnings.push(`${key} provider supplied but "${cap}" not in manifest.provides`);
     }
@@ -107,7 +111,9 @@ export function validatePack(pack: CountryPack): ValidationReport {
       continue;
     }
     if (!provides.includes(cap)) {
-      warnings.push(`requires "${cap}" not provided by this pack — Runtime must resolve from another pack`);
+      warnings.push(
+        `requires "${cap}" not provided by this pack — Runtime must resolve from another pack`,
+      );
     }
   }
 

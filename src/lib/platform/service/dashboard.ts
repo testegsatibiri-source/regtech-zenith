@@ -43,7 +43,9 @@ export const dashboardService = {
         const h = await CountryRuntime.health(p.pack.manifest.country);
         checked++;
         if (h.status === "ok") okCount++;
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
 
     const [releasesRes, paramsRes, auditRes] = await Promise.all([

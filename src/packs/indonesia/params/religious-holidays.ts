@@ -19,7 +19,12 @@ import { ID_EID_AL_FITR } from "./eid-al-fitr";
 export type Religion = "islam" | "kristen" | "katolik" | "hindu" | "buddha" | "konghucu";
 
 export const RELIGIONS: readonly Religion[] = [
-  "islam", "kristen", "katolik", "hindu", "buddha", "konghucu",
+  "islam",
+  "kristen",
+  "katolik",
+  "hindu",
+  "buddha",
+  "konghucu",
 ] as const;
 
 export type HolidaySourceStatus = "official" | "estimate";
@@ -34,23 +39,77 @@ export interface ReligiousHolidayEntry {
 
 /** Nyepi (Hindu) — Saka new year. */
 export const ID_NYEPI: readonly ReligiousHolidayEntry[] = [
-  { year: 2025, holiday: "Nyepi", gregorianDate: "2025-03-29", source: "SKB 3 Menteri 2024", sourceStatus: "official" },
-  { year: 2026, holiday: "Nyepi", gregorianDate: "2026-03-19", source: "SKB 3 Menteri 2025", sourceStatus: "official" },
-  { year: 2027, holiday: "Nyepi", gregorianDate: "2027-03-08", source: "astronomical estimate", sourceStatus: "estimate" },
+  {
+    year: 2025,
+    holiday: "Nyepi",
+    gregorianDate: "2025-03-29",
+    source: "SKB 3 Menteri 2024",
+    sourceStatus: "official",
+  },
+  {
+    year: 2026,
+    holiday: "Nyepi",
+    gregorianDate: "2026-03-19",
+    source: "SKB 3 Menteri 2025",
+    sourceStatus: "official",
+  },
+  {
+    year: 2027,
+    holiday: "Nyepi",
+    gregorianDate: "2027-03-08",
+    source: "astronomical estimate",
+    sourceStatus: "estimate",
+  },
 ] as const;
 
 /** Waisak (Buddha). */
 export const ID_WAISAK: readonly ReligiousHolidayEntry[] = [
-  { year: 2025, holiday: "Waisak", gregorianDate: "2025-05-12", source: "SKB 3 Menteri 2024", sourceStatus: "official" },
-  { year: 2026, holiday: "Waisak", gregorianDate: "2026-06-01", source: "SKB 3 Menteri 2025", sourceStatus: "official" },
-  { year: 2027, holiday: "Waisak", gregorianDate: "2027-05-20", source: "astronomical estimate", sourceStatus: "estimate" },
+  {
+    year: 2025,
+    holiday: "Waisak",
+    gregorianDate: "2025-05-12",
+    source: "SKB 3 Menteri 2024",
+    sourceStatus: "official",
+  },
+  {
+    year: 2026,
+    holiday: "Waisak",
+    gregorianDate: "2026-06-01",
+    source: "SKB 3 Menteri 2025",
+    sourceStatus: "official",
+  },
+  {
+    year: 2027,
+    holiday: "Waisak",
+    gregorianDate: "2027-05-20",
+    source: "astronomical estimate",
+    sourceStatus: "estimate",
+  },
 ] as const;
 
 /** Imlek (Konghucu) — Chinese lunar new year. */
 export const ID_IMLEK: readonly ReligiousHolidayEntry[] = [
-  { year: 2025, holiday: "Imlek", gregorianDate: "2025-01-29", source: "SKB 3 Menteri 2024", sourceStatus: "official" },
-  { year: 2026, holiday: "Imlek", gregorianDate: "2026-02-17", source: "SKB 3 Menteri 2025", sourceStatus: "official" },
-  { year: 2027, holiday: "Imlek", gregorianDate: "2027-02-06", source: "lunar calendar estimate", sourceStatus: "estimate" },
+  {
+    year: 2025,
+    holiday: "Imlek",
+    gregorianDate: "2025-01-29",
+    source: "SKB 3 Menteri 2024",
+    sourceStatus: "official",
+  },
+  {
+    year: 2026,
+    holiday: "Imlek",
+    gregorianDate: "2026-02-17",
+    source: "SKB 3 Menteri 2025",
+    sourceStatus: "official",
+  },
+  {
+    year: 2027,
+    holiday: "Imlek",
+    gregorianDate: "2027-02-06",
+    source: "lunar calendar estimate",
+    sourceStatus: "estimate",
+  },
 ] as const;
 
 export function religiousHolidayConfigKey(religion: Religion, year: number): string {

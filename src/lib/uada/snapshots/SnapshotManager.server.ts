@@ -3,7 +3,10 @@
 // inside activate() (single transaction on the client side, guarded by DB trigger).
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyRetention, type SnapshotRecord } from "@/lib/uada/contracts/snapshot/policy";
-import { DEFAULT_EMBEDDING_MODEL, DEFAULT_EMBEDDING_DIMENSIONS } from "@/lib/uada/gateway/embeddings.server";
+import {
+  DEFAULT_EMBEDDING_MODEL,
+  DEFAULT_EMBEDDING_DIMENSIONS,
+} from "@/lib/uada/gateway/embeddings.server";
 import { GRAPH_SCHEMA_VERSION } from "@/lib/uada/contracts/graph/version";
 import { DEFAULT_LOCK_KEY } from "@/lib/uada/reindex/lock";
 
@@ -94,13 +97,7 @@ export const SnapshotManager = {
 
   async setPromotionState(
     snapshotId: string,
-    state:
-      | "validating"
-      | "promoting"
-      | "failed"
-      | "cancel_requested"
-      | "cancelling"
-      | "cancelled",
+    state: "validating" | "promoting" | "failed" | "cancel_requested" | "cancelling" | "cancelled",
     failureReason?: string,
   ) {
     const db = await admin();
@@ -182,10 +179,13 @@ export const SnapshotManager = {
       .order("started_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    const coverageDetail = ((run?.coverage_detail as Record<string, {
-      ratio: number;
-      threshold: number;
-    }>) ?? {}) as Record<string, { ratio: number; threshold: number }>;
+    const coverageDetail = ((run?.coverage_detail as Record<
+      string,
+      {
+        ratio: number;
+        threshold: number;
+      }
+    >) ?? {}) as Record<string, { ratio: number; threshold: number }>;
     const legacy = ((run?.coverage as Record<string, number>) ?? {}) as Record<string, number>;
 
     let coverageOk = true;
@@ -197,8 +197,7 @@ export const SnapshotManager = {
         }
       }
     } else {
-      coverageOk =
-        Object.values(legacy).every((v) => v === 1) && Object.keys(legacy).length > 0;
+      coverageOk = Object.values(legacy).every((v) => v === 1) && Object.keys(legacy).length > 0;
       if (!coverageOk) reasons.push("coverage < 100%");
     }
 
@@ -274,7 +273,11 @@ export const SnapshotManager = {
     for (const s of outcome.archive) {
       await db
         .from("uada_snapshots")
-        .update({ state: "archived", promotion_state: "archived", archived_at: new Date().toISOString() })
+        .update({
+          state: "archived",
+          promotion_state: "archived",
+          archived_at: new Date().toISOString(),
+        })
         .eq("id", s.id);
     }
     for (const s of outcome.purge) {

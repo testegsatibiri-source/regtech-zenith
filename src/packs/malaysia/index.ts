@@ -25,6 +25,8 @@ export const malaysiaPack: CountryPack = {
   supports: (_c: Capability) => false,
   health: (): HealthReport => ({
     status: "warn",
-    checks: [{ name: "stub", ok: true, message: "Malaysia is a stub — no providers implemented yet" }],
+    checks: [
+      { name: "stub", ok: true, message: "Malaysia is a stub — no providers implemented yet" },
+    ],
   }),
 };

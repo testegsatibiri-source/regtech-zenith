@@ -25,7 +25,6 @@ export function canonicalSignable(m: CountryManifest): CanonicalSignable {
   };
 }
 
-
 export function canonicalManifestBytes(m: CountryManifest): Uint8Array {
   return new TextEncoder().encode(JSON.stringify(canonicalSignable(m)));
 }

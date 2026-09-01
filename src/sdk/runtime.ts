@@ -93,11 +93,16 @@ class Runtime {
   }
 
   tryInstall(pack: CountryPack): InstalledPack {
-    try { return this.install(pack); }
-    catch { return this.packs.get(pack.manifest.country)!; }
+    try {
+      return this.install(pack);
+    } catch {
+      return this.packs.get(pack.manifest.country)!;
+    }
   }
 
-  uninstall(code: string): void { this.packs.delete(code); }
+  uninstall(code: string): void {
+    this.packs.delete(code);
+  }
 
   get(code: string): CountryPack {
     const r = this.packs.get(code);
@@ -153,7 +158,11 @@ class Runtime {
     };
   }
 
-  require<K extends keyof Providers>(code: string, capability: Capability, key: K): NonNullable<Providers[K]> {
+  require<K extends keyof Providers>(
+    code: string,
+    capability: Capability,
+    key: K,
+  ): NonNullable<Providers[K]> {
     const p = this.get(code);
     const provider = p.providers[key];
     if (!provider) throw new CapabilityUnsupported(code, capability);
@@ -164,12 +173,18 @@ class Runtime {
     const pack = this.get(code);
     let report: HealthReport;
     if (!pack.health) {
-      report = { status: "ok", checks: [{ name: "health-hook-missing", ok: true, message: "pack has no health()" }] };
+      report = {
+        status: "ok",
+        checks: [{ name: "health-hook-missing", ok: true, message: "pack has no health()" }],
+      };
     } else {
       try {
         report = await Promise.resolve(pack.health());
       } catch (err) {
-        report = { status: "error", checks: [{ name: "health-throw", ok: false, message: (err as Error).message }] };
+        report = {
+          status: "error",
+          checks: [{ name: "health-throw", ok: false, message: (err as Error).message }],
+        };
       }
     }
     void emitBus({
@@ -181,7 +196,9 @@ class Runtime {
     return report;
   }
 
-  list(): InstalledPack[] { return Array.from(this.packs.values()); }
+  list(): InstalledPack[] {
+    return Array.from(this.packs.values());
+  }
 }
 
 export const CountryRuntime = new Runtime();

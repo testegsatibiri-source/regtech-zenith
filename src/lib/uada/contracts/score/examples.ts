@@ -7,17 +7,16 @@ export const SCORE_REPORT_EXAMPLE: ScoreReport = {
   snapshot: "2026-07-31-h15",
   overall: 83.13,
   dimensions: [
-
     {
       name: "coupling",
       score: 76,
-      weight: 0.20,
+      weight: 0.2,
       evidence: ["3 cross-boundary edges"],
     },
     {
       name: "boundary_integrity",
       score: 88,
-      weight: 0.20,
+      weight: 0.2,
       evidence: ["1 pack importing core internals", "0 UI importing .server modules"],
     },
     {
@@ -42,10 +41,13 @@ export const SCORE_REPORT_EXAMPLE: ScoreReport = {
       name: "regulatory_accuracy",
       score: 90,
       weight: 0.15,
-      evidence: ["2 packs installed", "1 pack not commercial-ready", "1 pack using simplified engines"],
+      evidence: [
+        "2 packs installed",
+        "1 pack not commercial-ready",
+        "1 pack using simplified engines",
+      ],
     },
   ],
   previousOverall: 79.5,
   delta: 3.5,
 };
-

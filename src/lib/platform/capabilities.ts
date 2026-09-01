@@ -5,11 +5,24 @@ import type { PlatformRole } from "./policy/types";
 
 export type Capability =
   | "dashboard.view"
-  | "pack.view" | "pack.install" | "pack.uninstall" | "pack.rollback" | "pack.health"
-  | "pack.sign" | "pack.countersign"
-  | "release.view" | "release.transition" | "release.approve" | "release.publish" | "release.rollback"
-  | "parameters.view" | "parameters.import" | "parameters.export" | "parameters.edit"
-  | "flags.view" | "flags.edit"
+  | "pack.view"
+  | "pack.install"
+  | "pack.uninstall"
+  | "pack.rollback"
+  | "pack.health"
+  | "pack.sign"
+  | "pack.countersign"
+  | "release.view"
+  | "release.transition"
+  | "release.approve"
+  | "release.publish"
+  | "release.rollback"
+  | "parameters.view"
+  | "parameters.import"
+  | "parameters.export"
+  | "parameters.edit"
+  | "flags.view"
+  | "flags.edit"
   | "audit.view"
   | "iam.manage"
   | "observability.view"
@@ -17,28 +30,69 @@ export type Capability =
 
 export type CapabilityScope = "global" | "country";
 
-export interface CapabilityGrant { capability: Capability; scope: CapabilityScope }
+export interface CapabilityGrant {
+  capability: Capability;
+  scope: CapabilityScope;
+}
 
 export const DEFAULT_ROLE_CAPABILITIES: Record<PlatformRole, CapabilityGrant[]> = {
   platform_admin: [
-    "dashboard.view","pack.view","pack.install","pack.uninstall","pack.rollback","pack.health",
-    "pack.sign","pack.countersign",
-    "release.view","release.transition","release.approve","release.publish","release.rollback",
-    "parameters.view","parameters.import","parameters.export",
-    "flags.view","flags.edit","audit.view","iam.manage","observability.view","incidents.manage",
+    "dashboard.view",
+    "pack.view",
+    "pack.install",
+    "pack.uninstall",
+    "pack.rollback",
+    "pack.health",
+    "pack.sign",
+    "pack.countersign",
+    "release.view",
+    "release.transition",
+    "release.approve",
+    "release.publish",
+    "release.rollback",
+    "parameters.view",
+    "parameters.import",
+    "parameters.export",
+    "flags.view",
+    "flags.edit",
+    "audit.view",
+    "iam.manage",
+    "observability.view",
+    "incidents.manage",
   ].map((c) => ({ capability: c as Capability, scope: "global" as const })),
   platform_operator: [
-    "dashboard.view","pack.view","pack.health","release.view",
-    "parameters.view","parameters.export","flags.view","observability.view","incidents.manage",
+    "dashboard.view",
+    "pack.view",
+    "pack.health",
+    "release.view",
+    "parameters.view",
+    "parameters.export",
+    "flags.view",
+    "observability.view",
+    "incidents.manage",
   ].map((c) => ({ capability: c as Capability, scope: "global" as const })),
   platform_auditor: [
-    "dashboard.view","pack.view","release.view","parameters.view",
-    "flags.view","audit.view","observability.view",
+    "dashboard.view",
+    "pack.view",
+    "release.view",
+    "parameters.view",
+    "flags.view",
+    "audit.view",
+    "observability.view",
   ].map((c) => ({ capability: c as Capability, scope: "global" as const })),
   country_cto: [
-    "dashboard.view","pack.view","pack.install","pack.rollback","pack.sign",
-    "release.view","release.transition","release.approve",
-    "parameters.view","parameters.import","flags.view","flags.edit",
+    "dashboard.view",
+    "pack.view",
+    "pack.install",
+    "pack.rollback",
+    "pack.sign",
+    "release.view",
+    "release.transition",
+    "release.approve",
+    "parameters.view",
+    "parameters.import",
+    "flags.view",
+    "flags.edit",
   ].map((c) => ({ capability: c as Capability, scope: "country" as const })),
 };
 
@@ -54,7 +108,11 @@ export function hasCapability(cap: Capability, ctx: CapabilityContext): boolean 
     for (const g of grants) {
       if (g.capability !== cap) continue;
       if (g.scope === "global") return true;
-      if (g.scope === "country" && ctx.targetCountry && ctx.countryScopes.includes(ctx.targetCountry)) {
+      if (
+        g.scope === "country" &&
+        ctx.targetCountry &&
+        ctx.countryScopes.includes(ctx.targetCountry)
+      ) {
         return true;
       }
     }

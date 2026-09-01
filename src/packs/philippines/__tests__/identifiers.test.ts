@@ -58,13 +58,18 @@ describe("PH statutory identifiers", () => {
 
   it("filing readiness requires employer + every employee", () => {
     const employer = {
-      tin: "001002003004", rdo: "050", sss: "0312345678",
-      philhealth: "012345678901", pagibig: "111122223333",
+      tin: "001002003004",
+      rdo: "050",
+      sss: "0312345678",
+      philhealth: "012345678901",
+      pagibig: "111122223333",
     };
-    expect(phFilingReadiness({
-      employer,
-      employees: [{ country_metadata: GOOD_EMPLOYEE }],
-    }).ready).toBe(true);
+    expect(
+      phFilingReadiness({
+        employer,
+        employees: [{ country_metadata: GOOD_EMPLOYEE }],
+      }).ready,
+    ).toBe(true);
 
     const partial = phFilingReadiness({
       employer,

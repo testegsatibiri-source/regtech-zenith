@@ -121,5 +121,8 @@ export interface SeparationProvider {
   grounds(ctx?: ProviderContext): SeparationGround[];
   computeSeparationPay(input: SeparationPayInput, ctx?: ProviderContext): SeparationPayOutput;
   computeFinalPay(input: FinalPayInput, ctx?: ProviderContext): FinalPayOutput;
-  processRequirements(input: SeparationRequirementsInput, ctx?: ProviderContext): SeparationNotice[];
+  processRequirements(
+    input: SeparationRequirementsInput,
+    ctx?: ProviderContext,
+  ): SeparationNotice[];
 }

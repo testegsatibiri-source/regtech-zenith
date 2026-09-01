@@ -1,6 +1,10 @@
 // H13 — Postgres Graph Store. Server-only.
 import type {
-  EdgeKind, GraphEdge, GraphNode, ImpactReport, TraversalQuery,
+  EdgeKind,
+  GraphEdge,
+  GraphNode,
+  ImpactReport,
+  TraversalQuery,
 } from "@/lib/uada/contracts/graph";
 import type { GraphStore } from "@/lib/uada/stores";
 
@@ -10,7 +14,12 @@ async function db() {
 }
 
 function toNode(row: {
-  id: string; kind: string; key: string; label: string; path: string | null; metadata: unknown;
+  id: string;
+  kind: string;
+  key: string;
+  label: string;
+  path: string | null;
+  metadata: unknown;
 }): GraphNode {
   return {
     id: row.id,
@@ -23,7 +32,11 @@ function toNode(row: {
 
 async function activeSnapshotId(): Promise<string> {
   const c = await db();
-  const { data, error } = await c.from("uada_snapshots").select("id").eq("state", "active").maybeSingle();
+  const { data, error } = await c
+    .from("uada_snapshots")
+    .select("id")
+    .eq("state", "active")
+    .maybeSingle();
   if (error) throw error;
   if (!data) throw new Error("No active snapshot");
   return data.id;
@@ -89,7 +102,13 @@ export const pgGraphStore: GraphStore = {
     if (!target) throw new Error(`Node not found: ${nodeId}`);
     const affected = await this.traverse({ nodeId, depth });
     const level: ImpactReport["level"] =
-      affected.length > 25 ? "critical" : affected.length > 10 ? "high" : affected.length > 3 ? "medium" : "low";
+      affected.length > 25
+        ? "critical"
+        : affected.length > 10
+          ? "high"
+          : affected.length > 3
+            ? "medium"
+            : "low";
     return {
       target,
       level,

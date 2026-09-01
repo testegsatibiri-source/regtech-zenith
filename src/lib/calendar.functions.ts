@@ -63,13 +63,16 @@ export const seedObligations = createServerFn({ method: "POST" })
         due_date: occ.due_date,
         period_label: periodLabelFrom(tpl.cadence, occ.period_start),
         status: "pending",
-        notes: [
-          occ.rule,
-          occ.statutory_date && occ.statutory_date !== occ.due_date
-            ? `Statutory date ${occ.statutory_date} rolled to the next business day`
-            : null,
-          occ.resolution === "needs_review" ? `⚠ ${occ.reason ?? "Needs review"}` : null,
-        ].filter(Boolean).join(" · ") || null,
+        notes:
+          [
+            occ.rule,
+            occ.statutory_date && occ.statutory_date !== occ.due_date
+              ? `Statutory date ${occ.statutory_date} rolled to the next business day`
+              : null,
+            occ.resolution === "needs_review" ? `⚠ ${occ.reason ?? "Needs review"}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ") || null,
       })),
     );
 
@@ -98,7 +101,6 @@ function periodLabelFrom(cadence: string, periodStart: string): string {
   return `${y}-${m}`;
 }
 
-
 export const updateObligationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -122,7 +124,10 @@ export const updateObligationStatus = createServerFn({ method: "POST" })
   });
 
 /** Utility: classify due-date risk relative to today. */
-export function classifyRisk(dueISO: string, status: string): "overdue" | "critical" | "soon" | "upcoming" | "done" {
+export function classifyRisk(
+  dueISO: string,
+  status: string,
+): "overdue" | "critical" | "soon" | "upcoming" | "done" {
   if (status === "completed") return "done";
   if (status === "dismissed") return "done";
   const today = new Date();
@@ -136,7 +141,9 @@ export function classifyRisk(dueISO: string, status: string): "overdue" | "criti
 }
 
 /** Build compliance findings from a list of obligation rows for the score. */
-export function obligationFindings(rows: { id: string; name: string; due_date: string; status: string; code: string }[]) {
+export function obligationFindings(
+  rows: { id: string; name: string; due_date: string; status: string; code: string }[],
+) {
   const overdue = rows.filter((r) => classifyRisk(r.due_date, r.status) === "overdue");
   const critical = rows.filter((r) => classifyRisk(r.due_date, r.status) === "critical");
   const findings = [] as {
@@ -154,7 +161,10 @@ export function obligationFindings(rows: { id: string; name: string; due_date: s
     passed: overdue.length === 0,
     weight: 30,
     message: overdue.length
-      ? `${overdue.length} obligation(s) past due: ${overdue.slice(0, 3).map((o) => o.name).join(", ")}${overdue.length > 3 ? "…" : ""}`
+      ? `${overdue.length} obligation(s) past due: ${overdue
+          .slice(0, 3)
+          .map((o) => o.name)
+          .join(", ")}${overdue.length > 3 ? "…" : ""}`
       : "All obligations up to date.",
   });
   findings.push({

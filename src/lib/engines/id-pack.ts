@@ -9,9 +9,12 @@ import { resolveWageFloor } from "@/packs/indonesia/params/umk-2026";
 const UMP_BY_PROVINCE = new Map<string, number>(
   [...UMP_2026, UMP_FALLBACK].map((e) => [e.province, e.amount]),
 );
-function resolveUmp(
-  province: string | undefined | null,
-): { amount: number; province: string; stale: boolean; sourceStatus: import("@/packs/indonesia/params/ump-2026").UmpSourceStatus } {
+function resolveUmp(province: string | undefined | null): {
+  amount: number;
+  province: string;
+  stale: boolean;
+  sourceStatus: import("@/packs/indonesia/params/ump-2026").UmpSourceStatus;
+} {
   if (province && UMP_BY_PROVINCE.has(province)) {
     const entry = [...UMP_2026, UMP_FALLBACK].find((e) => e.province === province)!;
     return {
@@ -44,10 +47,7 @@ const rules: ComplianceRule[] = [
         (meta.kabupaten as string | undefined) ??
         null;
       const { amount: ump, province: resolved, stale, sourceStatus } = resolveUmp(province);
-      const floor = resolveWageFloor(
-        { province: resolved, amount: ump, sourceStatus },
-        region,
-      );
+      const floor = resolveWageFloor({ province: resolved, amount: ump, sourceStatus }, region);
       const ok = e.base_salary >= floor.amount;
       if (!floor.conclusive) {
         return {
@@ -75,7 +75,9 @@ const rules: ComplianceRule[] = [
       const ok = Boolean((e.country_metadata ?? {}).npwp);
       return {
         passed: ok,
-        message: ok ? "NPWP on file." : "Missing NPWP — 20% higher PPh 21 withholding applies (DJP).",
+        message: ok
+          ? "NPWP on file."
+          : "Missing NPWP — 20% higher PPh 21 withholding applies (DJP).",
       };
     },
   },
@@ -99,7 +101,12 @@ const rules: ComplianceRule[] = [
     weight: 18,
     evaluate: (e) => {
       const ok = Boolean((e.country_metadata ?? {}).bpjs_kesehatan);
-      return { passed: ok, message: ok ? "Health insurance registered." : "Not enrolled in BPJS Kesehatan (mandatory)." };
+      return {
+        passed: ok,
+        message: ok
+          ? "Health insurance registered."
+          : "Not enrolled in BPJS Kesehatan (mandatory).",
+      };
     },
   },
   {
@@ -111,7 +118,9 @@ const rules: ComplianceRule[] = [
       const ok = Boolean((e.country_metadata ?? {}).bpjs_ketenagakerjaan);
       return {
         passed: ok,
-        message: ok ? "Employment insurance registered." : "Not enrolled in BPJS Ketenagakerjaan (mandatory).",
+        message: ok
+          ? "Employment insurance registered."
+          : "Not enrolled in BPJS Ketenagakerjaan (mandatory).",
       };
     },
   },
@@ -121,7 +130,8 @@ const rules: ComplianceRule[] = [
     severity: "medium",
     weight: 10,
     evaluate: (e, ctx) => {
-      const limit = ((ctx.params.overtime as { maxPerWeek: number }) ?? { maxPerWeek: 18 }).maxPerWeek;
+      const limit = ((ctx.params.overtime as { maxPerWeek: number }) ?? { maxPerWeek: 18 })
+        .maxPerWeek;
       const h = Number((e.country_metadata ?? {}).weekly_overtime_hours ?? 0);
       const ok = h <= limit;
       return {

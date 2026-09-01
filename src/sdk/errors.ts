@@ -21,7 +21,10 @@ export class CapabilityUnsupported extends Error {
 }
 
 export class PackValidationFailed extends Error {
-  constructor(public readonly pack: string, public readonly errors: string[]) {
+  constructor(
+    public readonly pack: string,
+    public readonly errors: string[],
+  ) {
     super(`Pack ${pack} failed validation: ${errors.join("; ")}`);
     this.name = "PackValidationFailed";
   }

@@ -20,7 +20,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/personnel")({
@@ -45,7 +51,14 @@ export const Route = createFileRoute("/_authenticated/personnel")({
 });
 
 const RELATIONSHIPS = ["spouse", "child", "parent", "sibling", "other"] as const;
-const REASONS = ["hire", "promotion", "salary_adjustment", "regularization", "transfer", "other"] as const;
+const REASONS = [
+  "hire",
+  "promotion",
+  "salary_adjustment",
+  "regularization",
+  "transfer",
+  "other",
+] as const;
 
 function PersonnelPage() {
   const { companyId, company } = useCompany();
@@ -229,9 +242,7 @@ function PersonnelPage() {
                 <Badge variant={dossier.complete ? "default" : "secondary"}>
                   {dossier.completeness}% complete
                 </Badge>
-                <span className="text-sm text-muted-foreground">
-                  PH-201-FILE dossier checklist
-                </span>
+                <span className="text-sm text-muted-foreground">PH-201-FILE dossier checklist</span>
               </div>
               <ul className="space-y-2">
                 {dossier.checks.map((c) => (
@@ -263,11 +274,19 @@ function PersonnelPage() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>ID number</Label>
-                      <Input value={spId} onChange={(e) => setSpId(e.target.value)} placeholder="SP-2026-0001" />
+                      <Input
+                        value={spId}
+                        onChange={(e) => setSpId(e.target.value)}
+                        placeholder="SP-2026-0001"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Valid until</Label>
-                      <Input type="date" value={spExpiry} onChange={(e) => setSpExpiry(e.target.value)} />
+                      <Input
+                        type="date"
+                        value={spExpiry}
+                        onChange={(e) => setSpExpiry(e.target.value)}
+                      />
                     </div>
                   </div>
                 )}
@@ -313,7 +332,11 @@ function PersonnelPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Birth date</Label>
-                    <Input type="date" value={depBirth} onChange={(e) => setDepBirth(e.target.value)} />
+                    <Input
+                      type="date"
+                      value={depBirth}
+                      onChange={(e) => setDepBirth(e.target.value)}
+                    />
                   </div>
                 </div>
                 <Button type="submit" disabled={busy}>
@@ -323,7 +346,10 @@ function PersonnelPage() {
 
               <div className="space-y-2">
                 {(depsQuery.data ?? []).map((d) => (
-                  <div key={d.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div
+                    key={d.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <p className="text-sm font-medium">{d.full_name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -371,12 +397,19 @@ function PersonnelPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Effective date</Label>
-                    <Input type="date" value={jobDate} onChange={(e) => setJobDate(e.target.value)} />
+                    <Input
+                      type="date"
+                      value={jobDate}
+                      onChange={(e) => setJobDate(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Reason</Label>
-                  <Select value={jobReason} onValueChange={(v) => setJobReason(v as (typeof REASONS)[number])}>
+                  <Select
+                    value={jobReason}
+                    onValueChange={(v) => setJobReason(v as (typeof REASONS)[number])}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -396,7 +429,10 @@ function PersonnelPage() {
 
               <div className="space-y-2">
                 {(historyQuery.data ?? []).map((h) => (
-                  <div key={h.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div
+                    key={h.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <p className="text-sm font-medium">
                         {h.position ?? "—"} · {Number(h.base_salary).toLocaleString()}

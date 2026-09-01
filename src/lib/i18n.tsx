@@ -33,12 +33,14 @@ const D: Dict = {
   "hero.signal2": { en: "Statutory contributions enrolled", id: "Iuran statutori terdaftar" },
   "hero.signal3": { en: "Tax ID missing on 3 employees", id: "Nomor pajak hilang pada 3 karyawan" },
 
-
   "score.title": { en: "Compliance Score", id: "Skor Kepatuhan" },
   "score.audit": { en: "Audit readiness", id: "Kesiapan audit" },
 
   "calc.title": { en: "Indonesia Payroll Calculator", id: "Kalkulator Penggajian Indonesia" },
-  "calc.sub": { en: "PPh 21 (TER), BPJS and THR — 2024 parameters.", id: "PPh 21 (TER), BPJS dan THR — parameter 2024." },
+  "calc.sub": {
+    en: "PPh 21 (TER), BPJS and THR — 2024 parameters.",
+    id: "PPh 21 (TER), BPJS dan THR — parameter 2024.",
+  },
   "calc.base": { en: "Base salary (IDR/month)", id: "Gaji pokok (IDR/bulan)" },
   "calc.allow": { en: "Allowances (IDR)", id: "Tunjangan (IDR)" },
   "calc.status": { en: "Marital status (PTKP)", id: "Status (PTKP)" },
@@ -61,7 +63,12 @@ interface I18nCtx {
   available: Lang[];
 }
 
-const Ctx = createContext<I18nCtx>({ lang: "en", setLang: () => {}, t: (k) => String(k), available: ["en"] });
+const Ctx = createContext<I18nCtx>({
+  lang: "en",
+  setLang: () => {},
+  t: (k) => String(k),
+  available: ["en"],
+});
 
 function translate(key: string, lang: Lang): string {
   const entry = D[key];
@@ -75,7 +82,9 @@ function translate(key: string, lang: Lang): string {
  */
 export function I18nProvider({ children }: { children: ReactNode }) {
   return (
-    <Ctx.Provider value={{ lang: "en", setLang: () => {}, t: (k) => translate(k, "en"), available: ["en"] }}>
+    <Ctx.Provider
+      value={{ lang: "en", setLang: () => {}, t: (k) => translate(k, "en"), available: ["en"] }}
+    >
       {children}
     </Ctx.Provider>
   );
@@ -89,7 +98,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 export function LocaleScope({ lang, children }: { lang: Lang; children: ReactNode }) {
   const fixed: Lang = lang || "en";
   return (
-    <Ctx.Provider value={{ lang: fixed, setLang: () => {}, t: (k) => translate(k, fixed), available: [fixed] }}>
+    <Ctx.Provider
+      value={{ lang: fixed, setLang: () => {}, t: (k) => translate(k, fixed), available: [fixed] }}
+    >
       {children}
     </Ctx.Provider>
   );

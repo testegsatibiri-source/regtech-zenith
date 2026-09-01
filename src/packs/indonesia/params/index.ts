@@ -50,14 +50,15 @@ export function buildIndonesiaParamsMap(): Record<string, unknown> {
     }
   }
   // H23-A — annual PPh 21 reconciliation parameters.
-  map[PPH21_ANNUAL_CONFIG_KEYS.brackets] = { ...ANNUAL_BRACKETS_META, brackets: ANNUAL_BRACKETS_HPP };
+  map[PPH21_ANNUAL_CONFIG_KEYS.brackets] = {
+    ...ANNUAL_BRACKETS_META,
+    brackets: ANNUAL_BRACKETS_HPP,
+  };
   map[PPH21_ANNUAL_CONFIG_KEYS.ptkp] = PTKP_2026;
   map[PPH21_ANNUAL_CONFIG_KEYS.biayaJabatan] = BIAYA_JABATAN;
   return map;
 }
 
 export function buildIndonesiaConfigService(base: Record<string, unknown> = {}): ConfigService {
-  return new ConfigService([
-    new StaticConfigProvider({ ...base, ...buildIndonesiaParamsMap() }),
-  ]);
+  return new ConfigService([new StaticConfigProvider({ ...base, ...buildIndonesiaParamsMap() })]);
 }

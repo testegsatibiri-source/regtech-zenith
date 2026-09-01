@@ -50,7 +50,6 @@ export const createCompany = createServerFn({ method: "POST" })
     return row;
   });
 
-
 // H21 Phase 2 — employer statutory registry (TIN/RDO/SSS/PhilHealth/Pag-IBIG
 // employer numbers). Stored as opaque per-jurisdiction JSON so Core stays
 // country-agnostic; the active Country Pack owns the keys and their formats.
@@ -158,9 +157,9 @@ export const savePayrollRun = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     if (items.length) {
-      const { error: itemErr } = await context.supabase.from("payroll_items").insert(
-        items.map((it) => ({ ...it, run_id: runRow.id, company_id: run.company_id })),
-      );
+      const { error: itemErr } = await context.supabase
+        .from("payroll_items")
+        .insert(items.map((it) => ({ ...it, run_id: runRow.id, company_id: run.company_id })));
       if (itemErr) throw new Error(itemErr.message);
     }
     return runRow;

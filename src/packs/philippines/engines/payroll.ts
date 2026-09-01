@@ -11,8 +11,15 @@ export function buildPhPayslip(input: PayslipInput, ctx?: ProviderContext): Pays
   const benefitsProvider = ctx?.siblings.benefits;
 
   const tax = taxProvider
-    ? taxProvider.calculate({ monthlyGross: gross, maritalStatus: input.maritalStatus, hasNpwp: input.hasNpwp }, ctx)
-    : calculatePhTax({ monthlyGross: gross, maritalStatus: input.maritalStatus, hasNpwp: input.hasNpwp });
+    ? taxProvider.calculate(
+        { monthlyGross: gross, maritalStatus: input.maritalStatus, hasNpwp: input.hasNpwp },
+        ctx,
+      )
+    : calculatePhTax({
+        monthlyGross: gross,
+        maritalStatus: input.maritalStatus,
+        hasNpwp: input.hasNpwp,
+      });
 
   const benefits = benefitsProvider
     ? benefitsProvider.calculate({ salary: input.baseSalary }, ctx)

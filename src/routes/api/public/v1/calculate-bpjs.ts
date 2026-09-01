@@ -17,10 +17,11 @@ const inputSchema = z.object({
 export const Route = createFileRoute("/api/public/v1/calculate-bpjs")({
   server: {
     handlers: {
-      OPTIONS: async ({ request }) => new Response(null, {
-        status: 204,
-        headers: { ...API_CORS_HEADERS, ...corsHeadersFor(request.headers.get("origin"), ["*"]) },
-      }),
+      OPTIONS: async ({ request }) =>
+        new Response(null, {
+          status: 204,
+          headers: { ...API_CORS_HEADERS, ...corsHeadersFor(request.headers.get("origin"), ["*"]) },
+        }),
       POST: async ({ request }) => {
         const start = performance.now();
         const traceId = traceIdFromRequest(request);
@@ -28,7 +29,10 @@ export const Route = createFileRoute("/api/public/v1/calculate-bpjs")({
         if (!auth.ok) return auth.response;
         const authed = auth.auth;
 
-        if (request.headers.get("content-length") && Number(request.headers.get("content-length")) > 8192) {
+        if (
+          request.headers.get("content-length") &&
+          Number(request.headers.get("content-length")) > 8192
+        ) {
           return jsonResponse({ error: "Payload too large" }, 413);
         }
         let raw: unknown;
@@ -39,29 +43,43 @@ export const Route = createFileRoute("/api/public/v1/calculate-bpjs")({
         }
         const parsed = inputSchema.safeParse(raw);
         if (!parsed.success) {
-          return finish(jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422), 422);
+          return finish(
+            jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422),
+            422,
+          );
         }
 
         const pack = CountryRuntime.get(parsed.data.country);
         const benefits = pack.providers.benefits;
         if (!benefits) {
-          return finish(jsonResponse({ error: `No benefits provider for ${pack.manifest.country}` }, 501), 501);
+          return finish(
+            jsonResponse({ error: `No benefits provider for ${pack.manifest.country}` }, 501),
+            501,
+          );
         }
 
-        const result = await timed("engine.bpjs", () => benefits.calculate({ salary: parsed.data.salary }), {
-          country: pack.manifest.country,
-          trace_id: traceId,
-        });
+        const result = await timed(
+          "engine.bpjs",
+          () => benefits.calculate({ salary: parsed.data.salary }),
+          {
+            country: pack.manifest.country,
+            trace_id: traceId,
+          },
+        );
 
-        const response = jsonResponse({
-          schemaVersion: "1",
-          engine: "BPJS",
-          country: pack.manifest.country,
-          rulesetVersion: pack.manifest.rulesetVersion,
-          providerVersion: benefits.version,
-          input: parsed.data,
-          result: { ...result, currency: pack.manifest.currency },
-        }, 200, { "x-request-id": traceId, "x-ruleset-version": pack.manifest.rulesetVersion });
+        const response = jsonResponse(
+          {
+            schemaVersion: "1",
+            engine: "BPJS",
+            country: pack.manifest.country,
+            rulesetVersion: pack.manifest.rulesetVersion,
+            providerVersion: benefits.version,
+            input: parsed.data,
+            result: { ...result, currency: pack.manifest.currency },
+          },
+          200,
+          { "x-request-id": traceId, "x-ruleset-version": pack.manifest.rulesetVersion },
+        );
         return finish(response, 200);
 
         async function finish(res: Response, status: number): Promise<Response> {

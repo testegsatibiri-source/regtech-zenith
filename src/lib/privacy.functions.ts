@@ -23,11 +23,31 @@ export const LEGAL_BASES = [
 ] as const;
 
 export const RETENTION_CATEGORIES = [
-  { category: "payroll_records", retentionMonths: 120, legalReference: "NIRC Sec. 235 / BIR RR 17-2013 (10 years)" },
-  { category: "statutory_filings", retentionMonths: 120, legalReference: "BIR / SSS record-keeping" },
-  { category: "employment_201_file", retentionMonths: 60, legalReference: "DOLE D.O. 183-17 (3 years post-separation, buffered)" },
-  { category: "leave_records", retentionMonths: 36, legalReference: "Labor Code Art. 306 (money claims prescriptive period)" },
-  { category: "applicant_data", retentionMonths: 12, legalReference: "NPC Advisory 2017-01 (proportionality)" },
+  {
+    category: "payroll_records",
+    retentionMonths: 120,
+    legalReference: "NIRC Sec. 235 / BIR RR 17-2013 (10 years)",
+  },
+  {
+    category: "statutory_filings",
+    retentionMonths: 120,
+    legalReference: "BIR / SSS record-keeping",
+  },
+  {
+    category: "employment_201_file",
+    retentionMonths: 60,
+    legalReference: "DOLE D.O. 183-17 (3 years post-separation, buffered)",
+  },
+  {
+    category: "leave_records",
+    retentionMonths: 36,
+    legalReference: "Labor Code Art. 306 (money claims prescriptive period)",
+  },
+  {
+    category: "applicant_data",
+    retentionMonths: 12,
+    legalReference: "NPC Advisory 2017-01 (proportionality)",
+  },
 ] as const;
 
 const companyId = z.object({ companyId: z.string().uuid() });
@@ -51,10 +71,7 @@ export const listConsents = createServerFn({ method: "POST" })
     companyId.extend({ employeeId: z.string().uuid().optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    let q = context.supabase
-      .from("employee_consents")
-      .select("*")
-      .eq("company_id", data.companyId);
+    let q = context.supabase.from("employee_consents").select("*").eq("company_id", data.companyId);
     if (data.employeeId) q = q.eq("employee_id", data.employeeId);
     const { data: rows, error } = await q.order("purpose", { ascending: true });
     if (error) throw new Error(error.message);
@@ -217,8 +234,14 @@ export const getPrivacyReadiness = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const [employees, consents, policies, log] = await Promise.all([
       context.supabase.from("employees").select("id, full_name").eq("company_id", data.companyId),
-      context.supabase.from("employee_consents").select("employee_id, purpose, granted").eq("company_id", data.companyId),
-      context.supabase.from("data_retention_policies").select("category, active").eq("company_id", data.companyId),
+      context.supabase
+        .from("employee_consents")
+        .select("employee_id, purpose, granted")
+        .eq("company_id", data.companyId),
+      context.supabase
+        .from("data_retention_policies")
+        .select("category, active")
+        .eq("company_id", data.companyId),
       context.supabase
         .from("personal_data_access_log")
         .select("id", { count: "exact", head: true })

@@ -8,8 +8,8 @@
 
 export interface EidEntry {
   year: number;
-  gregorianDate: string;   // ISO date of 1 Syawal
-  source: string;          // authority citation
+  gregorianDate: string; // ISO date of 1 Syawal
+  source: string; // authority citation
 }
 
 export const ID_EID_AL_FITR: readonly EidEntry[] = [

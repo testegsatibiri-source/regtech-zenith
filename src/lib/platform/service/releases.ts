@@ -32,10 +32,14 @@ export function canTransition(from: ReleaseStatus, to: ReleaseStatus): boolean {
 
 function actionFor(to: ReleaseStatus): PlatformAction {
   switch (to) {
-    case "approved": return "release.approve";
-    case "released": return "release.publish";
-    case "rolled_back": return "release.rollback";
-    default: return "release.transition";
+    case "approved":
+      return "release.approve";
+    case "released":
+      return "release.publish";
+    case "rolled_back":
+      return "release.rollback";
+    default:
+      return "release.transition";
   }
 }
 
@@ -71,10 +75,7 @@ export const releasesService = {
     return data ?? [];
   },
 
-  async transition(
-    ctx: PlatformContext,
-    input: { id: string; to: ReleaseStatus; notes?: string },
-  ) {
+  async transition(ctx: PlatformContext, input: { id: string; to: ReleaseStatus; notes?: string }) {
     const { data: current, error: readError } = await ctx.supabase
       .from("pack_installations")
       .select("*")
@@ -101,10 +102,22 @@ export const releasesService = {
 
     const now = new Date().toISOString();
     const patch: Record<string, string | null> = { status: input.to };
-    if (input.to === "approved") { patch.approved_by = ctx.policy.actorId; patch.approved_at = now; }
-    if (input.to === "released") { patch.released_by = ctx.policy.actorId; patch.released_at = now; }
-    if (input.to === "deprecated") { patch.deprecated_by = ctx.policy.actorId; patch.deprecated_at = now; }
-    if (input.to === "archived") { patch.archived_by = ctx.policy.actorId; patch.archived_at = now; }
+    if (input.to === "approved") {
+      patch.approved_by = ctx.policy.actorId;
+      patch.approved_at = now;
+    }
+    if (input.to === "released") {
+      patch.released_by = ctx.policy.actorId;
+      patch.released_at = now;
+    }
+    if (input.to === "deprecated") {
+      patch.deprecated_by = ctx.policy.actorId;
+      patch.deprecated_at = now;
+    }
+    if (input.to === "archived") {
+      patch.archived_by = ctx.policy.actorId;
+      patch.archived_at = now;
+    }
     if (input.notes) patch.notes = input.notes;
 
     const { data: updated, error: updateError } = await ctx.supabase

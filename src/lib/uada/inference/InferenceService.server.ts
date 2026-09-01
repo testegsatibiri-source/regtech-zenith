@@ -88,7 +88,11 @@ async function callGateway(
 function safeJsonParse<T>(text: string): T | null {
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) return null;
-  try { return JSON.parse(match[0]) as T; } catch { return null; }
+  try {
+    return JSON.parse(match[0]) as T;
+  } catch {
+    return null;
+  }
 }
 
 export const InferenceService = {
@@ -111,9 +115,10 @@ export const InferenceService = {
       filesUsed: req.bundle.documents.map((d) => d.path),
       model: choice.model,
       evidence: req.bundle.evidence,
-      warnings: req.bundle.evidence.length === 0
-        ? [{ code: "insufficient_evidence", message: "no evidence in bundle" }]
-        : undefined,
+      warnings:
+        req.bundle.evidence.length === 0
+          ? [{ code: "insufficient_evidence", message: "no evidence in bundle" }]
+          : undefined,
       runId,
       latencyMs,
     };
@@ -181,20 +186,42 @@ Rules:
       objective,
       summary: parsed?.summary ?? text.slice(0, 400),
       steps: (parsed?.steps ?? [])
-        .filter((s) => Array.isArray(s.evidencePaths) && s.evidencePaths.every((p) => evidencePaths.has(p)))
-        .map((s, i) => ({ order: s.order ?? i + 1, title: s.title, detail: s.detail, affectedFiles: s.affectedFiles ?? [], evidencePaths: s.evidencePaths })),
+        .filter(
+          (s) =>
+            Array.isArray(s.evidencePaths) && s.evidencePaths.every((p) => evidencePaths.has(p)),
+        )
+        .map((s, i) => ({
+          order: s.order ?? i + 1,
+          title: s.title,
+          detail: s.detail,
+          affectedFiles: s.affectedFiles ?? [],
+          evidencePaths: s.evidencePaths,
+        })),
       risks: parsed?.risks ?? [],
       assumptions: parsed?.assumptions ?? [],
       blockedBy: parsed?.blockedBy ?? [],
       affectedFiles: (parsed?.affectedFiles ?? []).filter((f) => evidencePaths.has(f)),
-      estimatedImpact: parsed?.steps && parsed.steps.length > 5 ? "transitive" : parsed?.steps && parsed.steps.length > 2 ? "indirect" : "direct",
+      estimatedImpact:
+        parsed?.steps && parsed.steps.length > 5
+          ? "transitive"
+          : parsed?.steps && parsed.steps.length > 2
+            ? "indirect"
+            : "direct",
       evidence: bundle.evidence,
     };
 
     const filteredCount = (parsed?.steps?.length ?? 0) - draft.steps.length;
     const warnings: Evidence extends never ? never : { code: string; message: string }[] = [];
-    if (filteredCount > 0) warnings.push({ code: "steps_dropped_missing_evidence", message: `${filteredCount} step(s) dropped for citing unknown files` });
-    if (!parsed) warnings.push({ code: "unparseable_plan", message: "model output was not valid JSON; used raw summary" });
+    if (filteredCount > 0)
+      warnings.push({
+        code: "steps_dropped_missing_evidence",
+        message: `${filteredCount} step(s) dropped for citing unknown files`,
+      });
+    if (!parsed)
+      warnings.push({
+        code: "unparseable_plan",
+        message: "model output was not valid JSON; used raw summary",
+      });
 
     const resp: UadaResponse<Plan> = {
       data: draft,
@@ -234,9 +261,8 @@ Rules:
 - Do NOT repeat findings already listed under "Deterministic findings".
 - If you have nothing grounded to add, return {"findings": []}.`;
 
-    const alreadyFound = input.ruleFindings
-      .map((f) => `- ${f.id} ${f.path}: ${f.title}`)
-      .join("\n") || "(none)";
+    const alreadyFound =
+      input.ruleFindings.map((f) => `- ${f.id} ${f.path}: ${f.title}`).join("\n") || "(none)";
     const truncatedDiff = input.diff.slice(0, 20000);
     const prompt = [
       "## Changed files",
@@ -273,16 +299,19 @@ Rules:
     return (parsed?.findings ?? [])
       .filter((f) => !!f.path && known.has(f.path) && !!f.title)
       .slice(0, 20)
-      .map((f, i): ReviewFinding => ({
-        id: `ADV-${i + 1}`,
-        origin: "advisory",
-        severity: (severities.has(String(f.severity)) ? f.severity : "info") as ReviewFinding["severity"],
-        title: String(f.title),
-        detail: String(f.detail ?? ""),
-        path: String(f.path),
-        references: Array.isArray(f.references) ? f.references.map(String) : [],
-        suggestion: f.suggestion ? String(f.suggestion) : undefined,
-      }));
+      .map(
+        (f, i): ReviewFinding => ({
+          id: `ADV-${i + 1}`,
+          origin: "advisory",
+          severity: (severities.has(String(f.severity))
+            ? f.severity
+            : "info") as ReviewFinding["severity"],
+          title: String(f.title),
+          detail: String(f.detail ?? ""),
+          path: String(f.path),
+          references: Array.isArray(f.references) ? f.references.map(String) : [],
+          suggestion: f.suggestion ? String(f.suggestion) : undefined,
+        }),
+      );
   },
 };
-

@@ -81,17 +81,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "UBoard Asia — Compliance & Payroll for Southeast Asia" },
-      { name: "description", content: "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes." },
+      {
+        name: "description",
+        content:
+          "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes.",
+      },
       { name: "author", content: "UBoard Asia" },
       { property: "og:title", content: "UBoard Asia — Compliance & Payroll for Southeast Asia" },
-      { property: "og:description", content: "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes." },
+      {
+        property: "og:description",
+        content:
+          "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@UBoardAsia" },
       { name: "twitter:title", content: "UBoard Asia — Compliance & Payroll for Southeast Asia" },
-      { name: "twitter:description", content: "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/92bdefcf-b80c-46ee-986e-5f351a41b40c" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/92bdefcf-b80c-46ee-986e-5f351a41b40c" },
+      {
+        name: "twitter:description",
+        content:
+          "Localized payroll and a live Compliance Score for Indonesia and beyond. PPh 21 (TER), BPJS and THR engines that stay compliant as the law changes.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/92bdefcf-b80c-46ee-986e-5f351a41b40c",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/92bdefcf-b80c-46ee-986e-5f351a41b40c",
+      },
     ],
     links: [
       {

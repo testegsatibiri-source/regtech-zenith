@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, ShieldAlert, ShieldCheck, TrendingUp, AlertTriangle, Loader2, FileText } from "lucide-react";
+import {
+  Sparkles,
+  ShieldAlert,
+  ShieldCheck,
+  TrendingUp,
+  AlertTriangle,
+  Loader2,
+  FileText,
+} from "lucide-react";
 import { runComplianceAudit, type AuditReport, type AuditInsight } from "@/lib/audit.functions";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
@@ -58,7 +66,9 @@ function AuditPage() {
     return (
       <div className="mx-auto max-w-md py-20 text-center">
         <h2 className="text-xl font-semibold">Select a company</h2>
-        <p className="mt-2 text-muted-foreground">Create or pick a company in the top bar to run an audit.</p>
+        <p className="mt-2 text-muted-foreground">
+          Create or pick a company in the top bar to run an audit.
+        </p>
       </div>
     );
   }
@@ -76,25 +86,42 @@ function AuditPage() {
           </p>
         </div>
         <Button onClick={trigger} disabled={loading} size="lg">
-          {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Auditing…</> : <><ShieldAlert className="mr-2 h-4 w-4" /> Run audit</>}
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Auditing…
+            </>
+          ) : (
+            <>
+              <ShieldAlert className="mr-2 h-4 w-4" /> Run audit
+            </>
+          )}
         </Button>
       </div>
 
       {!report && !loading && <EmptyState />}
       {loading && (
-        <Card><CardContent className="flex items-center gap-3 p-8 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" /> Cross-checking employees, latest payroll run and Country Pack rules…
-        </CardContent></Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-8 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" /> Cross-checking employees, latest payroll
+            run and Country Pack rules…
+          </CardContent>
+        </Card>
       )}
 
       {report && (
         <>
           <div className="grid gap-5 lg:grid-cols-3">
             <Card className="lg:col-span-1">
-              <CardHeader><CardTitle>Overall risk</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Overall risk</CardTitle>
+              </CardHeader>
               <CardContent className="flex flex-col items-center gap-3">
                 <ScoreGauge score={report.complianceScore} label="Audit readiness" />
-                <div className={"text-sm font-medium uppercase tracking-wide " + RISK_STYLE[report.riskLevel]}>
+                <div
+                  className={
+                    "text-sm font-medium uppercase tracking-wide " + RISK_STYLE[report.riskLevel]
+                  }
+                >
                   {report.riskLevel} risk
                 </div>
                 <p className="text-center text-xs text-muted-foreground">
@@ -105,12 +132,38 @@ function AuditPage() {
 
             <div className="space-y-4 lg:col-span-2">
               <div className="grid gap-3 sm:grid-cols-3">
-                <Stat icon={AlertTriangle} tone="warn" value={report.stats.belowUmp} label={`Below ${t.minimumWage}`} />
-                <Stat icon={AlertTriangle} tone="warn" value={report.stats.overtimeViolations} label="OT violations" />
-                <Stat icon={TrendingUp} value={report.stats.salaryOutliers} label="Salary outliers" />
-                <Stat icon={FileText} value={report.stats.missingNpwp} label={`Missing ${t.taxId}`} />
-                <Stat icon={ShieldAlert} value={report.stats.missingBpjs} label={`Missing ${t.socialSecurity}`} />
-                <Stat icon={ShieldCheck} value={report.stats.payrollPeriod ?? "—"} label="Last run" />
+                <Stat
+                  icon={AlertTriangle}
+                  tone="warn"
+                  value={report.stats.belowUmp}
+                  label={`Below ${t.minimumWage}`}
+                />
+                <Stat
+                  icon={AlertTriangle}
+                  tone="warn"
+                  value={report.stats.overtimeViolations}
+                  label="OT violations"
+                />
+                <Stat
+                  icon={TrendingUp}
+                  value={report.stats.salaryOutliers}
+                  label="Salary outliers"
+                />
+                <Stat
+                  icon={FileText}
+                  value={report.stats.missingNpwp}
+                  label={`Missing ${t.taxId}`}
+                />
+                <Stat
+                  icon={ShieldAlert}
+                  value={report.stats.missingBpjs}
+                  label={`Missing ${t.socialSecurity}`}
+                />
+                <Stat
+                  icon={ShieldCheck}
+                  value={report.stats.payrollPeriod ?? "—"}
+                  label="Last run"
+                />
               </div>
 
               <Card>
@@ -123,9 +176,20 @@ function AuditPage() {
                     {report.narrative}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-4 border-t border-border pt-3 text-xs text-muted-foreground">
-                    <span>Total gross: <strong className="text-foreground">{money(report.stats.totalGross)}</strong></span>
-                    <span>Avg salary: <strong className="text-foreground">{money(report.stats.avgSalary)}</strong></span>
-                    <span>Median: <strong className="text-foreground">{money(report.stats.medianSalary)}</strong></span>
+                    <span>
+                      Total gross:{" "}
+                      <strong className="text-foreground">{money(report.stats.totalGross)}</strong>
+                    </span>
+                    <span>
+                      Avg salary:{" "}
+                      <strong className="text-foreground">{money(report.stats.avgSalary)}</strong>
+                    </span>
+                    <span>
+                      Median:{" "}
+                      <strong className="text-foreground">
+                        {money(report.stats.medianSalary)}
+                      </strong>
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -133,7 +197,9 @@ function AuditPage() {
           </div>
 
           <Card>
-            <CardHeader><CardTitle>Findings ({report.insights.length})</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Findings ({report.insights.length})</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               {report.insights.length === 0 ? (
                 <div className="flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
@@ -143,8 +209,12 @@ function AuditPage() {
                 report.insights.map((i) => (
                   <div key={i.code} className={"rounded-lg border p-4 " + SEV_STYLE[i.severity]}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="border-current bg-transparent uppercase">{i.severity}</Badge>
-                      <Badge variant="outline" className="border-current bg-transparent">{i.category}</Badge>
+                      <Badge variant="outline" className="border-current bg-transparent uppercase">
+                        {i.severity}
+                      </Badge>
+                      <Badge variant="outline" className="border-current bg-transparent">
+                        {i.category}
+                      </Badge>
                       <span className="font-semibold">{i.title}</span>
                       <span className="ml-auto font-mono text-xs opacity-70">{i.code}</span>
                     </div>
@@ -161,7 +231,8 @@ function AuditPage() {
           </Card>
 
           <p className="text-center text-xs text-muted-foreground">
-            Generated {new Date(report.generatedAt).toLocaleString()} · {activePack.name} Country Pack {activePack.rulesetVersion ?? ""}
+            Generated {new Date(report.generatedAt).toLocaleString()} · {activePack.name} Country
+            Pack {activePack.rulesetVersion ?? ""}
           </p>
         </>
       )}
@@ -169,11 +240,28 @@ function AuditPage() {
   );
 }
 
-function Stat({ icon: Icon, value, label, tone }: { icon: typeof ShieldAlert; value: string | number; label: string; tone?: "warn" }) {
+function Stat({
+  icon: Icon,
+  value,
+  label,
+  tone,
+}: {
+  icon: typeof ShieldAlert;
+  value: string | number;
+  label: string;
+  tone?: "warn";
+}) {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 p-4">
-        <span className={"flex h-10 w-10 items-center justify-center rounded-lg " + (tone === "warn" && value !== 0 ? "bg-warning/15 text-warning" : "bg-primary/10 text-primary")}>
+        <span
+          className={
+            "flex h-10 w-10 items-center justify-center rounded-lg " +
+            (tone === "warn" && value !== 0
+              ? "bg-warning/15 text-warning"
+              : "bg-primary/10 text-primary")
+          }
+        >
           <Icon className="h-5 w-5" />
         </span>
         <div>
@@ -190,13 +278,17 @@ function EmptyState() {
   const t = terminologyFor(activePack.code);
   const money = (v: number) => formatCurrency(v, activePack.currency);
   return (
-    <Card><CardContent className="space-y-3 p-8 text-center">
-      <Sparkles className="mx-auto h-8 w-8 text-accent" />
-      <h3 className="text-lg font-semibold">Run a predictive audit</h3>
-      <p className="mx-auto max-w-md text-sm text-muted-foreground">
-        UBoard Asia will cross-check every employee against the {activePack.name} Country Pack rules (wage floors, tax IDs, statutory contributions, working-time and bonus liabilities),
-        detect statistical outliers in salaries and effective tax rates, and generate an executive summary powered by AI.
-      </p>
-    </CardContent></Card>
+    <Card>
+      <CardContent className="space-y-3 p-8 text-center">
+        <Sparkles className="mx-auto h-8 w-8 text-accent" />
+        <h3 className="text-lg font-semibold">Run a predictive audit</h3>
+        <p className="mx-auto max-w-md text-sm text-muted-foreground">
+          UBoard Asia will cross-check every employee against the {activePack.name} Country Pack
+          rules (wage floors, tax IDs, statutory contributions, working-time and bonus liabilities),
+          detect statistical outliers in salaries and effective tax rates, and generate an executive
+          summary powered by AI.
+        </p>
+      </CardContent>
+    </Card>
   );
 }

@@ -19,13 +19,18 @@ export function variantForTier(tier: CatalogEntry["tier"]): PackCardVariant {
  * /packs and any future regional page. Never duplicate this card.
  * `variant` is presentation-only; when omitted it is derived from pack.tier.
  */
-export function CountryPackCard({ pack, variant }: { pack: CatalogEntry; variant?: PackCardVariant }) {
+export function CountryPackCard({
+  pack,
+  variant,
+}: {
+  pack: CatalogEntry;
+  variant?: PackCardVariant;
+}) {
   const v = variant ?? variantForTier(pack.tier);
   if (v === "roadmap") return <RoadmapCard pack={pack} />;
   if (v === "validation") return <ValidationCard pack={pack} />;
   return <ProductionCard pack={pack} />;
 }
-
 
 function ProductionCard({ pack }: { pack: CatalogEntry }) {
   return (
@@ -60,7 +65,9 @@ function ProductionCard({ pack }: { pack: CatalogEntry }) {
 
         {pack.complianceAreas.length > 0 && (
           <div className="mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Coverage</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Coverage
+            </p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               {pack.complianceAreas.map((a) => (
                 <li key={a}>• {a}</li>
@@ -71,7 +78,9 @@ function ProductionCard({ pack }: { pack: CatalogEntry }) {
 
         {pack.domain && (
           <div className="mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Local site</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Local site
+            </p>
             <a
               href={`https://${pack.domain}`}
               target="_blank"
@@ -107,7 +116,9 @@ function ValidationCard({ pack }: { pack: CatalogEntry }) {
             <h3 className="mt-2 font-display font-semibold">{pack.name}</h3>
             <p className="text-xs text-muted-foreground">{pack.region}</p>
           </div>
-          <Badge variant="outline" className="shrink-0">{pack.statusLabel}</Badge>
+          <Badge variant="outline" className="shrink-0">
+            {pack.statusLabel}
+          </Badge>
         </div>
 
         {planned.length > 0 && (
@@ -152,11 +163,15 @@ export function RoadmapPackCard({ pack }: { pack: CatalogEntry }) {
             <h3 className="mt-2 font-display font-semibold">{pack.name}</h3>
             <p className="text-xs text-muted-foreground">{pack.region}</p>
           </div>
-          <Badge variant="outline" className="shrink-0">{pack.statusLabel}</Badge>
+          <Badge variant="outline" className="shrink-0">
+            {pack.statusLabel}
+          </Badge>
         </div>
         {pack.plannedCapabilities.length > 0 && (
           <>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Planned</p>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Planned
+            </p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               {pack.plannedCapabilities.map((c) => (
                 <li key={c}>• {c}</li>

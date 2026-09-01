@@ -4,12 +4,12 @@
 import { PII_DENYLIST } from "./manifest";
 
 export interface DbDoc {
-  path: string;                // synthetic (e.g. "db://public.employees")
+  path: string; // synthetic (e.g. "db://public.employees")
   kind: "schema";
   sha256Input: string;
   summary: string;
   metadata: Record<string, unknown>;
-  denied: boolean;             // true when the table is PII-denylisted (structure only)
+  denied: boolean; // true when the table is PII-denylisted (structure only)
 }
 
 export interface DbNode {
@@ -47,7 +47,11 @@ export async function indexDb(): Promise<DbIndex> {
 
   const byTable = new Map<string, Array<{ name: string; type: string; nullable: boolean }>>();
   for (const row of (cols ?? []) as Array<{
-    table_schema: string; table_name: string; column_name: string; data_type: string; is_nullable: string;
+    table_schema: string;
+    table_name: string;
+    column_name: string;
+    data_type: string;
+    is_nullable: string;
   }>) {
     const key = `${row.table_schema}.${row.table_name}`;
     const list = byTable.get(key) ?? [];

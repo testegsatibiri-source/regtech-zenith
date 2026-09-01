@@ -50,7 +50,10 @@ export const SearchEngine = {
       // stronger signal — the code parser recognised the file as structured).
       const nodePaths = new Set(bundle.nodes.map((n) => n.path).filter(Boolean));
       hits = hits
-        .map((h) => ({ ...h, score: nodePaths.has(h.path) ? Math.min(1, h.score + 0.05) : h.score }))
+        .map((h) => ({
+          ...h,
+          score: nodePaths.has(h.path) ? Math.min(1, h.score + 0.05) : h.score,
+        }))
         .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
     }
 

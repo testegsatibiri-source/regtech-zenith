@@ -15,7 +15,12 @@ interface Ctx {
 }
 
 const CompanyCtx = createContext<Ctx>({
-  companies: [], company: null, companyId: null, setCompanyId: () => {}, loading: true, refetch: () => {},
+  companies: [],
+  company: null,
+  companyId: null,
+  setCompanyId: () => {},
+  loading: true,
+  refetch: () => {},
 });
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
@@ -42,7 +47,9 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const company = companies.find((c) => c.id === companyId) ?? null;
 
   return (
-    <CompanyCtx.Provider value={{ companies, company, companyId, setCompanyId, loading: isLoading, refetch }}>
+    <CompanyCtx.Provider
+      value={{ companies, company, companyId, setCompanyId, loading: isLoading, refetch }}
+    >
       {children}
     </CompanyCtx.Provider>
   );

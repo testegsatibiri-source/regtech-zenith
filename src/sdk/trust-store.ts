@@ -7,8 +7,8 @@ import type { SigningCapability } from "./trust-policy";
 export interface TrustedKey {
   keyId: string;
   publisher: string;
-  publicKey: string;      // base64 Ed25519 raw (32B)
-  algo: string;           // "ed25519"
+  publicKey: string; // base64 Ed25519 raw (32B)
+  algo: string; // "ed25519"
   capabilities: SigningCapability[];
   provider: "db" | "kms" | "hsm";
   active: boolean;

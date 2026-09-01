@@ -7,7 +7,11 @@ export interface Logger {
 }
 
 function make(bindings: Record<string, unknown>): Logger {
-  const write = (level: "info" | "warn" | "error", msg: string, fields?: Record<string, unknown>) => {
+  const write = (
+    level: "info" | "warn" | "error",
+    msg: string,
+    fields?: Record<string, unknown>,
+  ) => {
     const payload = {
       level,
       ts: new Date().toISOString(),

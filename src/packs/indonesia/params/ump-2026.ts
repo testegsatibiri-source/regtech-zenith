@@ -34,48 +34,165 @@ const K = (province: string, amount: number, opts: Partial<UmpEntry> = {}): UmpE
 // Values from CNN Indonesia reporting of the Kemnaker 2026 announcement.
 // Rounded to hundred-thousand IDR as published; pending exact SK Gubernur.
 export const UMP_2026: UmpEntry[] = [
-  K("DKI Jakarta", 5_720_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Jawa Barat", 2_310_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Jawa Tengah", 2_320_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Jawa Timur", 2_440_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Banten", 3_100_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Bali", 3_200_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("DI Yogyakarta", 2_410_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Aceh", 3_930_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sumatera Utara", 3_220_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sumatera Barat", 3_180_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Riau", 3_780_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Kepulauan Riau", 3_870_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Jambi", 3_470_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sumatera Selatan", 3_940_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Bangka Belitung", 4_030_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Bengkulu", 2_820_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Lampung", 3_040_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Kalimantan Barat", 3_050_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Kalimantan Tengah", 3_680_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Kalimantan Selatan", 3_720_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Kalimantan Timur", 3_760_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Kalimantan Utara", 3_770_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sulawesi Utara", 4_000_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Gorontalo", 3_400_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sulawesi Tengah", 3_170_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sulawesi Selatan", 3_920_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sulawesi Barat", 3_310_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Sulawesi Tenggara", 3_300_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Maluku", 3_330_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Maluku Utara", 3_510_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Nusa Tenggara Barat", 2_670_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Nusa Tenggara Timur", 2_450_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Papua", 4_430_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Papua Barat", 3_840_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Papua Selatan", 4_510_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Papua Tengah", 4_280_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Papua Pegunungan", 4_510_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
-  K("Papua Barat Daya", 3_760_000, { source: "Kemnaker 2026 via CNN Indonesia (rounded)", sourceStatus: "media-report" }),
+  K("DKI Jakarta", 5_720_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Jawa Barat", 2_310_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Jawa Tengah", 2_320_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Jawa Timur", 2_440_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Banten", 3_100_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Bali", 3_200_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("DI Yogyakarta", 2_410_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Aceh", 3_930_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sumatera Utara", 3_220_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sumatera Barat", 3_180_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Riau", 3_780_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Kepulauan Riau", 3_870_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Jambi", 3_470_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sumatera Selatan", 3_940_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Bangka Belitung", 4_030_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Bengkulu", 2_820_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Lampung", 3_040_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Kalimantan Barat", 3_050_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Kalimantan Tengah", 3_680_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Kalimantan Selatan", 3_720_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Kalimantan Timur", 3_760_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Kalimantan Utara", 3_770_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sulawesi Utara", 4_000_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Gorontalo", 3_400_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sulawesi Tengah", 3_170_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sulawesi Selatan", 3_920_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sulawesi Barat", 3_310_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Sulawesi Tenggara", 3_300_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Maluku", 3_330_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Maluku Utara", 3_510_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Nusa Tenggara Barat", 2_670_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Nusa Tenggara Timur", 2_450_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Papua", 4_430_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Papua Barat", 3_840_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Papua Selatan", 4_510_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Papua Tengah", 4_280_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Papua Pegunungan", 4_510_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
+  K("Papua Barat Daya", 3_760_000, {
+    source: "Kemnaker 2026 via CNN Indonesia (rounded)",
+    sourceStatus: "media-report",
+  }),
 ];
 
 /** Fallback used when a province lookup fails. */
-export const UMP_FALLBACK: UmpEntry = K("Other", 2_000_000, { source: "fallback", sourceStatus: "stale" });
+export const UMP_FALLBACK: UmpEntry = K("Other", 2_000_000, {
+  source: "fallback",
+  sourceStatus: "stale",
+});
 
 export function umpConfigKey(province: string): string {
   return `id.wages.ump.${province}`;

@@ -22,7 +22,6 @@ import {
   uadaScore,
 } from "@/lib/uada/uada.functions";
 
-
 function ErrorLine({ error }: { error: unknown }) {
   if (!error) return null;
   return (
@@ -75,27 +74,37 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
   const [diff, setDiff] = useState("");
 
   const score = useMutation({
-    mutationFn: () =>
-      scoreFn({ data: { persist: true } }) as Promise<UadaResponse<ScoreReport>>,
+    mutationFn: () => scoreFn({ data: { persist: true } }) as Promise<UadaResponse<ScoreReport>>,
   });
 
   const review = useMutation({
     mutationFn: () =>
-      reviewFn({ data: { diff, advisory: true, maxDocuments: 10 } }) as Promise<UadaResponse<ReviewReport>>,
+      reviewFn({ data: { diff, advisory: true, maxDocuments: 10 } }) as Promise<
+        UadaResponse<ReviewReport>
+      >,
   });
-
 
   const search = useMutation({
     mutationFn: () =>
       searchFn({
-        data: { query, k: 10, minimumScore: 0.1, expansionDepth: 0, reranker: "graph-proximity" as const },
+        data: {
+          query,
+          k: 10,
+          minimumScore: 0.1,
+          expansionDepth: 0,
+          reranker: "graph-proximity" as const,
+        },
       }) as Promise<UadaResponse<SearchHitV2[]>>,
   });
-  const impact = useMutation({ mutationFn: () => impactFn({ data: { nodeId, depth: 2 } }) as Promise<UadaResponse<ImpactReportV2>>,
+  const impact = useMutation({
+    mutationFn: () =>
+      impactFn({ data: { nodeId, depth: 2 } }) as Promise<UadaResponse<ImpactReportV2>>,
   });
   const plan = useMutation({
     mutationFn: () =>
-      planFn({ data: { objective, maxDocuments: 12, expansionDepth: 1 } }) as Promise<UadaResponse<Plan>>,
+      planFn({ data: { objective, maxDocuments: 12, expansionDepth: 1 } }) as Promise<
+        UadaResponse<Plan>
+      >,
   });
   const bench = useMutation({ mutationFn: () => benchFn({ data: {} }) });
 
@@ -113,7 +122,10 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
               placeholder="How does the Indonesia TER table get resolved?"
               disabled={disabled}
             />
-            <Button onClick={() => search.mutate()} disabled={disabled || !query || search.isPending}>
+            <Button
+              onClick={() => search.mutate()}
+              disabled={disabled || !query || search.isPending}
+            >
               {search.isPending ? "Searching…" : "Search"}
             </Button>
           </div>
@@ -153,7 +165,10 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
               placeholder="graph node UUID"
               disabled={disabled}
             />
-            <Button onClick={() => impact.mutate()} disabled={disabled || !nodeId || impact.isPending}>
+            <Button
+              onClick={() => impact.mutate()}
+              disabled={disabled || !nodeId || impact.isPending}
+            >
               {impact.isPending ? "Analysing…" : "Analyse"}
             </Button>
           </div>
@@ -197,7 +212,10 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
             rows={3}
             disabled={disabled}
           />
-          <Button onClick={() => plan.mutate()} disabled={disabled || objective.length < 4 || plan.isPending}>
+          <Button
+            onClick={() => plan.mutate()}
+            disabled={disabled || objective.length < 4 || plan.isPending}
+          >
             {plan.isPending ? "Planning…" : "Generate plan"}
           </Button>
           <ErrorLine error={plan.error} />
@@ -214,7 +232,9 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
                   <li key={s.order}>
                     <b>{s.title}</b> — {s.detail}
                     {s.affectedFiles.length > 0 && (
-                      <div className="font-mono text-muted-foreground">{s.affectedFiles.join(", ")}</div>
+                      <div className="font-mono text-muted-foreground">
+                        {s.affectedFiles.join(", ")}
+                      </div>
                     )}
                   </li>
                 ))}
@@ -223,14 +243,18 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
                 <ul className="list-disc pl-4">
                   {plan.data.data.risks.map((r, i) => (
                     <li key={i}>
-                      <Badge variant={r.severity === "high" ? "destructive" : "secondary"}>{r.severity}</Badge>{" "}
+                      <Badge variant={r.severity === "high" ? "destructive" : "secondary"}>
+                        {r.severity}
+                      </Badge>{" "}
                       {r.description}
                     </li>
                   ))}
                 </ul>
               )}
               {plan.data.data.blockedBy.length > 0 && (
-                <p className="text-destructive">Blocked by: {plan.data.data.blockedBy.join(", ")}</p>
+                <p className="text-destructive">
+                  Blocked by: {plan.data.data.blockedBy.join(", ")}
+                </p>
               )}
             </div>
           )}
@@ -243,8 +267,8 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Deterministic score of the active snapshot across the five frozen dimensions
-            (ADR-0031). Running it stores one row per dimension.
+            Deterministic score of the active snapshot across the five frozen dimensions (ADR-0031).
+            Running it stores one row per dimension.
           </p>
           <Button onClick={() => score.mutate()} disabled={disabled || score.isPending}>
             {score.isPending ? "Scoring…" : "Compute score"}
@@ -261,9 +285,7 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
                 <Badge variant={score.data.data.overall >= 70 ? "default" : "destructive"}>
                   overall {score.data.data.overall}
                 </Badge>
-                <span className="text-muted-foreground">
-                  snapshot {score.data.data.snapshot}
-                </span>
+                <span className="text-muted-foreground">snapshot {score.data.data.snapshot}</span>
                 {typeof score.data.data.delta === "number" && (
                   <Badge variant={score.data.data.delta >= 0 ? "default" : "destructive"}>
                     {score.data.data.delta >= 0 ? "+" : ""}
@@ -299,7 +321,6 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
         </CardContent>
       </Card>
 
-
       <Card>
         <CardHeader>
           <CardTitle>Architecture review</CardTitle>
@@ -313,7 +334,10 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
             className="font-mono text-xs"
             disabled={disabled}
           />
-          <Button onClick={() => review.mutate()} disabled={disabled || diff.length < 10 || review.isPending}>
+          <Button
+            onClick={() => review.mutate()}
+            disabled={disabled || diff.length < 10 || review.isPending}
+          >
             {review.isPending ? "Reviewing…" : "Review diff"}
           </Button>
           <ErrorLine error={review.error} />
@@ -339,12 +363,14 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
                 <Badge variant="destructive">errors {review.data.data.verdict.errors}</Badge>
                 <Badge variant="secondary">warnings {review.data.data.verdict.warnings}</Badge>
                 <span className="text-muted-foreground">
-                  {review.data.data.filesChanged.length} files · +{review.data.data.additions} /
-                  −{review.data.data.deletions}
+                  {review.data.data.filesChanged.length} files · +{review.data.data.additions} / −
+                  {review.data.data.deletions}
                 </span>
               </div>
               {review.data.data.findings.length === 0 ? (
-                <p className="text-muted-foreground">No findings — diff conforms to the current rule set.</p>
+                <p className="text-muted-foreground">
+                  No findings — diff conforms to the current rule set.
+                </p>
               ) : (
                 <ul className="space-y-1">
                   {review.data.data.findings.map((f, i) => (
@@ -352,7 +378,11 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge
                           variant={
-                            f.severity === "error" ? "destructive" : f.severity === "warning" ? "secondary" : "outline"
+                            f.severity === "error"
+                              ? "destructive"
+                              : f.severity === "warning"
+                                ? "secondary"
+                                : "outline"
                           }
                         >
                           {f.id}
@@ -377,8 +407,6 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
         </CardContent>
       </Card>
 
-
-
       <Card>
         <CardHeader>
           <CardTitle>Search benchmark</CardTitle>
@@ -390,9 +418,15 @@ export function UadaConsole({ disabled }: { disabled?: boolean }) {
           <ErrorLine error={bench.error} />
           {bench.data && (
             <div className="rounded border p-3 text-xs">
-              <div><b>Snapshot:</b> v{bench.data.snapshotVersion}</div>
-              <div><b>Fixtures:</b> {bench.data.ran} · <b>Hits:</b> {bench.data.hits}</div>
-              <div><b>Avg precision@5:</b> {bench.data.avgPrecision.toFixed(3)}</div>
+              <div>
+                <b>Snapshot:</b> v{bench.data.snapshotVersion}
+              </div>
+              <div>
+                <b>Fixtures:</b> {bench.data.ran} · <b>Hits:</b> {bench.data.hits}
+              </div>
+              <div>
+                <b>Avg precision@5:</b> {bench.data.avgPrecision.toFixed(3)}
+              </div>
               <div className={bench.data.regressions > 0 ? "text-destructive" : undefined}>
                 <b>Regressions:</b> {bench.data.regressions}
               </div>

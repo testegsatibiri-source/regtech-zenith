@@ -1,7 +1,13 @@
 // H5/H6 — Compliance SDK public surface.
 export type { Capability } from "./Capability";
 export { CAPABILITIES } from "./Capability";
-export type { CountryManifest, PackSignature, PackDependency, SignatureEnvelope, SignatureBlock } from "./manifest";
+export type {
+  CountryManifest,
+  PackSignature,
+  PackDependency,
+  SignatureEnvelope,
+  SignatureBlock,
+} from "./manifest";
 export type { CountryPack, Providers, HealthCheck, HealthReport } from "./CountryPack";
 export { CountryRuntime } from "./runtime";
 export type { InstalledPack, PackStatus } from "./runtime";
@@ -20,7 +26,11 @@ export { SDK_EVENT_TYPES } from "./events";
 export type { TaxProvider, TaxCalcInput, TaxCalcOutput } from "./providers/TaxProvider";
 export type { BenefitsProvider, BenefitsInput, BenefitsOutput } from "./providers/BenefitsProvider";
 export type { PayrollProvider, PayslipInput, Payslip } from "./providers/PayrollProvider";
-export type { ThirteenthProvider, ThirteenthInput, ThirteenthOutput } from "./providers/ThirteenthProvider";
+export type {
+  ThirteenthProvider,
+  ThirteenthInput,
+  ThirteenthOutput,
+} from "./providers/ThirteenthProvider";
 export type {
   CalendarProvider,
   ObligationTemplate,
@@ -73,7 +83,11 @@ export { MemoryTrustStore } from "./trust-store";
 export type { PackSignatureRecord, VerificationResult } from "./signing";
 export { verifyEd25519 } from "./signing";
 export type { CompatibilityReport, CompatCheck, CompatibilityInput } from "./compatibility";
-export { CompatibilityService, compatibilityService, COMPATIBILITY_ENGINE_VERSION } from "./compatibility";
+export {
+  CompatibilityService,
+  compatibilityService,
+  COMPATIBILITY_ENGINE_VERSION,
+} from "./compatibility";
 export type { PackState, TransitionGuard } from "./lifecycle";
 export { canTransition, guardsFor, GUARDS } from "./lifecycle";
 // H11 additions
@@ -81,7 +95,11 @@ export { PACK_INTERFACE_VERSION, SUPPORTED_PACK_INTERFACE_RANGE } from "./INTERF
 export type { FeatureGate, GateEnv, GateState } from "./feature-gates";
 export { FeatureGates, currentEnv } from "./feature-gates";
 export type { CompatibilityMatrix, MatrixCheck, MatrixReport } from "./compatibility-matrix";
-export { COMPATIBILITY_MATRIX_V1, checkMatrix, checkPackAgainstMatrix } from "./compatibility-matrix";
+export {
+  COMPATIBILITY_MATRIX_V1,
+  checkMatrix,
+  checkPackAgainstMatrix,
+} from "./compatibility-matrix";
 export type { SignatureRejectionCode, SignatureRejection } from "./signature-rejection";
 export { SIGNATURE_REJECTION_LABELS } from "./signature-rejection";
 export type { ReadinessReport, ReadinessStatus, ReadinessStep, RegistryPackRow } from "./boot";

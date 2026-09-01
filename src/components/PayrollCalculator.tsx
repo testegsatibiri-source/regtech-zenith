@@ -8,10 +8,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
-function Row({ label, value, strong, tone }: { label: string; value: string; strong?: boolean; tone?: "net" | "cost" }) {
+function Row({
+  label,
+  value,
+  strong,
+  tone,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  tone?: "net" | "cost";
+}) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-border/60 last:border-0">
       <span className={strong ? "font-medium" : "text-muted-foreground"}>{label}</span>
@@ -41,10 +55,14 @@ export function PayrollCalculator() {
   const [months, setMonths] = useState(12);
 
   const slip = useMemo(
-    () => buildPayslip({ baseSalary: base, allowances: allow, maritalStatus: status, hasNpwp: npwp }),
+    () =>
+      buildPayslip({ baseSalary: base, allowances: allow, maritalStatus: status, hasNpwp: npwp }),
     [base, allow, status, npwp],
   );
-  const thr = useMemo(() => calculateThr({ monthlySalary: base + allow, monthsOfService: months }), [base, allow, months]);
+  const thr = useMemo(
+    () => calculateThr({ monthlySalary: base + allow, monthsOfService: months }),
+    [base, allow, months],
+  );
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -56,18 +74,32 @@ export function PayrollCalculator() {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t("calc.base")}</Label>
-            <Input type="number" value={base} onChange={(e) => setBase(Number(e.target.value) || 0)} />
+            <Input
+              type="number"
+              value={base}
+              onChange={(e) => setBase(Number(e.target.value) || 0)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{t("calc.allow")}</Label>
-            <Input type="number" value={allow} onChange={(e) => setAllow(Number(e.target.value) || 0)} />
+            <Input
+              type="number"
+              value={allow}
+              onChange={(e) => setAllow(Number(e.target.value) || 0)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{t("calc.status")}</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {MARITAL_STATUS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                {MARITAL_STATUS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -77,7 +109,11 @@ export function PayrollCalculator() {
           </div>
           <div className="space-y-1.5">
             <Label>{t("calc.months")}</Label>
-            <Input type="number" value={months} onChange={(e) => setMonths(Number(e.target.value) || 0)} />
+            <Input
+              type="number"
+              value={months}
+              onChange={(e) => setMonths(Number(e.target.value) || 0)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -86,8 +122,8 @@ export function PayrollCalculator() {
         <CardHeader>
           <CardTitle>Breakdown</CardTitle>
           <p className="text-sm text-muted-foreground">
-            TER category <span className="font-semibold text-foreground">{slip.tax.category}</span> · rate{" "}
-            {(slip.tax.rate * 100).toFixed(2)}%
+            TER category <span className="font-semibold text-foreground">{slip.tax.category}</span>{" "}
+            · rate {(slip.tax.rate * 100).toFixed(2)}%
           </p>
         </CardHeader>
         <CardContent>

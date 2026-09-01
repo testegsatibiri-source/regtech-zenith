@@ -9,7 +9,9 @@ CountryRuntime.tryInstall(philippinesPack);
 
 describe("[Runtime] multi-pack coexistence", () => {
   it("ID, MY and PH all coexist on the same Runtime instance", () => {
-    const list = CountryRuntime.list().map((r) => r.pack.manifest.country).sort();
+    const list = CountryRuntime.list()
+      .map((r) => r.pack.manifest.country)
+      .sort();
     expect(list).toEqual(["ID", "MY", "PH"]);
     expect(CountryRuntime.find("ID")).toBeTruthy();
     expect(CountryRuntime.find("PH")).toBeTruthy();
@@ -63,7 +65,10 @@ describe("[Runtime] multi-pack coexistence", () => {
   it("PH payroll composed via ctx.siblings uses PH tax (not ID tax)", () => {
     const ctx = CountryRuntime.contextFor("PH");
     const phPay = CountryRuntime.get("PH").providers.payroll!;
-    const slip = phPay.buildPayslip({ baseSalary: 50_000, maritalStatus: "single", hasNpwp: true }, ctx);
+    const slip = phPay.buildPayslip(
+      { baseSalary: 50_000, maritalStatus: "single", hasNpwp: true },
+      ctx,
+    );
     // PH tax for ₱50k gross is in the 20% bracket, roughly ₱5,208
     expect(slip.tax.tax).toBeGreaterThan(5_000);
     expect(slip.tax.tax).toBeLessThan(5_400);

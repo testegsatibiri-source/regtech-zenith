@@ -1,14 +1,7 @@
 // H12.5 — Knowledge Store contracts. Documents, snapshots, embeddings.
 // Deliberately isolated from the Graph Store contracts (ADR-0020).
 
-export type DocumentKind =
-  | "code"
-  | "route"
-  | "migration"
-  | "adr"
-  | "doc"
-  | "config"
-  | "schema";
+export type DocumentKind = "code" | "route" | "migration" | "adr" | "doc" | "config" | "schema";
 
 export type EmbeddingModel =
   | "google/gemini-embedding-001"

@@ -33,7 +33,6 @@ export interface Providers {
   overtime?: OvertimeProvider;
 }
 
-
 export interface HealthCheck {
   name: string;
   ok: boolean;

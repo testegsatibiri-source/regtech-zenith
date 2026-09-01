@@ -14,12 +14,26 @@ export function ScoreGauge({ score, size = 160, label, className }: Props) {
   const offset = c - (pct / 100) * c;
 
   const tone =
-    pct >= 85 ? "var(--color-success)" : pct >= 60 ? "var(--color-warning)" : "var(--color-destructive)";
+    pct >= 85
+      ? "var(--color-success)"
+      : pct >= 60
+        ? "var(--color-warning)"
+        : "var(--color-destructive)";
 
   return (
-    <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
+    <div
+      className={cn("relative inline-flex items-center justify-center", className)}
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-muted)" strokeWidth={12} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--color-muted)"
+          strokeWidth={12}
+        />
         <circle
           cx={size / 2}
           cy={size / 2}

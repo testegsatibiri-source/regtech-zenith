@@ -6,7 +6,6 @@ import "@/sdk/bootstrap";
 import { classify } from "@/lib/packs/catalog";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-
 import type {
   ContextBundle,
   ContextMetrics,
@@ -19,10 +18,7 @@ import type { GraphEdge, GraphNode } from "@/lib/uada/contracts/graph";
 import type { ArchitectureFacts } from "@/lib/uada/contracts/score/facts";
 
 import { computeEvidenceHash } from "@/lib/uada/contracts/response/hash";
-import {
-  DEFAULT_EMBEDDING_MODEL,
-  embedBatch,
-} from "@/lib/uada/gateway/embeddings.server";
+import { DEFAULT_EMBEDDING_MODEL, embedBatch } from "@/lib/uada/gateway/embeddings.server";
 
 async function admin(): Promise<SupabaseClient> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -39,7 +35,9 @@ async function sha256Hex(input: string): Promise<string> {
 }
 
 function cosine(a: number[], b: number[]): number {
-  let dot = 0, na = 0, nb = 0;
+  let dot = 0,
+    na = 0,
+    nb = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
     na += a[i] * a[i];
@@ -51,7 +49,11 @@ function cosine(a: number[], b: number[]): number {
 function parseVector(raw: unknown): number[] | null {
   if (Array.isArray(raw)) return raw as number[];
   if (typeof raw === "string") {
-    try { return JSON.parse(raw) as number[]; } catch { return null; }
+    try {
+      return JSON.parse(raw) as number[];
+    } catch {
+      return null;
+    }
   }
   return null;
 }
@@ -107,14 +109,17 @@ async function assembleDocuments(
     scored.push({ documentId: (row as { document_id: string }).document_id, score: s });
   }
   // Deterministic ordering: score desc, then document_id asc as tiebreaker.
-  scored.sort((a, b) => (b.score - a.score) || a.documentId.localeCompare(b.documentId));
+  scored.sort((a, b) => b.score - a.score || a.documentId.localeCompare(b.documentId));
   const top = scored.slice(0, req.maxDocuments);
   if (top.length === 0) return { docs: [], embeddingMs };
 
   const { data: documents } = await db
     .from("uada_documents")
     .select("id, path, kind, summary")
-    .in("id", top.map((t) => t.documentId));
+    .in(
+      "id",
+      top.map((t) => t.documentId),
+    );
   const byId = new Map((documents ?? []).map((d) => [d.id, d]));
   const docs: DocumentRef[] = top
     .map((t) => {
@@ -130,7 +135,7 @@ async function assembleDocuments(
     })
     .filter((x): x is DocumentRef => x !== null)
     // Enforce final deterministic order for the bundle body.
-    .sort((a, b) => (b.score - a.score) || a.path.localeCompare(b.path));
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
 
   return { docs, embeddingMs };
 }
@@ -167,7 +172,7 @@ async function expandGraph(
       .in("from_node", frontier);
     const next = new Set<string>();
     for (const e of outEdges ?? []) {
-      const meta = ((e.metadata as Record<string, unknown>) ?? {});
+      const meta = (e.metadata as Record<string, unknown>) ?? {};
       edgeRows.push({
         fromId: e.from_node as string,
         toId: e.to_node as string,
@@ -205,17 +210,12 @@ async function expandGraph(
 
   // Deterministic ordering.
   nodes.sort((a, b) => a.id.localeCompare(b.id));
-  edgeRows.sort((a, b) =>
-    (a.fromId + a.toId + a.kind).localeCompare(b.fromId + b.toId + b.kind),
-  );
+  edgeRows.sort((a, b) => (a.fromId + a.toId + a.kind).localeCompare(b.fromId + b.toId + b.kind));
 
   return { nodes, edges: edgeRows, expansionMs: Date.now() - t0 };
 }
 
-async function loadMemory(
-  db: SupabaseClient,
-  req: ContextRequest,
-): Promise<MemoryEntry[]> {
+async function loadMemory(db: SupabaseClient, req: ContextRequest): Promise<MemoryEntry[]> {
   if (!req.includeMemory) return [];
   const { data } = await db
     .from("uada_memory")
@@ -228,10 +228,7 @@ async function loadMemory(
     .sort((a, b) => (a.scope + a.key).localeCompare(b.scope + b.key));
 }
 
-async function buildEvidence(
-  docs: DocumentRef[],
-  snapshotVersion: number,
-): Promise<Evidence[]> {
+async function buildEvidence(docs: DocumentRef[], snapshotVersion: number): Promise<Evidence[]> {
   const evidence: Evidence[] = [];
   for (const d of docs) {
     const partial = {
@@ -261,10 +258,7 @@ function estimateTokens(bundle: {
   return Math.ceil(chars / 4);
 }
 
-async function assembleArchitecture(
-  version?: number,
-  now?: string,
-): Promise<ArchitectureFacts> {
+async function assembleArchitecture(version?: number, now?: string): Promise<ArchitectureFacts> {
   const db = await admin();
   const snap = await resolveSnapshot(db, version);
 
@@ -348,7 +342,8 @@ function buildRegulatoryFacts(): ArchitectureFacts["regulatory"] {
     if (rec.status !== "installed") flagsList.push(`status:${rec.status}`);
     if (tier !== "production") flagsList.push("tier:non-production");
     for (const b of blockers) {
-      if (b.startsWith("regulatory correction pending")) flagsList.push("regulatory-correction-pending");
+      if (b.startsWith("regulatory correction pending"))
+        flagsList.push("regulatory-correction-pending");
     }
     flags.push({
       country: rec.pack.manifest.country,
@@ -361,7 +356,6 @@ function buildRegulatoryFacts(): ArchitectureFacts["regulatory"] {
   }
   return flags;
 }
-
 
 export const ContextAssembler = {
   /**

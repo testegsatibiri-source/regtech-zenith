@@ -32,8 +32,7 @@ function ReleasesPage() {
   });
 
   const mutate = useMutation({
-    mutationFn: (input: { id: string; to: string }) =>
-      transitionFn({ data: input as never }),
+    mutationFn: (input: { id: string; to: string }) => transitionFn({ data: input as never }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["platform", "releases"] });
       qc.invalidateQueries({ queryKey: ["platform", "dashboard"] });
@@ -46,7 +45,9 @@ function ReleasesPage() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-3xl font-bold">Release Center</h1>
-        <p className="text-muted-foreground">6-state lifecycle. Gates enforced on approved → released.</p>
+        <p className="text-muted-foreground">
+          6-state lifecycle. Gates enforced on approved → released.
+        </p>
       </header>
 
       {isLoading ? (
@@ -59,7 +60,9 @@ function ReleasesPage() {
             <Card key={r.id}>
               <CardHeader className="flex-row items-center justify-between pb-2">
                 <div>
-                  <CardTitle className="text-base">{r.country_code} · v{r.pack_version}</CardTitle>
+                  <CardTitle className="text-base">
+                    {r.country_code} · v{r.pack_version}
+                  </CardTitle>
                   <div className="text-xs text-muted-foreground font-mono">
                     {r.installed_from} · {new Date(r.created_at).toLocaleString()}
                   </div>

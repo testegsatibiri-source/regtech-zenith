@@ -27,7 +27,8 @@ async function fireSlack(target: string, p: AlertPayload) {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      text: `:rotating_light: *[${p.severity}] ${p.ruleName}*\n` +
+      text:
+        `:rotating_light: *[${p.severity}] ${p.ruleName}*\n` +
         `layer=${p.layer} metric=${p.metric} value=${p.observedValue} threshold=${p.threshold}`,
     }),
   });
@@ -50,9 +51,12 @@ async function fireEmail(_target: string, p: AlertPayload) {
 export async function dispatchNotification(t: NotificationTarget, p: AlertPayload): Promise<void> {
   try {
     switch (t.channel) {
-      case "slack":   return await fireSlack(t.target, p);
-      case "webhook": return await fireWebhook(t.target, p);
-      case "email":   return await fireEmail(t.target, p);
+      case "slack":
+        return await fireSlack(t.target, p);
+      case "webhook":
+        return await fireWebhook(t.target, p);
+      case "email":
+        return await fireEmail(t.target, p);
       case "sms":
       case "whatsapp":
       case "pagerduty":
@@ -65,16 +69,25 @@ export async function dispatchNotification(t: NotificationTarget, p: AlertPayloa
 }
 
 /** Evaluate a single rule against an observed value. */
-export function evaluate(rule: {
-  comparator: ">" | "<" | ">=" | "<=" | "==" | "!=";
-  threshold: number;
-}, observed: number): boolean {
+export function evaluate(
+  rule: {
+    comparator: ">" | "<" | ">=" | "<=" | "==" | "!=";
+    threshold: number;
+  },
+  observed: number,
+): boolean {
   switch (rule.comparator) {
-    case ">":  return observed >  rule.threshold;
-    case "<":  return observed <  rule.threshold;
-    case ">=": return observed >= rule.threshold;
-    case "<=": return observed <= rule.threshold;
-    case "==": return observed === rule.threshold;
-    case "!=": return observed !== rule.threshold;
+    case ">":
+      return observed > rule.threshold;
+    case "<":
+      return observed < rule.threshold;
+    case ">=":
+      return observed >= rule.threshold;
+    case "<=":
+      return observed <= rule.threshold;
+    case "==":
+      return observed === rule.threshold;
+    case "!=":
+      return observed !== rule.threshold;
   }
 }

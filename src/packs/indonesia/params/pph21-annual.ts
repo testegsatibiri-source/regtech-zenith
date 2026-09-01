@@ -18,7 +18,7 @@ export const ANNUAL_BRACKETS_HPP: readonly AnnualBracket[] = [
   { bound: 60_000_000, rate: 0.05 },
   { bound: 250_000_000, rate: 0.15 },
   { bound: 500_000_000, rate: 0.25 },
-  { bound: 5_000_000_000, rate: 0.30 },
+  { bound: 5_000_000_000, rate: 0.3 },
 ] as const;
 
 /** Rate applied above the last bracket (> Rp 5.000.000.000). */
@@ -66,11 +66,7 @@ export function ptkpForStatus(status: string): number {
   if (!match) return PTKP_2026.base;
   const married = match[1] === "K";
   const dependents = Math.min(Number(match[2] ?? 0) || 0, PTKP_2026.maxDependents);
-  return (
-    PTKP_2026.base +
-    (married ? PTKP_2026.married : 0) +
-    dependents * PTKP_2026.perDependent
-  );
+  return PTKP_2026.base + (married ? PTKP_2026.married : 0) + dependents * PTKP_2026.perDependent;
 }
 
 /** Annual occupational-expense deduction for a given annual gross. */

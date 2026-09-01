@@ -45,7 +45,11 @@ describe("PH filing provider (H21 Phase 4)", () => {
     expect(philippinesPack.supports("filings")).toBe(true);
     expect(philippinesPack.providers.filings?.forms()).toHaveLength(5);
     expect(PH_FILING_FORMS.map((f) => f.code)).toEqual([
-      "BIR-1601C", "BIR-1604C-ALPHALIST", "SSS-R3", "PHIC-RF1", "HDMF-MCRF",
+      "BIR-1601C",
+      "BIR-1604C-ALPHALIST",
+      "SSS-R3",
+      "PHIC-RF1",
+      "HDMF-MCRF",
     ]);
   });
 
@@ -103,12 +107,14 @@ describe("PH filing provider (H21 Phase 4)", () => {
   });
 
   it("stamps the ruleset version that produced the numbers (DEBT-023)", () => {
-    expect(generatePhFiling(req("SSS-R3", 3)).rulesetVersion)
-      .toBe(philippinesPack.manifest.rulesetVersion);
+    expect(generatePhFiling(req("SSS-R3", 3)).rulesetVersion).toBe(
+      philippinesPack.manifest.rulesetVersion,
+    );
   });
 
   it("is deterministic — identical input yields byte-identical output", () => {
-    expect(generatePhFiling(req("SSS-R3", 3)).content)
-      .toBe(generatePhFiling(req("SSS-R3", 3)).content);
+    expect(generatePhFiling(req("SSS-R3", 3)).content).toBe(
+      generatePhFiling(req("SSS-R3", 3)).content,
+    );
   });
 });

@@ -68,10 +68,7 @@ export const deleteDependent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("employee_dependents")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("employee_dependents").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -176,18 +173,9 @@ export const getEmployeeDossier = createServerFn({ method: "POST" })
         .eq("id", data.employeeId)
         .eq("company_id", data.companyId)
         .maybeSingle(),
-      supabase
-        .from("employee_dependents")
-        .select("id")
-        .eq("employee_id", data.employeeId),
-      supabase
-        .from("employee_job_history")
-        .select("id")
-        .eq("employee_id", data.employeeId),
-      supabase
-        .from("employment_contracts")
-        .select("id, status")
-        .eq("employee_id", data.employeeId),
+      supabase.from("employee_dependents").select("id").eq("employee_id", data.employeeId),
+      supabase.from("employee_job_history").select("id").eq("employee_id", data.employeeId),
+      supabase.from("employment_contracts").select("id, status").eq("employee_id", data.employeeId),
     ]);
     if (!employee) throw new Error("Employee not found");
 

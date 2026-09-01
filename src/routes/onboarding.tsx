@@ -27,16 +27,26 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
       { title: "Set up your company — UBoard Asia" },
-      { name: "description", content: "Create your company and choose the country pack that governs its payroll and compliance rules." },
+      {
+        name: "description",
+        content:
+          "Create your company and choose the country pack that governs its payroll and compliance rules.",
+      },
       { property: "og:title", content: "Set up your company — UBoard Asia" },
-      { property: "og:description", content: "Choose a jurisdiction and start running compliant payroll." },
+      {
+        property: "og:description",
+        content: "Choose a jurisdiction and start running compliant payroll.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),
   errorComponent: ({ error }) => (
-    <div className="flex min-h-screen items-center justify-center p-6 text-sm text-destructive" role="alert">
+    <div
+      className="flex min-h-screen items-center justify-center p-6 text-sm text-destructive"
+      role="alert"
+    >
       {error.message}
     </div>
   ),
@@ -99,15 +109,30 @@ function OnboardingPage() {
           <CardContent className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="co-name">Company name</Label>
-              <Input id="co-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+              <Input
+                id="co-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={120}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="co-legal">Legal name (optional)</Label>
-              <Input id="co-legal" value={legalName} onChange={(e) => setLegalName(e.target.value)} maxLength={160} />
+              <Input
+                id="co-legal"
+                value={legalName}
+                onChange={(e) => setLegalName(e.target.value)}
+                maxLength={160}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="co-tax">Tax ID (optional)</Label>
-              <Input id="co-tax" value={taxId} onChange={(e) => setTaxId(e.target.value)} maxLength={64} />
+              <Input
+                id="co-tax"
+                value={taxId}
+                onChange={(e) => setTaxId(e.target.value)}
+                maxLength={64}
+              />
             </div>
 
             <div className="space-y-2">
@@ -115,9 +140,17 @@ function OnboardingPage() {
               <CountryPackSelector packs={packs} value={countryCode} onSelect={setCountryCode} />
             </div>
 
-            {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+            {error && (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            )}
 
-            <Button className="w-full" onClick={submit} disabled={saving || !name.trim() || !countryCode}>
+            <Button
+              className="w-full"
+              onClick={submit}
+              disabled={saving || !name.trim() || !countryCode}
+            >
               Create company
             </Button>
           </CardContent>

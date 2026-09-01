@@ -101,8 +101,7 @@ export function applyRetention(
 
   // Archived: keep newest N, purge the rest and anything past purgeAfterDays.
   archived.forEach((s, idx) => {
-    const ageDays =
-      (now.getTime() - new Date(s.archivedAt ?? s.createdAt).getTime()) / dayMs;
+    const ageDays = (now.getTime() - new Date(s.archivedAt ?? s.createdAt).getTime()) / dayMs;
     if (idx >= policy.keepArchived || ageDays > policy.purgeAfterDays) {
       outcome.purge.push(s);
     } else {

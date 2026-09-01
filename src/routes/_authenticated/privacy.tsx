@@ -21,7 +21,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/privacy")({
@@ -163,10 +169,14 @@ function PrivacyPage() {
           <div className="space-y-2">
             <Label>Employee</Label>
             <Select value={employeeId} onValueChange={setEmployeeId}>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
               <SelectContent>
                 {(employees.data ?? []).map((e: { id: string; full_name: string }) => (
-                  <SelectItem key={e.id} value={e.id}>{e.full_name}</SelectItem>
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.full_name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -174,10 +184,14 @@ function PrivacyPage() {
           <div className="space-y-2">
             <Label>Purpose</Label>
             <Select value={purpose} onValueChange={setPurpose}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {PROCESSING_PURPOSES.map((p) => (
-                  <SelectItem key={p} value={p}>{p.replace(/_/g, " ")}</SelectItem>
+                  <SelectItem key={p} value={p}>
+                    {p.replace(/_/g, " ")}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -185,21 +199,31 @@ function PrivacyPage() {
           <div className="space-y-2">
             <Label>Legal basis</Label>
             <Select value={legalBasis} onValueChange={setLegalBasis}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {LEGAL_BASES.map((b) => (
-                  <SelectItem key={b} value={b}>{b.replace(/_/g, " ")}</SelectItem>
+                  <SelectItem key={b} value={b}>
+                    {b.replace(/_/g, " ")}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Evidence ref</Label>
-            <Input value={evidenceRef} onChange={(e) => setEvidenceRef(e.target.value)} placeholder="Signed form #" />
+            <Input
+              value={evidenceRef}
+              onChange={(e) => setEvidenceRef(e.target.value)}
+              placeholder="Signed form #"
+            />
           </div>
           <div className="flex items-end gap-2">
             <Button onClick={() => recordConsent(true)}>Grant</Button>
-            <Button variant="outline" onClick={() => recordConsent(false)}>Withdraw</Button>
+            <Button variant="outline" onClick={() => recordConsent(false)}>
+              Withdraw
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -207,7 +231,9 @@ function PrivacyPage() {
       {r && r.missingConsentCount > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Missing mandatory consents ({r.missingConsentCount})</CardTitle>
+            <CardTitle className="text-base">
+              Missing mandatory consents ({r.missingConsentCount})
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {r.missingConsents.map((m) => (
@@ -228,10 +254,16 @@ function PrivacyPage() {
             <p className="text-sm text-muted-foreground">No consent records yet.</p>
           )}
           {(consents.data ?? []).map((c) => (
-            <div key={c.id} className="flex items-center justify-between border-b py-2 text-sm last:border-0">
+            <div
+              key={c.id}
+              className="flex items-center justify-between border-b py-2 text-sm last:border-0"
+            >
               <div>
                 <span className="font-medium">{employeeName(c.employee_id)}</span>
-                <span className="text-muted-foreground"> · {c.purpose.replace(/_/g, " ")} · {c.legal_basis.replace(/_/g, " ")}</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  · {c.purpose.replace(/_/g, " ")} · {c.legal_basis.replace(/_/g, " ")}
+                </span>
               </div>
               <Badge variant={c.granted ? "default" : "destructive"}>
                 {c.granted ? "Granted" : "Withdrawn"}
@@ -265,10 +297,15 @@ function PrivacyPage() {
             <p className="text-sm text-muted-foreground">No retention policies defined.</p>
           )}
           {(policies.data ?? []).map((p) => (
-            <div key={p.id} className="flex items-center justify-between gap-4 border-b py-2 text-sm last:border-0">
+            <div
+              key={p.id}
+              className="flex items-center justify-between gap-4 border-b py-2 text-sm last:border-0"
+            >
               <div>
                 <span className="font-medium">{p.category.replace(/_/g, " ")}</span>
-                <span className="block text-xs text-muted-foreground">{p.legal_reference ?? "—"}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {p.legal_reference ?? "—"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -277,7 +314,8 @@ function PrivacyPage() {
                   defaultValue={p.retention_months}
                   onBlur={async (e) => {
                     const months = Number(e.target.value);
-                    if (!companyId || !Number.isFinite(months) || months === p.retention_months) return;
+                    if (!companyId || !Number.isFinite(months) || months === p.retention_months)
+                      return;
                     await savePolicyFn({
                       data: {
                         companyId,
@@ -310,11 +348,16 @@ function PrivacyPage() {
             <p className="text-sm text-muted-foreground">No access recorded yet.</p>
           )}
           {(accessLog.data ?? []).map((l) => (
-            <div key={l.id} className="flex items-center justify-between border-b py-2 text-sm last:border-0">
+            <div
+              key={l.id}
+              className="flex items-center justify-between border-b py-2 text-sm last:border-0"
+            >
               <span>
                 <span className="font-medium">{l.action}</span>{" "}
                 <span className="text-muted-foreground">{l.resource}</span>
-                {l.employee_id && <span className="text-muted-foreground"> · {employeeName(l.employee_id)}</span>}
+                {l.employee_id && (
+                  <span className="text-muted-foreground"> · {employeeName(l.employee_id)}</span>
+                )}
               </span>
               <span className="text-xs text-muted-foreground">
                 {new Date(l.created_at).toLocaleString()}

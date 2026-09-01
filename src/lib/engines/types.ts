@@ -37,7 +37,10 @@ export interface ComplianceRule<Ctx = unknown> {
   title: string;
   severity: Severity;
   weight: number;
-  evaluate: (employee: EmployeeLike, ctx: Ctx & { params: Record<string, unknown> }) => {
+  evaluate: (
+    employee: EmployeeLike,
+    ctx: Ctx & { params: Record<string, unknown> },
+  ) => {
     passed: boolean;
     message: string;
     conclusive?: boolean;

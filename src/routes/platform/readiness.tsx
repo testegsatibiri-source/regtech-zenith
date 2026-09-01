@@ -100,7 +100,14 @@ function ReadinessPage() {
                 {Object.entries(data.gates).map(([g, on]) => (
                   <div key={g} className="flex items-center justify-between font-mono text-xs">
                     <span>{g}</span>
-                    <Badge variant="outline" className={on ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "text-muted-foreground"}>
+                    <Badge
+                      variant="outline"
+                      className={
+                        on
+                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                          : "text-muted-foreground"
+                      }
+                    >
                       {on ? "on" : "off"}
                     </Badge>
                   </div>
@@ -115,12 +122,21 @@ function ReadinessPage() {
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               {data.packs.map((p) => (
-                <div key={p.country} className="flex items-center justify-between border-b border-border py-1 last:border-0">
-                  <span className="font-mono">{p.country} · v{p.version}</span>
-                  <Badge variant="outline" className={statusTone[p.status] ?? ""}>{p.status}</Badge>
+                <div
+                  key={p.country}
+                  className="flex items-center justify-between border-b border-border py-1 last:border-0"
+                >
+                  <span className="font-mono">
+                    {p.country} · v{p.version}
+                  </span>
+                  <Badge variant="outline" className={statusTone[p.status] ?? ""}>
+                    {p.status}
+                  </Badge>
                 </div>
               ))}
-              {data.packs.length === 0 ? <p className="text-muted-foreground">Nenhum pack registrado.</p> : null}
+              {data.packs.length === 0 ? (
+                <p className="text-muted-foreground">Nenhum pack registrado.</p>
+              ) : null}
             </CardContent>
           </Card>
         </>

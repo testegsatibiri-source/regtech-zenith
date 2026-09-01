@@ -14,10 +14,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
@@ -28,7 +37,10 @@ export const Route = createFileRoute("/_authenticated/payroll")({
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 type Emp = {
-  id: string; full_name: string; base_salary: number; marital_status: string;
+  id: string;
+  full_name: string;
+  base_salary: number;
+  marital_status: string;
   country_metadata?: Record<string, unknown> | null;
 };
 
@@ -82,7 +94,9 @@ function Payroll() {
     { gross: 0, tax: 0, bpjsEmp: 0, net: 0, cost: 0 },
   );
 
-  const score = employees.length ? evaluateCompany(employees as never[], activePack.code as never).score : 100;
+  const score = employees.length
+    ? evaluateCompany(employees as never[], activePack.code as never).score
+    : 100;
 
   if (!companyId) return <p className="text-muted-foreground">Create a company first.</p>;
 
@@ -112,7 +126,9 @@ function Payroll() {
       });
       toast.success(`Payroll finalized — Compliance Score ${score}%`);
       await queryClient.invalidateQueries({ queryKey: ["runs", companyId] });
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
     setSaving(false);
   }
 
@@ -121,22 +137,43 @@ function Payroll() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Payroll</h1>
-          <p className="text-muted-foreground">{company?.name} · {activePack.name} Country Pack{activePack.rulesetVersion ? ` · ${activePack.rulesetVersion}` : ""}</p>
+          <p className="text-muted-foreground">
+            {company?.name} · {activePack.name} Country Pack
+            {activePack.rulesetVersion ? ` · ${activePack.rulesetVersion}` : ""}
+          </p>
         </div>
         <div className="flex items-end gap-2">
           <div className="w-28">
             <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{MONTHS.map((m, i) => <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>)}</SelectContent>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((m, i) => (
+                  <SelectItem key={m} value={String(i + 1)}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
           <div className="w-24">
             <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{[year - 1, year, year + 1].map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[year - 1, year, year + 1].map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
-          <Button onClick={run} disabled={saving}><Play className="mr-1 h-4 w-4" /> Run payroll</Button>
+          <Button onClick={run} disabled={saving}>
+            <Play className="mr-1 h-4 w-4" /> Run payroll
+          </Button>
         </div>
       </div>
 
@@ -153,7 +190,11 @@ function Payroll() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Preview · {MONTHS[month - 1]} {year}</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>
+            Preview · {MONTHS[month - 1]} {year}
+          </CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -168,18 +209,30 @@ function Payroll() {
             </TableHeader>
             <TableBody>
               {computed.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  {activePack.pack ? "Add employees to run payroll." : `No installed Country Pack for ${activePack.code}.`}
-                </TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                    {activePack.pack
+                      ? "Add employees to run payroll."
+                      : `No installed Country Pack for ${activePack.code}.`}
+                  </TableCell>
+                </TableRow>
               )}
               {computed.map(({ emp, slip }) => (
                 <TableRow key={emp.id}>
                   <TableCell className="font-medium">{emp.full_name}</TableCell>
-                  <TableCell><Badge variant="secondary">{slip.tax.category ?? "—"} · {(slip.tax.rate * 100).toFixed(2)}%</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">
+                      {slip.tax.category ?? "—"} · {(slip.tax.rate * 100).toFixed(2)}%
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(slip.gross)}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(slip.tax.tax)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{fmt(slip.benefits.employee.total)}</TableCell>
-                  <TableCell className="text-right font-semibold tabular-nums text-success">{fmt(slip.net)}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {fmt(slip.benefits.employee.total)}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums text-success">
+                    {fmt(slip.net)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -188,7 +241,11 @@ function Payroll() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Payroll history</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-4 w-4" /> Payroll history
+          </CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -201,14 +258,42 @@ function Payroll() {
             </TableHeader>
             <TableBody>
               {runs.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="py-8 text-center text-muted-foreground">No runs yet.</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                    No runs yet.
+                  </TableCell>
+                </TableRow>
               )}
-              {(runs as { id: string; period_month: number; period_year: number; compliance_score: number; status: string; totals: { net?: number } }[]).map((r) => (
+              {(
+                runs as {
+                  id: string;
+                  period_month: number;
+                  period_year: number;
+                  compliance_score: number;
+                  status: string;
+                  totals: { net?: number };
+                }[]
+              ).map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-medium">{MONTHS[r.period_month - 1]} {r.period_year}</TableCell>
-                  <TableCell><Badge className={"border-0 " + (r.compliance_score >= 85 ? "bg-success/15 text-success" : "bg-warning/15 text-warning")}>{r.compliance_score}%</Badge></TableCell>
+                  <TableCell className="font-medium">
+                    {MONTHS[r.period_month - 1]} {r.period_year}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        "border-0 " +
+                        (r.compliance_score >= 85
+                          ? "bg-success/15 text-success"
+                          : "bg-warning/15 text-warning")
+                      }
+                    >
+                      {r.compliance_score}%
+                    </Badge>
+                  </TableCell>
                   <TableCell className="capitalize text-muted-foreground">{r.status}</TableCell>
-                  <TableCell className="text-right tabular-nums">{r.totals?.net != null ? fmt(r.totals.net) : "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {r.totals?.net != null ? fmt(r.totals.net) : "—"}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -224,7 +309,14 @@ function Metric({ label, value, tone }: { label: string; value: string; tone?: "
     <Card>
       <CardContent className="p-4">
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className={"mt-1 font-display text-xl font-bold " + (tone === "net" ? "text-success" : tone === "cost" ? "text-primary" : "")}>{value}</div>
+        <div
+          className={
+            "mt-1 font-display text-xl font-bold " +
+            (tone === "net" ? "text-success" : tone === "cost" ? "text-primary" : "")
+          }
+        >
+          {value}
+        </div>
       </CardContent>
     </Card>
   );

@@ -21,8 +21,7 @@ export function calculatePhTax(input: TaxCalcInput): TaxCalcOutput {
   // 1-peso gaps between `upTo` and the next `floor`, so an `upTo` lookup would
   // drop fractional grosses such as 33,332.50 into the wrong bracket.
   const brackets = PH_PARAMS.birMonthly;
-  const bracket =
-    [...brackets].reverse().find((b) => taxableGross >= b.floor) ?? brackets[0]!;
+  const bracket = [...brackets].reverse().find((b) => taxableGross >= b.floor) ?? brackets[0]!;
   const excess = Math.max(0, taxableGross - bracket.floor);
   const tax = Math.round(bracket.fixed + excess * bracket.rate);
 

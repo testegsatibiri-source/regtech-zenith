@@ -25,10 +25,11 @@ describe("landing coverage data", () => {
     );
   });
 
-
   it("keeps the coverage counter consistent with the selection surface", async () => {
     const catalog = await listCatalogWithHealth();
-    const available = selectAvailablePacks(catalog).map((p) => p.countryCode).sort();
+    const available = selectAvailablePacks(catalog)
+      .map((p) => p.countryCode)
+      .sort();
     const production = catalog
       .filter((p) => p.tier === "production")
       .map((p) => p.code.toUpperCase())

@@ -1,13 +1,13 @@
-import { generateKeyPairSync, sign } from "node:crypto";
+import { generateKeyPairSync, sign, type KeyObject } from "node:crypto";
 import { canonicalManifestBytes } from "../src/packs/indonesia/params/canonical-manifest";
 import type { CountryManifest } from "../src/sdk/manifest";
 
-function exportRawPublicKey(publicKey: any): string {
+function exportRawPublicKey(publicKey: KeyObject): string {
   const spki = publicKey.export({ type: "spki", format: "der" }) as Buffer;
   return spki.slice(-32).toString("base64");
 }
 
-function signBytes(bytes: Uint8Array, privateKey: any): string {
+function signBytes(bytes: Uint8Array, privateKey: KeyObject): string {
   return sign(null, bytes, privateKey).toString("base64");
 }
 
@@ -22,19 +22,50 @@ const manifest: CountryManifest = {
   version: "1.6.0",
   rulesetVersion: "PH-2024.6",
   interfaceVersion: "1.0.0",
-  engines: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation", "leave"],
-  provides: ["payroll", "tax", "benefits", "thirteenth", "calendar", "contracts", "audit", "rules", "filings", "separation", "leave"],
+  engines: [
+    "payroll",
+    "tax",
+    "benefits",
+    "thirteenth",
+    "calendar",
+    "contracts",
+    "audit",
+    "rules",
+    "filings",
+    "separation",
+    "leave",
+  ],
+  provides: [
+    "payroll",
+    "tax",
+    "benefits",
+    "thirteenth",
+    "calendar",
+    "contracts",
+    "audit",
+    "rules",
+    "filings",
+    "separation",
+    "leave",
+  ],
   requires: [],
   events: {
     emits: ["PayrollCalculated@1", "PayrollFinalized@1", "TaxCalculated@1"],
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["train-law", "13th-month", "sss", "philhealth", "pagibig", "offboarding", "statutory-leave"],
+  features: [
+    "train-law",
+    "13th-month",
+    "sss",
+    "philhealth",
+    "pagibig",
+    "offboarding",
+    "statutory-leave",
+  ],
   supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
   commercialReady: false,
-  signatureBlock: undefined as any,
 };
 
 const bytes = canonicalManifestBytes(manifest);
@@ -66,6 +97,10 @@ console.log("// === PH v1.6.0 signature block ===");
 console.log(JSON.stringify(block, null, 2));
 console.log("\n// === Trust store public keys (INSERT or UPDATE) ===");
 console.log(`-- author: uboard-ph, keyId=${block.author.keyId}`);
-console.log(`INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'uboard-ph', '${authorPub}', 'ed25519', ARRAY['sign']::text[], 'db', true, '${block.author.keyId}');`);
+console.log(
+  `INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'uboard-ph', '${authorPub}', 'ed25519', ARRAY['sign']::text[], 'db', true, '${block.author.keyId}');`,
+);
 console.log(`-- countersign: platform-cto-ph, keyId=${block.countersign.keyId}`);
-console.log(`INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'platform-cto-ph', '${countersignPub}', 'ed25519', ARRAY['sign']::text[], 'db', true, '${block.countersign.keyId}');`);
+console.log(
+  `INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'platform-cto-ph', '${countersignPub}', 'ed25519', ARRAY['sign']::text[], 'db', true, '${block.countersign.keyId}');`,
+);

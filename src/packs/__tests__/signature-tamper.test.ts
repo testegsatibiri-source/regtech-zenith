@@ -3,7 +3,7 @@
 // commercialReady field, or with a flipped value, fails verification against
 // the current signed manifest.
 import { describe, expect, it } from "vitest";
-import { generateKeyPairSync, sign } from "node:crypto";
+import { generateKeyPairSync, sign, type KeyObject } from "node:crypto";
 import { verifyEd25519 } from "@/sdk/signing";
 import { canonicalManifestBytes } from "@/packs/indonesia/params/canonical-manifest";
 import type { CountryManifest } from "@/sdk/manifest";
@@ -25,11 +25,11 @@ function makeManifest(overrides: Partial<CountryManifest> = {}): CountryManifest
   };
 }
 
-function signBytes(bytes: Uint8Array, privateKey: any): string {
+function signBytes(bytes: Uint8Array, privateKey: KeyObject): string {
   return sign(null, bytes, privateKey).toString("base64");
 }
 
-function exportRawPublicKey(publicKey: any): string {
+function exportRawPublicKey(publicKey: KeyObject): string {
   // Node does not support raw Ed25519 export directly; SPKI DER is
   // 30 2a 30 05 06 03 2b 65 70 03 21 00 <32-byte key>. Slice the last 32 bytes.
   const spki = publicKey.export({ type: "spki", format: "der" }) as Buffer;
@@ -99,4 +99,3 @@ describe("H20 — commercialReady signature tamper", () => {
     expect(result.verified).toBe(false);
   });
 });
-

@@ -6,10 +6,7 @@ import {
   assertEvidenceComplete,
 } from "@/lib/uada/contracts/response/hash";
 import type { Evidence } from "@/lib/uada/contracts/response";
-import {
-  GRAPH_SCHEMA_VERSION,
-  GRAPH_SCHEMA_KINDS_V1,
-} from "@/lib/uada/contracts/graph/version";
+import { GRAPH_SCHEMA_VERSION, GRAPH_SCHEMA_KINDS_V1 } from "@/lib/uada/contracts/graph/version";
 
 async function mk(over: Partial<Evidence> = {}): Promise<Evidence> {
   const base = {
@@ -44,29 +41,29 @@ describe("H13.5 evidence hash", () => {
   it("guard rejects hash mismatch", async () => {
     const e = await mk();
     const tampered: Evidence = { ...e, path: "src/y.ts" };
-    await expect(
-      assertEvidenceComplete({ confidence: 0.8, evidence: [tampered] }),
-    ).rejects.toThrow(/hash mismatch/);
+    await expect(assertEvidenceComplete({ confidence: 0.8, evidence: [tampered] })).rejects.toThrow(
+      /hash mismatch/,
+    );
   });
 
   it("guard rejects missing evidenceHash", async () => {
     const e = await mk();
     const broken = { ...e, evidenceHash: "" } as Evidence;
-    await expect(
-      assertEvidenceComplete({ confidence: 0.8, evidence: [broken] }),
-    ).rejects.toThrow(/missing evidenceHash/);
+    await expect(assertEvidenceComplete({ confidence: 0.8, evidence: [broken] })).rejects.toThrow(
+      /missing evidenceHash/,
+    );
   });
 
   it("guard forbids confidence > 0 with no evidence", async () => {
-    await expect(
-      assertEvidenceComplete({ confidence: 0.5, evidence: [] }),
-    ).rejects.toThrow(/requires at least/);
+    await expect(assertEvidenceComplete({ confidence: 0.5, evidence: [] })).rejects.toThrow(
+      /requires at least/,
+    );
   });
 
   it("guard rejects confidence out of range", async () => {
-    await expect(
-      assertEvidenceComplete({ confidence: 1.5, evidence: [] }),
-    ).rejects.toThrow(/out of range/);
+    await expect(assertEvidenceComplete({ confidence: 1.5, evidence: [] })).rejects.toThrow(
+      /out of range/,
+    );
   });
 });
 

@@ -6,7 +6,11 @@ import { indexCode } from "@/lib/uada/indexers/code.server";
 import { indexDocs } from "@/lib/uada/indexers/docs.server";
 import { indexDb } from "@/lib/uada/indexers/db.server";
 import { buildGraph } from "@/lib/uada/graph/builder.server";
-import { batchSizeFor, embedBatch, DEFAULT_EMBEDDING_MODEL } from "@/lib/uada/gateway/embeddings.server";
+import {
+  batchSizeFor,
+  embedBatch,
+  DEFAULT_EMBEDDING_MODEL,
+} from "@/lib/uada/gateway/embeddings.server";
 
 async function db() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -27,7 +31,10 @@ export interface ReindexResult {
   promotionState: string;
   durationMs: number;
   coverage: Record<string, number>;
-  coverageDetail?: Record<string, { present: number; expected: number; ratio: number; threshold: number }>;
+  coverageDetail?: Record<
+    string,
+    { present: number; expected: number; ratio: number; threshold: number }
+  >;
   ok: boolean;
   reasons?: string[];
   acquired: boolean;
@@ -210,7 +217,10 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
         .from("uada_embeddings")
         .update({ status: "processing" })
         .eq("snapshot_id", snap.id)
-        .in("document_id", chunk.map((d) => d.id));
+        .in(
+          "document_id",
+          chunk.map((d) => d.id),
+        );
       try {
         const { vectors, tokens } = await embedBatch(
           chunk.map((d) => `${d.kind}: ${d.path}\n${d.summary}`),
@@ -241,7 +251,10 @@ export async function runReindex(input: ReindexInput): Promise<ReindexResult> {
             error_message: err instanceof Error ? err.message : String(err),
           })
           .eq("snapshot_id", snap.id)
-          .in("document_id", chunk.map((d) => d.id));
+          .in(
+            "document_id",
+            chunk.map((d) => d.id),
+          );
         denyMessages.push(`embed batch failed: ${err instanceof Error ? err.message : "unknown"}`);
       }
     }
