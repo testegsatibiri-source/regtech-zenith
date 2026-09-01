@@ -38,7 +38,11 @@ export interface BpjsParams {
   jp: BpjsParamEntry & { employeeRate: number; employerRate: number; cap: number };
   jkk: BpjsParamEntry & { riskLevels: BpjsRiskLevel[] };
   jkm: BpjsParamEntry & { employerRate: number };
-  jkp: BpjsParamEntry & { governmentRate: number; jkkRecomposition: number; jkmRecomposition: number };
+  jkp: BpjsParamEntry & {
+    governmentRate: number;
+    jkkRecomposition: number;
+    jkmRecomposition: number;
+  };
 }
 
 const OFFICIAL = "official";

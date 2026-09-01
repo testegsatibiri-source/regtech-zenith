@@ -104,7 +104,14 @@ function extractFromSourceFile(sf: ts.SourceFile) {
   }
   visit(sf);
 
-  return { imports, dynamicImports, exports, defaultExport, hasServerFn, componentRefs: [...componentRefs] };
+  return {
+    imports,
+    dynamicImports,
+    exports,
+    defaultExport,
+    hasServerFn,
+    componentRefs: [...componentRefs],
+  };
 }
 
 export function indexCode(): CodeIndex {
@@ -118,7 +125,13 @@ export function indexCode(): CodeIndex {
   for (const entry of entries) {
     let sf: ts.SourceFile;
     try {
-      sf = ts.createSourceFile(entry.path, entry.content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+      sf = ts.createSourceFile(
+        entry.path,
+        entry.content,
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TSX,
+      );
     } catch {
       continue;
     }
@@ -143,7 +156,8 @@ export function indexCode(): CodeIndex {
     });
 
     for (const to of parsed.imports) importsList.push({ from: entry.path, to, dynamic: false });
-    for (const to of parsed.dynamicImports) importsList.push({ from: entry.path, to, dynamic: true });
+    for (const to of parsed.dynamicImports)
+      importsList.push({ from: entry.path, to, dynamic: true });
   }
 
   return { documents, imports: importsList };

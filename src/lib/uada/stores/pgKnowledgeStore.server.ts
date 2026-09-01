@@ -1,6 +1,10 @@
 // H13 — Postgres Knowledge Store. Server-only.
 import type {
-  DocQuery, Document, SearchHit, SearchQuery, Snapshot,
+  DocQuery,
+  Document,
+  SearchHit,
+  SearchQuery,
+  Snapshot,
 } from "@/lib/uada/contracts/knowledge";
 import type { KnowledgeStore } from "@/lib/uada/stores";
 import { embedBatch, DEFAULT_EMBEDDING_MODEL } from "@/lib/uada/gateway/embeddings.server";
@@ -11,8 +15,13 @@ async function db() {
 }
 
 function toSnapshot(row: {
-  id: string; version: number; commit_sha: string | null; created_at: string;
-  activated_at: string | null; embedding_model: string; embedding_dimensions: number;
+  id: string;
+  version: number;
+  commit_sha: string | null;
+  created_at: string;
+  activated_at: string | null;
+  embedding_model: string;
+  embedding_dimensions: number;
   stats: unknown;
 }): Snapshot {
   const stats = (row.stats as Record<string, number>) ?? {};
@@ -28,8 +37,15 @@ function toSnapshot(row: {
 }
 
 function toDocument(row: {
-  id: string; snapshot_id: string; path: string; kind: string; sha256: string;
-  summary: string; metadata: unknown; content: string | null; content_truncated: boolean;
+  id: string;
+  snapshot_id: string;
+  path: string;
+  kind: string;
+  sha256: string;
+  summary: string;
+  metadata: unknown;
+  content: string | null;
+  content_truncated: boolean;
   updated_at: string;
 }): Document {
   return {
@@ -116,7 +132,10 @@ export const pgKnowledgeStore: KnowledgeStore = {
     for (const row of rows ?? []) {
       const vec = parseVector((row as { embedding: unknown }).embedding);
       if (!vec || vec.length !== query.length) continue;
-      scored.push({ documentId: (row as { document_id: string }).document_id, score: cosine(query, vec) });
+      scored.push({
+        documentId: (row as { document_id: string }).document_id,
+        score: cosine(query, vec),
+      });
     }
     scored.sort((a, b) => b.score - a.score);
     const top = scored.slice(0, topK);
@@ -125,9 +144,14 @@ export const pgKnowledgeStore: KnowledgeStore = {
     const { data: docs } = await c
       .from("uada_documents")
       .select("*")
-      .in("id", top.map((t) => t.documentId));
+      .in(
+        "id",
+        top.map((t) => t.documentId),
+      );
     const byId = new Map((docs ?? []).map((d) => [d.id, toDocument(d)]));
-    return top.map((t) => ({ document: byId.get(t.documentId)!, score: t.score })).filter((h) => h.document);
+    return top
+      .map((t) => ({ document: byId.get(t.documentId)!, score: t.score }))
+      .filter((h) => h.document);
   },
 };
 
@@ -143,9 +167,13 @@ function parseVector(raw: unknown): number[] | null {
   return null;
 }
 function cosine(a: number[], b: number[]): number {
-  let dot = 0, na = 0, nb = 0;
+  let dot = 0,
+    na = 0,
+    nb = 0;
   for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i];
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
   }
   return dot / (Math.sqrt(na) * Math.sqrt(nb) || 1);
 }

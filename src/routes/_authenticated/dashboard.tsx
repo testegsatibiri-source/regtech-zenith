@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, Users, Wallet, ArrowRight, CalendarClock } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Users,
+  Wallet,
+  ArrowRight,
+  CalendarClock,
+} from "lucide-react";
 import { listEmployees, listPayrollRuns } from "@/lib/data.functions";
 import { listObligations, obligationFindings, classifyRisk } from "@/lib/calendar.functions";
 import { listContracts } from "@/lib/contracts.functions";
@@ -55,10 +62,14 @@ function Dashboard() {
   const calFindings = obligationFindings(obligations);
   const contractFindings = evaluateContracts(
     contracts as ContractLike[],
-    (employees as { id: string; full_name: string }[]).map((e) => ({ id: e.id, full_name: e.full_name })),
+    (employees as { id: string; full_name: string }[]).map((e) => ({
+      id: e.id,
+      full_name: e.full_name,
+    })),
   );
   const combined = [...report.findings, ...calFindings, ...contractFindings];
-  const combinedScore = employees.length || obligations.length || contracts.length ? scoreFindings(combined) : 100;
+  const combinedScore =
+    employees.length || obligations.length || contracts.length ? scoreFindings(combined) : 100;
   const failing = combined.filter((f) => !f.passed);
   const critical = failing.filter((f) => f.severity === "critical" || f.severity === "high");
   const atRiskCount = obligations.filter((o) => {
@@ -70,12 +81,16 @@ function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{company?.name ?? "Dashboard"}</h1>
-        <p className="text-muted-foreground">Compliance overview · {activePack.name} Country Pack</p>
+        <p className="text-muted-foreground">
+          Compliance overview · {activePack.name} Country Pack
+        </p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Compliance Score</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Compliance Score</CardTitle>
+          </CardHeader>
           <CardContent className="flex flex-col items-center gap-3">
             <ScoreGauge score={combinedScore} label="Audit readiness" />
             <p className="text-center text-sm text-muted-foreground">
@@ -92,14 +107,28 @@ function Dashboard() {
           <div className="grid gap-4 sm:grid-cols-4">
             <Stat icon={Users} label="Employees" value={String(employees.length)} />
             <Stat icon={Wallet} label="Payroll runs" value={String(runs.length)} />
-            <Stat icon={CalendarClock} label="At-risk filings" value={String(atRiskCount)} tone={atRiskCount ? "warn" : "ok"} />
-            <Stat icon={AlertTriangle} label="Open findings" value={String(failing.length)} tone={failing.length ? "warn" : "ok"} />
+            <Stat
+              icon={CalendarClock}
+              label="At-risk filings"
+              value={String(atRiskCount)}
+              tone={atRiskCount ? "warn" : "ok"}
+            />
+            <Stat
+              icon={AlertTriangle}
+              label="Open findings"
+              value={String(failing.length)}
+              tone={failing.length ? "warn" : "ok"}
+            />
           </div>
 
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Compliance findings</CardTitle>
-              <Button asChild size="sm" variant="outline"><Link to="/payroll">Run payroll <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/payroll">
+                  Run payroll <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2">
               {failing.length === 0 ? (
@@ -107,18 +136,25 @@ function Dashboard() {
                   <CheckCircle2 className="h-4 w-4" /> Everything checks out.
                 </div>
               ) : (
-                dedupe(failing).slice(0, 8).map((f) => (
-                  <div key={f.rule_code} className="flex items-start justify-between gap-3 rounded-lg border border-border p-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{f.title}</span>
-                        <SeverityBadge s={f.severity} />
+                dedupe(failing)
+                  .slice(0, 8)
+                  .map((f) => (
+                    <div
+                      key={f.rule_code}
+                      className="flex items-start justify-between gap-3 rounded-lg border border-border p-3"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{f.title}</span>
+                          <SeverityBadge s={f.severity} />
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{f.message}</p>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{f.message}</p>
+                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                        {f.rule_code}
+                      </span>
                     </div>
-                    <span className="shrink-0 font-mono text-xs text-muted-foreground">{f.rule_code}</span>
-                  </div>
-                ))
+                  ))
               )}
             </CardContent>
           </Card>
@@ -134,11 +170,26 @@ function dedupe(findings: Finding[]): Finding[] {
   return [...seen.values()].sort((a, b) => b.weight - a.weight);
 }
 
-function Stat({ icon: Icon, label, value, tone }: { icon: typeof Users; label: string; value: string; tone?: "ok" | "warn" }) {
+function Stat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string;
+  tone?: "ok" | "warn";
+}) {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 p-4">
-        <span className={"flex h-10 w-10 items-center justify-center rounded-lg " + (tone === "warn" ? "bg-warning/15 text-warning" : "bg-primary/10 text-primary")}>
+        <span
+          className={
+            "flex h-10 w-10 items-center justify-center rounded-lg " +
+            (tone === "warn" ? "bg-warning/15 text-warning" : "bg-primary/10 text-primary")
+          }
+        >
           <Icon className="h-5 w-5" />
         </span>
         <div>
@@ -164,7 +215,10 @@ function EmptyCompany() {
   return (
     <div className="mx-auto max-w-md py-20 text-center">
       <h2 className="text-xl font-semibold">Create your first company</h2>
-      <p className="mt-2 text-muted-foreground">Use the <span className="font-medium">+</span> button in the top bar to add a company, then start adding employees.</p>
+      <p className="mt-2 text-muted-foreground">
+        Use the <span className="font-medium">+</span> button in the top bar to add a company, then
+        start adding employees.
+      </p>
     </div>
   );
 }

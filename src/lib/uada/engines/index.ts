@@ -1,15 +1,7 @@
 // H12.5 — Engine interfaces (pure contracts). Implementations arrive at H13+.
 import type { UadaResponse } from "@/lib/uada/contracts/response";
-import type {
-  SearchHit,
-  SearchQuery,
-  Snapshot,
-} from "@/lib/uada/contracts/knowledge";
-import type {
-  GraphNode,
-  ImpactReport,
-  TraversalQuery,
-} from "@/lib/uada/contracts/graph";
+import type { SearchHit, SearchQuery, Snapshot } from "@/lib/uada/contracts/knowledge";
+import type { GraphNode, ImpactReport, TraversalQuery } from "@/lib/uada/contracts/graph";
 
 export interface SearchEngine {
   search(q: SearchQuery): Promise<UadaResponse<SearchHit[]>>;
@@ -29,7 +21,10 @@ export interface PlanEngine {
 }
 
 export interface ReviewEngine {
-  review(input: { diff: string; prNumber?: number }): Promise<UadaResponse<{ findings: unknown[] }>>;
+  review(input: {
+    diff: string;
+    prNumber?: number;
+  }): Promise<UadaResponse<{ findings: unknown[] }>>;
 }
 
 export interface AuditEngine {

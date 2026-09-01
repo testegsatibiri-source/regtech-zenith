@@ -28,8 +28,24 @@ export const openApiSpec = {
             "application/json": {
               schema: { $ref: "#/components/schemas/TaxRequest" },
               examples: {
-                withNpwp: { summary: "Married, 1 dependent, with NPWP", value: { monthlyGross: 15000000, maritalStatus: "K/1", hasNpwp: true, country: "ID" } },
-                withoutNpwp: { summary: "Single, no NPWP (20% surcharge)", value: { monthlyGross: 15000000, maritalStatus: "TK/0", hasNpwp: false, country: "ID" } },
+                withNpwp: {
+                  summary: "Married, 1 dependent, with NPWP",
+                  value: {
+                    monthlyGross: 15000000,
+                    maritalStatus: "K/1",
+                    hasNpwp: true,
+                    country: "ID",
+                  },
+                },
+                withoutNpwp: {
+                  summary: "Single, no NPWP (20% surcharge)",
+                  value: {
+                    monthlyGross: 15000000,
+                    maritalStatus: "TK/0",
+                    hasNpwp: false,
+                    country: "ID",
+                  },
+                },
               },
             },
           },
@@ -37,7 +53,9 @@ export const openApiSpec = {
         responses: {
           "200": {
             description: "Calculation result",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/TaxResponse" } } },
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/TaxResponse" } },
+            },
           },
           "400": { $ref: "#/components/responses/BadJson" },
           "401": { $ref: "#/components/responses/Unauthorized" },
@@ -63,7 +81,9 @@ export const openApiSpec = {
         responses: {
           "200": {
             description: "Calculation result",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/BpjsResponse" } } },
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/BpjsResponse" } },
+            },
           },
           "400": { $ref: "#/components/responses/BadJson" },
           "401": { $ref: "#/components/responses/Unauthorized" },
@@ -111,7 +131,8 @@ export const openApiSpec = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "sk_live_...",
-        description: "Provision a key from the /keys admin surface. Anonymous requests are rate-limited.",
+        description:
+          "Provision a key from the /keys admin surface. Anonymous requests are rate-limited.",
       },
     },
     schemas: {
@@ -120,7 +141,11 @@ export const openApiSpec = {
         required: ["monthlyGross"],
         properties: {
           monthlyGross: { type: "number", minimum: 0, example: 15000000 },
-          maritalStatus: { type: "string", enum: ["TK/0","TK/1","TK/2","TK/3","K/0","K/1","K/2","K/3"], default: "TK/0" },
+          maritalStatus: {
+            type: "string",
+            enum: ["TK/0", "TK/1", "TK/2", "TK/3", "K/0", "K/1", "K/2", "K/3"],
+            default: "TK/0",
+          },
           hasNpwp: { type: "boolean", default: true },
           country: { type: "string", enum: ["ID"], default: "ID" },
         },
@@ -136,7 +161,7 @@ export const openApiSpec = {
           result: {
             type: "object",
             properties: {
-              terCategory: { type: "string", enum: ["A","B","C"] },
+              terCategory: { type: "string", enum: ["A", "B", "C"] },
               effectiveRate: { type: "number" },
               npwpSurcharge: { type: "number" },
               tax: { type: "number" },
@@ -174,12 +199,21 @@ export const openApiSpec = {
       Health: {
         type: "object",
         properties: {
-          status: { type: "string", enum: ["ok","degraded"] },
+          status: { type: "string", enum: ["ok", "degraded"] },
           uptime_ms: { type: "number" },
-          db: { type: "object", properties: { status: { type: "string" }, latency_ms: { type: "number", nullable: true } } },
+          db: {
+            type: "object",
+            properties: {
+              status: { type: "string" },
+              latency_ms: { type: "number", nullable: true },
+            },
+          },
           rulesets: {
             type: "array",
-            items: { type: "object", properties: { code: { type: "string" }, version: { type: "string" } } },
+            items: {
+              type: "object",
+              properties: { code: { type: "string" }, version: { type: "string" } },
+            },
           },
           schemaVersion: { type: "string" },
         },
@@ -187,10 +221,22 @@ export const openApiSpec = {
       Error: { type: "object", properties: { error: { type: "string" } } },
     },
     responses: {
-      BadJson: { description: "Malformed JSON body", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      Unauthorized: { description: "Missing/invalid API key", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      RateLimited: { description: "Rate limit or monthly quota exceeded", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      ValidationError: { description: "Input failed validation", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      BadJson: {
+        description: "Malformed JSON body",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+      },
+      Unauthorized: {
+        description: "Missing/invalid API key",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+      },
+      RateLimited: {
+        description: "Rate limit or monthly quota exceeded",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+      },
+      ValidationError: {
+        description: "Input failed validation",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+      },
     },
   },
 } as const;

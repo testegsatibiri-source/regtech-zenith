@@ -1,10 +1,6 @@
 // PH obligation templates — BIR / SSS / PhilHealth / Pag-IBIG.
 import type { ObligationTemplate, CalendarSubject, ObligationOccurrence } from "@/sdk";
-import {
-  resolvePhMonthlyDeadline,
-  resolvePhAnnualDeadline,
-  phSubjectFrom,
-} from "./deadlines";
+import { resolvePhMonthlyDeadline, resolvePhAnnualDeadline, phSubjectFrom } from "./deadlines";
 
 interface Template {
   code: string;
@@ -13,7 +9,7 @@ interface Template {
   cadence: ObligationTemplate["cadence"];
   legalBasis: string;
   monthlyDueDay?: number; // day of following month
-  annualMonth?: number;   // 1-12
+  annualMonth?: number; // 1-12
   annualDay?: number;
 }
 
@@ -74,7 +70,6 @@ function iso(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
-
 function lastDay(y: number, m: number): number {
   return new Date(Date.UTC(y, m, 0)).getUTCDate();
 }
@@ -112,14 +107,16 @@ export function phCalendarTemplates(): ObligationTemplate[] {
           t.annualDay ?? 31,
           t.legalBasis ?? "Annual statutory filing",
         );
-        return [{
-          period_start: iso(year, 1, 1),
-          period_end: iso(year, 12, 31),
-          due_date: r.dueDate,
-          ...(r.statutoryDate ? { statutory_date: r.statutoryDate } : {}),
-          resolution: r.status,
-          rule: r.rule,
-        }];
+        return [
+          {
+            period_start: iso(year, 1, 1),
+            period_end: iso(year, 12, 31),
+            due_date: r.dueDate,
+            ...(r.statutoryDate ? { statutory_date: r.statutoryDate } : {}),
+            resolution: r.status,
+            rule: r.rule,
+          },
+        ];
       }
       return [];
     },

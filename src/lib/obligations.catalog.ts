@@ -122,7 +122,9 @@ async function loadThrResolver(): Promise<ThrDueResolver> {
   return _thrDueResolver;
 }
 // Synchronous accessor used at boot; populated eagerly by the pack module.
-export function registerThrDueResolver(r: ThrDueResolver): void { _thrDueResolver = r; }
+export function registerThrDueResolver(r: ThrDueResolver): void {
+  _thrDueResolver = r;
+}
 
 export interface DueDateResult {
   date: Date;
@@ -157,11 +159,17 @@ export function computeDueDateWithStatus(
     };
   }
   if (tpl.frequency === "annual" && tpl.annualMonth && tpl.annualDay) {
-    return { date: new Date(Date.UTC(periodYear, tpl.annualMonth - 1, tpl.annualDay)), status: "resolved" };
+    return {
+      date: new Date(Date.UTC(periodYear, tpl.annualMonth - 1, tpl.annualDay)),
+      status: "resolved",
+    };
   }
   const offset = tpl.monthOffset ?? 0;
   const day = tpl.dueDay ?? 1;
-  return { date: new Date(Date.UTC(periodYear, periodMonth - 1 + offset, day)), status: "resolved" };
+  return {
+    date: new Date(Date.UTC(periodYear, periodMonth - 1 + offset, day)),
+    status: "resolved",
+  };
 }
 
 // Ensure the resolver is registered as soon as this module is loaded on the

@@ -56,14 +56,20 @@ describe("H15 diff parser", () => {
 describe("H15 architecture rules", () => {
   it("ARCH-001 flags non-UADA files importing UADA internals", () => {
     const f = ReviewRules.run(
-      parseUnifiedDiff(diffFor("src/routes/index.tsx", ['import { x } from "@/lib/uada/stores/index";'])),
+      parseUnifiedDiff(
+        diffFor("src/routes/index.tsx", ['import { x } from "@/lib/uada/stores/index";']),
+      ),
     );
     expect(f.some((x) => x.id === "ARCH-001" && x.severity === "error")).toBe(true);
   });
 
   it("ARCH-001 does not flag UADA-internal imports", () => {
     const f = ReviewRules.run(
-      parseUnifiedDiff(diffFor("src/lib/uada/engines/x.server.ts", ['import { y } from "@/lib/uada/contracts/review";'])),
+      parseUnifiedDiff(
+        diffFor("src/lib/uada/engines/x.server.ts", [
+          'import { y } from "@/lib/uada/contracts/review";',
+        ]),
+      ),
     );
     expect(f.some((x) => x.id === "ARCH-001")).toBe(false);
   });
@@ -82,21 +88,31 @@ describe("H15 architecture rules", () => {
 
   it("ARCH-004 flags UADA referencing PII tables", () => {
     const f = ReviewRules.run(
-      parseUnifiedDiff(diffFor("src/lib/uada/indexers/db.server.ts", ['const t = "payroll_items";'])),
+      parseUnifiedDiff(
+        diffFor("src/lib/uada/indexers/db.server.ts", ['const t = "payroll_items";']),
+      ),
     );
     expect(f.some((x) => x.id === "ARCH-004")).toBe(true);
   });
 
   it("ARCH-005 flags packs importing Core", () => {
     const f = ReviewRules.run(
-      parseUnifiedDiff(diffFor("src/packs/vietnam/index.ts", ['import { compliance } from "@/lib/engines/compliance";'])),
+      parseUnifiedDiff(
+        diffFor("src/packs/vietnam/index.ts", [
+          'import { compliance } from "@/lib/engines/compliance";',
+        ]),
+      ),
     );
     expect(f.some((x) => x.id === "ARCH-005")).toBe(true);
   });
 
   it("ARCH-005 allows packs importing the SDK", () => {
     const f = ReviewRules.run(
-      parseUnifiedDiff(diffFor("src/packs/vietnam/index.ts", ['import type { CountryPack } from "@/sdk/CountryPack";'])),
+      parseUnifiedDiff(
+        diffFor("src/packs/vietnam/index.ts", [
+          'import type { CountryPack } from "@/sdk/CountryPack";',
+        ]),
+      ),
     );
     expect(f).toHaveLength(0);
   });
@@ -115,7 +131,9 @@ describe("H15 architecture rules", () => {
       "grant select on public.widgets to authenticated;",
       "alter table public.widgets enable row level security;",
     ]);
-    expect(ReviewRules.run(parseUnifiedDiff(sql)).filter((x) => x.id === "ARCH-006")).toHaveLength(0);
+    expect(ReviewRules.run(parseUnifiedDiff(sql)).filter((x) => x.id === "ARCH-006")).toHaveLength(
+      0,
+    );
   });
 
   it("ARCH-007 warns on frozen contract change without ADR, clears with one", () => {
@@ -130,7 +148,7 @@ describe("H15 architecture rules", () => {
     const f = ReviewRules.run(
       parseUnifiedDiff(
         diffFor("src/lib/uada/uada.functions.ts", [
-          "export const rogue = createServerFn({ method: \"POST\" }).handler(async () => 1);",
+          'export const rogue = createServerFn({ method: "POST" }).handler(async () => 1);',
         ]),
       ),
     );
@@ -152,12 +170,28 @@ describe("H15 architecture rules", () => {
     expect(summariseVerdict([]).decision).toBe("approve");
     expect(
       summariseVerdict([
-        { id: "X", origin: "rule", severity: "warning", title: "t", detail: "d", path: "p", references: [] },
+        {
+          id: "X",
+          origin: "rule",
+          severity: "warning",
+          title: "t",
+          detail: "d",
+          path: "p",
+          references: [],
+        },
       ]).decision,
     ).toBe("comment");
     expect(
       summariseVerdict([
-        { id: "X", origin: "rule", severity: "error", title: "t", detail: "d", path: "p", references: [] },
+        {
+          id: "X",
+          origin: "rule",
+          severity: "error",
+          title: "t",
+          detail: "d",
+          path: "p",
+          references: [],
+        },
       ]).decision,
     ).toBe("block");
   });

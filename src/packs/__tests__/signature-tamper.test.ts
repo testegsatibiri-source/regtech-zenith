@@ -99,4 +99,3 @@ describe("H20 — commercialReady signature tamper", () => {
     expect(result.verified).toBe(false);
   });
 });
-

@@ -17,20 +17,65 @@ export const MANIFEST_GLOBS = [
 
 // Eagerly-loaded manifests. Vite resolves these at build time; each entry is
 // { "/absolute/path.ts": "raw source string" }.
-const SRC_LIB = import.meta.glob("/src/lib/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const SRC_ROUTES = import.meta.glob("/src/routes/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const SRC_COMPONENTS = import.meta.glob("/src/components/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const SRC_HOOKS = import.meta.glob("/src/hooks/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const SRC_PROVIDERS = import.meta.glob("/src/providers/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const SRC_SERVICES = import.meta.glob("/src/services/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const SRC_CONTEXTS = import.meta.glob("/src/contexts/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const MIGRATIONS = import.meta.glob("/supabase/migrations/**/*.sql", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const DOCS = import.meta.glob("/docs/**/*.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const SRC_LIB = import.meta.glob("/src/lib/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const SRC_ROUTES = import.meta.glob("/src/routes/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const SRC_COMPONENTS = import.meta.glob("/src/components/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const SRC_HOOKS = import.meta.glob("/src/hooks/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const SRC_PROVIDERS = import.meta.glob("/src/providers/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const SRC_SERVICES = import.meta.glob("/src/services/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const SRC_CONTEXTS = import.meta.glob("/src/contexts/**/*.{ts,tsx}", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const MIGRATIONS = import.meta.glob("/supabase/migrations/**/*.sql", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const DOCS = import.meta.glob("/docs/**/*.md", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
 
 export interface ManifestEntry {
-  path: string;         // repo-relative (e.g. "src/lib/uada/index.ts")
+  path: string; // repo-relative (e.g. "src/lib/uada/index.ts")
   content: string;
-  kind: "code" | "route" | "component" | "hook" | "provider" | "service" | "context" | "migration" | "doc";
+  kind:
+    | "code"
+    | "route"
+    | "component"
+    | "hook"
+    | "provider"
+    | "service"
+    | "context"
+    | "migration"
+    | "doc";
 }
 
 function toEntries(record: Record<string, string>, kind: ManifestEntry["kind"]): ManifestEntry[] {

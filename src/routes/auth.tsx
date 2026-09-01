@@ -40,7 +40,10 @@ function AuthPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: name } },
+      options: {
+        emailRedirectTo: window.location.origin + "/dashboard",
+        data: { full_name: name },
+      },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -48,7 +51,9 @@ function AuthPage() {
   }
 
   async function google() {
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const res = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
     if (res.error) return toast.error("Google sign-in failed");
     if (res.redirected) return;
     navigate({ to: "/dashboard" });
@@ -57,12 +62,19 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center gradient-hero px-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2 font-display text-xl font-bold text-white">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="h-5 w-5" /></span>
+        <Link
+          to="/"
+          className="mb-6 flex items-center justify-center gap-2 font-display text-xl font-bold text-white"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
           UBoard<span className="text-accent">Asia</span>
         </Link>
         <Card>
-          <CardHeader><CardTitle className="text-center">Welcome</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-center">Welcome</CardTitle>
+          </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin">
               <TabsList className="grid w-full grid-cols-2">
@@ -73,21 +85,27 @@ function AuthPage() {
               <TabsContent value="signin" className="space-y-3 pt-4">
                 <Field label="Email" value={email} onChange={setEmail} type="email" />
                 <Field label="Password" value={password} onChange={setPassword} type="password" />
-                <Button className="w-full" onClick={signIn} disabled={loading}>Sign in</Button>
+                <Button className="w-full" onClick={signIn} disabled={loading}>
+                  Sign in
+                </Button>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-3 pt-4">
                 <Field label="Full name" value={name} onChange={setName} />
                 <Field label="Email" value={email} onChange={setEmail} type="email" />
                 <Field label="Password" value={password} onChange={setPassword} type="password" />
-                <Button className="w-full" onClick={signUp} disabled={loading}>Create account</Button>
+                <Button className="w-full" onClick={signUp} disabled={loading}>
+                  Create account
+                </Button>
               </TabsContent>
             </Tabs>
 
             <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
               <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
             </div>
-            <Button variant="outline" className="w-full" onClick={google}>Continue with Google</Button>
+            <Button variant="outline" className="w-full" onClick={google}>
+              Continue with Google
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -95,7 +113,17 @@ function AuthPage() {
   );
 }
 
-function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+}) {
   return (
     <div className="space-y-1.5">
       <Label>{label}</Label>

@@ -12,7 +12,9 @@ export function LangToggle() {
           onClick={() => setLang(l)}
           className={
             "px-2.5 py-1 transition-colors " +
-            (lang === l ? "bg-primary text-primary-foreground" : "bg-transparent text-muted-foreground hover:bg-muted")
+            (lang === l
+              ? "bg-primary text-primary-foreground"
+              : "bg-transparent text-muted-foreground hover:bg-muted")
           }
         >
           {l.toUpperCase()}

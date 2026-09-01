@@ -36,4 +36,3 @@ export interface ArchitectureFacts {
     flags: string[];
   }[];
 }
-

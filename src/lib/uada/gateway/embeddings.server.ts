@@ -11,7 +11,10 @@ export interface EmbedResult {
   tokens: number;
 }
 
-export async function embedBatch(inputs: string[], model = DEFAULT_EMBEDDING_MODEL): Promise<EmbedResult> {
+export async function embedBatch(
+  inputs: string[],
+  model = DEFAULT_EMBEDDING_MODEL,
+): Promise<EmbedResult> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
   if (inputs.length === 0) return { vectors: [], tokens: 0 };

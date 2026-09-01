@@ -23,7 +23,9 @@ function PacksPage() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-3xl font-bold">Country Packs</h1>
-        <p className="text-muted-foreground">Runtime-registered packs with their governance metadata.</p>
+        <p className="text-muted-foreground">
+          Runtime-registered packs with their governance metadata.
+        </p>
       </header>
 
       {isLoading ? (
@@ -31,7 +33,11 @@ function PacksPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {(data ?? []).map((p) => (
-            <Card key={p.country} className="cursor-pointer transition-colors hover:border-primary" onClick={() => setSelected(p.country)}>
+            <Card
+              key={p.country}
+              className="cursor-pointer transition-colors hover:border-primary"
+              onClick={() => setSelected(p.country)}
+            >
               <CardHeader className="flex-row items-center justify-between">
                 <div>
                   <CardTitle>{p.name}</CardTitle>
@@ -44,7 +50,9 @@ function PacksPage() {
               <CardContent className="space-y-2 text-sm">
                 <div className="flex flex-wrap gap-1">
                   {p.provides.map((c) => (
-                    <Badge key={c} variant="outline" className="font-mono text-[10px]">{c}</Badge>
+                    <Badge key={c} variant="outline" className="font-mono text-[10px]">
+                      {c}
+                    </Badge>
                   ))}
                 </div>
                 {p.reason ? <p className="text-xs text-destructive">{p.reason}</p> : null}
@@ -66,7 +74,11 @@ function StatusBadge({ status }: { status: string }) {
     failed: "bg-destructive/10 text-destructive border-destructive/20",
     incompatible: "bg-destructive/10 text-destructive border-destructive/20",
   };
-  return <Badge variant="outline" className={tone[status] ?? ""}>{status}</Badge>;
+  return (
+    <Badge variant="outline" className={tone[status] ?? ""}>
+      {status}
+    </Badge>
+  );
 }
 
 function PackDetailPanel({ country, onClose }: { country: string; onClose: () => void }) {
@@ -76,7 +88,11 @@ function PackDetailPanel({ country, onClose }: { country: string; onClose: () =>
     queryKey: ["platform", "pack", country],
     queryFn: () => detailFn({ data: { country } }),
   });
-  const { data: health, refetch: recheck, isFetching: healthLoading } = useQuery({
+  const {
+    data: health,
+    refetch: recheck,
+    isFetching: healthLoading,
+  } = useQuery({
     queryKey: ["platform", "pack", country, "health"],
     queryFn: () => healthFn({ data: { country } }),
   });
@@ -88,9 +104,13 @@ function PackDetailPanel({ country, onClose }: { country: string; onClose: () =>
       <CardHeader className="flex-row items-center justify-between">
         <div>
           <CardTitle>{data.name} — detail</CardTitle>
-          <div className="mt-1 text-xs text-muted-foreground font-mono">{data.country} · v{data.version}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-mono">
+            {data.country} · v{data.version}
+          </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          Close
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
         <section>
@@ -108,11 +128,20 @@ function PackDetailPanel({ country, onClose }: { country: string; onClose: () =>
           ) : null}
         </section>
 
-        {data.validation && (data.validation.errors.length > 0 || data.validation.warnings.length > 0) ? (
+        {data.validation &&
+        (data.validation.errors.length > 0 || data.validation.warnings.length > 0) ? (
           <section>
             <h3 className="mb-1 font-semibold">Validator</h3>
-            {data.validation.errors.map((e, i) => <p key={i} className="text-destructive text-xs">✗ {e}</p>)}
-            {data.validation.warnings.map((w, i) => <p key={i} className="text-amber-500 text-xs">⚠ {w}</p>)}
+            {data.validation.errors.map((e, i) => (
+              <p key={i} className="text-destructive text-xs">
+                ✗ {e}
+              </p>
+            ))}
+            {data.validation.warnings.map((w, i) => (
+              <p key={i} className="text-amber-500 text-xs">
+                ⚠ {w}
+              </p>
+            ))}
           </section>
         ) : null}
 
@@ -125,11 +154,16 @@ function PackDetailPanel({ country, onClose }: { country: string; onClose: () =>
               {data.installations.slice(0, 5).map((i) => (
                 <li key={i.id} className="py-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono">v{i.pack_version} · {i.status}</span>
-                    <span className="text-muted-foreground">{new Date(i.created_at).toLocaleString()}</span>
+                    <span className="font-mono">
+                      v{i.pack_version} · {i.status}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {new Date(i.created_at).toLocaleString()}
+                    </span>
                   </div>
                   <div className="text-muted-foreground">
-                    from {i.installed_from} · core {i.installed_core_version ?? "?"} · sdk {i.installed_sdk_version ?? "?"}
+                    from {i.installed_from} · core {i.installed_core_version ?? "?"} · sdk{" "}
+                    {i.installed_sdk_version ?? "?"}
                   </div>
                 </li>
               ))}

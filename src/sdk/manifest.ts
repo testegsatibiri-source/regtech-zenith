@@ -16,8 +16,8 @@ export interface PackSignature {
 export interface SignatureEnvelope {
   keyId: string;
   algorithm: "Ed25519";
-  signature: string;   // base64
-  publisher?: string;  // metadata only; lookup is by keyId
+  signature: string; // base64
+  publisher?: string; // metadata only; lookup is by keyId
   ts?: string;
 }
 export interface SignatureBlock {
@@ -26,8 +26,8 @@ export interface SignatureBlock {
 }
 
 export interface PackDependency {
-  pack: string;      // ISO 3166-1 alpha-2 of another country pack
-  range: string;     // semver range against that pack's `version`
+  pack: string; // ISO 3166-1 alpha-2 of another country pack
+  range: string; // semver range against that pack's `version`
 }
 
 export interface CountryManifest {
@@ -93,5 +93,4 @@ export interface CountryManifest {
    * PACK_INTERFACE_ENFORCE is on, packs without a compatible value are rejected.
    */
   interfaceVersion?: string;
-
 }

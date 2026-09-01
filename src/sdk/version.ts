@@ -21,11 +21,16 @@ export function satisfies(range: string, version: string): boolean {
   const target = parse(m[2]);
   const c = cmp(v, target);
   switch (op) {
-    case ">=": return c >= 0;
-    case ">": return c > 0;
-    case "=": return c === 0;
-    case "^": return v[0] === target[0] && c >= 0;
-    default: return false;
+    case ">=":
+      return c >= 0;
+    case ">":
+      return c > 0;
+    case "=":
+      return c === 0;
+    case "^":
+      return v[0] === target[0] && c >= 0;
+    default:
+      return false;
   }
 }
 

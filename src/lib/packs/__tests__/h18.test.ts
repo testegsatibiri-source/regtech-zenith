@@ -13,7 +13,12 @@ describe("H18 — onboarding contract", () => {
   });
 
   it("always emits an uppercase code and a lowercase flag asset", () => {
-    const p = toAvailablePack({ code: "ph", name: "Philippines", currency: "PHP", tier: "production" });
+    const p = toAvailablePack({
+      code: "ph",
+      name: "Philippines",
+      currency: "PHP",
+      tier: "production",
+    });
     expect(p.countryCode).toBe("PH");
     expect(p.flagAsset).toBe(flagAssetFor("PH"));
     expect(p.status).toBe("production");

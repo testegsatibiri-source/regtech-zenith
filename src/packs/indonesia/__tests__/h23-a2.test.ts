@@ -74,7 +74,11 @@ describe("PTKP and biaya jabatan", () => {
 
 describe("Annual reconciliation with statutory deductions", () => {
   it("stays backwards compatible when only gross is supplied", () => {
-    const r = reconcileAnnualPph21({ year: 2026, annualGross: 200_000_000, withheldTerTotal: 10_000_000 });
+    const r = reconcileAnnualPph21({
+      year: 2026,
+      annualGross: 200_000_000,
+      withheldTerTotal: 10_000_000,
+    });
     expect(r.annualTaxableIncome).toBe(146_000_000);
     expect(r.deductions.occupationalAllowance).toBe(0);
   });

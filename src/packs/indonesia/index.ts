@@ -35,8 +35,15 @@ import { ID_SIGNATURE_BLOCK } from "./signature";
 registerThrDueResolver(thrDueDate);
 
 const PROVIDES: Capability[] = [
-  "payroll", "tax", "benefits", "thirteenth", "overtime",
-  "calendar", "contracts", "audit", "rules",
+  "payroll",
+  "tax",
+  "benefits",
+  "thirteenth",
+  "overtime",
+  "calendar",
+  "contracts",
+  "audit",
+  "rules",
 ];
 
 const RULESET_VERSION = "ID-2026.4";
@@ -57,13 +64,23 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["ter-2024", "thr", "thr-by-religion", "bpjs-2026", "jkp", "ump-2026", "overtime", "annual-reconciliation", "ter-official-bc", "pph21-ptkp-deductions"],
+  features: [
+    "ter-2024",
+    "thr",
+    "thr-by-religion",
+    "bpjs-2026",
+    "jkp",
+    "ump-2026",
+    "overtime",
+    "annual-reconciliation",
+    "ter-official-bc",
+    "pph21-ptkp-deductions",
+  ],
   supportedLanguages: ["id", "en"],
   requiresCore: ">=2.2.0",
   commercialReady: false,
   signatureBlock: ID_SIGNATURE_BLOCK as SignatureBlock,
 };
-
 
 // ---- Providers ----
 
@@ -119,7 +136,12 @@ const payroll: PayrollProvider = {
     const p = buildPayslip({ ...input, tables: TER_TABLES });
     return {
       gross: p.gross,
-      tax: { category: p.tax.category, rate: p.tax.rate, tax: p.tax.tax, surcharge: p.tax.npwpSurcharge },
+      tax: {
+        category: p.tax.category,
+        rate: p.tax.rate,
+        tax: p.tax.tax,
+        surcharge: p.tax.npwpSurcharge,
+      },
       benefits: {
         employee: { ...p.bpjs.employee } as Record<string, number> & { total: number },
         employer: { ...p.bpjs.employer } as Record<string, number> & { total: number },
@@ -137,7 +159,9 @@ const calendar: CalendarProvider = {
       code: t.code,
       title: t.name,
       category: t.category,
-      cadence: (t.frequency === "one_off" ? "one_off" : t.frequency) as ObligationTemplate["cadence"],
+      cadence: (t.frequency === "one_off"
+        ? "one_off"
+        : t.frequency) as ObligationTemplate["cadence"],
       severity: "high",
       legalBasis: t.base_legal,
       occurrences: (year: number) => {
@@ -146,7 +170,11 @@ const calendar: CalendarProvider = {
           for (let m = 1; m <= 12; m++) {
             const period_start = `${year}-${String(m).padStart(2, "0")}-01`;
             const period_end = period_start;
-            list.push({ period_start, period_end, due_date: computeDueDate(t, year, m).toISOString().slice(0, 10) });
+            list.push({
+              period_start,
+              period_end,
+              due_date: computeDueDate(t, year, m).toISOString().slice(0, 10),
+            });
           }
         } else if (t.frequency === "annual") {
           list.push({
@@ -204,7 +232,17 @@ const audit: AuditProvider = {
   heuristics: () => [],
 };
 
-const providers: Providers = { tax, benefits, payroll, thirteenth, overtime, calendar, contracts, rules, audit };
+const providers: Providers = {
+  tax,
+  benefits,
+  payroll,
+  thirteenth,
+  overtime,
+  calendar,
+  contracts,
+  rules,
+  audit,
+};
 
 function health(): HealthReport {
   const checks = [
@@ -228,7 +266,11 @@ function health(): HealthReport {
     checks.push({ name: "benefits.calculate.smoke", ok: false, message: (err as Error).message });
   }
   try {
-    contracts.validate({ contract_type: "PKWTT", start_date: "2024-01-01", status: "active" } as never);
+    contracts.validate({
+      contract_type: "PKWTT",
+      start_date: "2024-01-01",
+      status: "active",
+    } as never);
     checks.push({ name: "contracts.validate.smoke", ok: true });
   } catch (err) {
     checks.push({ name: "contracts.validate.smoke", ok: false, message: (err as Error).message });
@@ -241,7 +283,8 @@ function health(): HealthReport {
   }
 
   const failing = checks.filter((c) => !c.ok);
-  const status: HealthReport["status"] = failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
+  const status: HealthReport["status"] =
+    failing.length === 0 ? "ok" : failing.length < 2 ? "warn" : "error";
   return { status, checks };
 }
 

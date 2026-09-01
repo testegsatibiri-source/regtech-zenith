@@ -22,7 +22,14 @@ describe("PH leave catalogue", () => {
   it("ships the statutory types with legal basis", () => {
     const codes = PH_LEAVE_TYPES.map((t) => t.code);
     expect(codes).toEqual(
-      expect.arrayContaining(["PH-SIL", "PH-MATERNITY", "PH-PATERNITY", "PH-SOLO-PARENT", "PH-VAWC", "PH-GYNE"]),
+      expect.arrayContaining([
+        "PH-SIL",
+        "PH-MATERNITY",
+        "PH-PATERNITY",
+        "PH-SOLO-PARENT",
+        "PH-VAWC",
+        "PH-GYNE",
+      ]),
     );
     for (const t of PH_LEAVE_TYPES) expect(t.legalBasis).toBeTruthy();
   });
@@ -42,17 +49,19 @@ describe("PH entitlement rules", () => {
     expect(early.eligible).toBe(false);
     expect(early.entitledDays).toBe(0);
 
-    const later = phLeaveEntitlement({ employee: { ...base, sex: "female" }, asOf: "2026-06-01" }).find(
-      (e) => e.code === "PH-SIL",
-    )!;
+    const later = phLeaveEntitlement({
+      employee: { ...base, sex: "female" },
+      asOf: "2026-06-01",
+    }).find((e) => e.code === "PH-SIL")!;
     expect(later.eligible).toBe(true);
     expect(later.entitledDays).toBe(5);
   });
 
   it("gives 105 days maternity and 120 to a solo parent (RA 11210)", () => {
-    const normal = phLeaveEntitlement({ employee: { ...base, sex: "female" }, asOf: "2026-06-01" }).find(
-      (e) => e.code === "PH-MATERNITY",
-    )!;
+    const normal = phLeaveEntitlement({
+      employee: { ...base, sex: "female" },
+      asOf: "2026-06-01",
+    }).find((e) => e.code === "PH-MATERNITY")!;
     expect(normal.entitledDays).toBe(105);
 
     const solo = phLeaveEntitlement({
@@ -74,7 +83,12 @@ describe("PH entitlement rules", () => {
   it("withholds solo-parent benefits without a valid Solo Parent ID (RA 11861)", () => {
     // Flag only, no ID on file.
     const flagOnly = phLeaveEntitlement({
-      employee: { ...base, sex: "female", soloParent: true, countryMetadata: { solo_parent: true } },
+      employee: {
+        ...base,
+        sex: "female",
+        soloParent: true,
+        countryMetadata: { solo_parent: true },
+      },
       asOf: "2026-06-01",
     });
     expect(flagOnly.find((e) => e.code === "PH-MATERNITY")!.entitledDays).toBe(105);
@@ -137,9 +151,10 @@ describe("PH entitlement rules", () => {
   });
 
   it("requires a Solo Parent ID for RA 8972 leave", () => {
-    const without = phLeaveEntitlement({ employee: { ...base, sex: "female" }, asOf: "2026-06-01" }).find(
-      (e) => e.code === "PH-SOLO-PARENT",
-    )!;
+    const without = phLeaveEntitlement({
+      employee: { ...base, sex: "female" },
+      asOf: "2026-06-01",
+    }).find((e) => e.code === "PH-SOLO-PARENT")!;
     expect(without.eligible).toBe(false);
     expect(without.reason).toMatch(/Solo Parent ID/i);
   });
@@ -169,11 +184,19 @@ describe("PH conversion and salary differential", () => {
   });
 
   it("charges the employer only the difference over the SSS benefit (RA 11210 §5)", () => {
-    const out = phSalaryDifferential({ monthlySalary: 30_000, agencyBenefit: 70_000, leaveDays: 105 });
+    const out = phSalaryDifferential({
+      monthlySalary: 30_000,
+      agencyBenefit: 70_000,
+      leaveDays: 105,
+    });
     expect(out.fullSalaryForLeave).toBe(105_000);
     expect(out.employerCost).toBe(35_000);
 
-    const covered = phSalaryDifferential({ monthlySalary: 10_000, agencyBenefit: 50_000, leaveDays: 105 });
+    const covered = phSalaryDifferential({
+      monthlySalary: 10_000,
+      agencyBenefit: 50_000,
+      leaveDays: 105,
+    });
     expect(covered.employerCost).toBe(0);
   });
 });
@@ -184,7 +207,13 @@ describe("Fase A ↔ Fase B boundary", () => {
   it("still reports incompleteness when no accrual snapshot is supplied", () => {
     const out = phComputeFinalPay(
       {
-        employee: { employeeId: "e1", fullName: "X", baseSalary: 26_400, joinDate: "2023-01-01", separationDate: "2026-06-30" },
+        employee: {
+          employeeId: "e1",
+          fullName: "X",
+          baseSalary: 26_400,
+          joinDate: "2023-01-01",
+          separationDate: "2026-06-30",
+        },
         separation: {
           ground,
           monthlySalaryForStatutory: 26_400,
@@ -211,7 +240,13 @@ describe("Fase A ↔ Fase B boundary", () => {
 
     const out = phComputeFinalPay(
       {
-        employee: { employeeId: "e1", fullName: "X", baseSalary: 26_400, joinDate: "2023-01-01", separationDate: "2026-06-30" },
+        employee: {
+          employeeId: "e1",
+          fullName: "X",
+          baseSalary: 26_400,
+          joinDate: "2023-01-01",
+          separationDate: "2026-06-30",
+        },
         separation: {
           ground,
           monthlySalaryForStatutory: 26_400,

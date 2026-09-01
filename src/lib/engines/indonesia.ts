@@ -48,7 +48,12 @@ export interface TaxResult {
   npwpSurcharge: number;
 }
 
-export function calculateTax({ monthlyGross, maritalStatus, hasNpwp = true, tables }: TaxInput): TaxResult {
+export function calculateTax({
+  monthlyGross,
+  maritalStatus,
+  hasNpwp = true,
+  tables,
+}: TaxInput): TaxResult {
   const category = terCategory(maritalStatus);
   const table = (tables ?? TER_TABLES)[category];
   const rate = terRate(monthlyGross, category, table);
@@ -89,8 +94,12 @@ export interface BpjsInput {
 }
 
 export function calculateBpjs(input: BpjsInput | number): BpjsResult {
-  const { salary, jkkRiskLevel = "very-low", params = BPJS_2026, includeJkp = false } =
-    typeof input === "number" ? { salary: input } : input;
+  const {
+    salary,
+    jkkRiskLevel = "very-low",
+    params = BPJS_2026,
+    includeJkp = false,
+  } = typeof input === "number" ? { salary: input } : input;
   const healthBase = Math.min(salary, params.health.cap);
   const jpBase = Math.min(salary, params.jp.cap);
   const eHealth = Math.round(healthBase * params.health.employeeRate);
@@ -99,14 +108,21 @@ export function calculateBpjs(input: BpjsInput | number): BpjsResult {
   const rHealth = Math.round(healthBase * params.health.employerRate);
   const rJht = Math.round(salary * params.jht.employerRate);
   const rJp = Math.round(jpBase * params.jp.employerRate);
-  const jkkRate = params.jkk.riskLevels.find((r) => r.code === jkkRiskLevel)?.employerRate ?? params.jkk.riskLevels[0].employerRate;
+  const jkkRate =
+    params.jkk.riskLevels.find((r) => r.code === jkkRiskLevel)?.employerRate ??
+    params.jkk.riskLevels[0].employerRate;
   const rJkk = Math.round(salary * jkkRate);
   const rJkm = Math.round(salary * params.jkm.employerRate);
 
   const result: BpjsResult = {
     employee: { health: eHealth, jht: eJht, jp: eJp, total: eHealth + eJht + eJp },
     employer: {
-      health: rHealth, jht: rJht, jp: rJp, jkk: rJkk, jkm: rJkm, jkp: 0,
+      health: rHealth,
+      jht: rJht,
+      jp: rJp,
+      jkk: rJkk,
+      jkm: rJkm,
+      jkp: 0,
       total: rHealth + rJht + rJp + rJkk + rJkm,
     },
     sourceStatus: {
@@ -122,7 +138,12 @@ export function calculateBpjs(input: BpjsInput | number): BpjsResult {
     const gov = Math.round(salary * params.jkp.governmentRate);
     const jkkRec = Math.round(salary * params.jkp.jkkRecomposition);
     const jkmRec = Math.round(salary * params.jkp.jkmRecomposition);
-    result.jkp = { government: gov, jkkRecomposition: jkkRec, jkmRecomposition: jkmRec, total: gov + jkkRec + jkmRec };
+    result.jkp = {
+      government: gov,
+      jkkRecomposition: jkkRec,
+      jkmRecomposition: jkmRec,
+      total: gov + jkkRec + jkmRec,
+    };
     result.employer.jkp = jkkRec + jkmRec;
     result.employer.total += jkkRec + jkmRec;
     result.sourceStatus!.jkp = params.jkp.sourceStatus;
@@ -153,7 +174,12 @@ export interface ThrResult {
   /** Present when a religion is declared: deadline + provenance. */
   due?: ThrDueResolution;
 }
-export function calculateThr({ monthlySalary, monthsOfService, religion, year }: ThrInput): ThrResult {
+export function calculateThr({
+  monthlySalary,
+  monthsOfService,
+  religion,
+  year,
+}: ThrInput): ThrResult {
   const due = religion
     ? thrDueDateForReligion(religion, year ?? new Date().getUTCFullYear())
     : undefined;
@@ -162,7 +188,11 @@ export function calculateThr({ monthlySalary, monthsOfService, religion, year }:
       ? { eligible: false, amount: 0, prorated: false }
       : monthsOfService >= 12
         ? { eligible: true, amount: Math.round(monthlySalary), prorated: false }
-        : { eligible: true, amount: Math.round((monthsOfService / 12) * monthlySalary), prorated: true };
+        : {
+            eligible: true,
+            amount: Math.round((monthsOfService / 12) * monthlySalary),
+            prorated: true,
+          };
   return due ? { ...base, due } : base;
 }
 
@@ -181,7 +211,13 @@ export interface Payslip {
   net: number;
   employerCost: number;
 }
-export function buildPayslip({ baseSalary, allowances = 0, maritalStatus, hasNpwp = true, tables }: PayslipInput): Payslip {
+export function buildPayslip({
+  baseSalary,
+  allowances = 0,
+  maritalStatus,
+  hasNpwp = true,
+  tables,
+}: PayslipInput): Payslip {
   const gross = baseSalary + allowances;
   const tax = calculateTax({ monthlyGross: gross, maritalStatus, hasNpwp, tables });
   const bpjs = calculateBpjs(baseSalary);
@@ -191,7 +227,10 @@ export function buildPayslip({ baseSalary, allowances = 0, maritalStatus, hasNpw
 }
 
 export function monthsBetween(from: Date, to: Date): number {
-  return Math.max(0, (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()));
+  return Math.max(
+    0,
+    (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()),
+  );
 }
 
 // ---------- Annual PPh 21 reconciliation (H23-A) ----------
@@ -250,7 +289,11 @@ export function reconcileAnnualPph21({
     annualTaxLiability,
     withheldTerTotal,
     underpaid,
-    deductions: { ptkp: allowance, occupationalAllowance: occupational, contributions: deductibleContributions },
+    deductions: {
+      ptkp: allowance,
+      occupationalAllowance: occupational,
+      contributions: deductibleContributions,
+    },
     legalBasis: "UU 7/2021 (HPP) art. 17; PMK 101/2016 (PTKP); PMK 250/2008 (biaya jabatan)",
     message:
       underpaid > 0
@@ -259,9 +302,17 @@ export function reconcileAnnualPph21({
   };
 }
 
-
 // Re-export overtime engine from the pack for convenience.
-export { thrDueDateForReligion, resolveThrHoliday, RELIGIONS } from "@/packs/indonesia/params/religious-holidays";
+export {
+  thrDueDateForReligion,
+  resolveThrHoliday,
+  RELIGIONS,
+} from "@/packs/indonesia/params/religious-holidays";
 export type { Religion, ThrDueResolution } from "@/packs/indonesia/params/religious-holidays";
 export { calculateOvertime } from "@/packs/indonesia/engines/overtime";
-export type { OvertimeInput, OvertimeResult, WorkWeekPattern, DayType } from "@/packs/indonesia/engines/overtime";
+export type {
+  OvertimeInput,
+  OvertimeResult,
+  WorkWeekPattern,
+  DayType,
+} from "@/packs/indonesia/engines/overtime";

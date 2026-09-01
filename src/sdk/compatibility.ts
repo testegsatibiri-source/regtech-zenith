@@ -45,10 +45,19 @@ export interface CompatibilityInput {
   matrix?: CompatibilityMatrix;
 }
 
-const err = (name: string, message: string, code?: SignatureRejectionCode): CompatCheck =>
-  ({ name, ok: false, severity: "error", message, code });
-const warn = (name: string, message: string): CompatCheck =>
-  ({ name, ok: true, severity: "warning", message });
+const err = (name: string, message: string, code?: SignatureRejectionCode): CompatCheck => ({
+  name,
+  ok: false,
+  severity: "error",
+  message,
+  code,
+});
+const warn = (name: string, message: string): CompatCheck => ({
+  name,
+  ok: true,
+  severity: "warning",
+  message,
+});
 const ok = (name: string): CompatCheck => ({ name, ok: true, severity: "info" });
 
 export class CompatibilityService {
@@ -84,7 +93,12 @@ export class CompatibilityService {
       const rec = installed.find((r) => r.pack.manifest.country === dep.pack);
       if (!rec) checks.push(err("dependency", `missing dependency: pack ${dep.pack}`));
       else if (!satisfies(dep.range, rec.pack.manifest.version)) {
-        checks.push(err("dependency", `${dep.pack}@${rec.pack.manifest.version} does not satisfy ${dep.range}`));
+        checks.push(
+          err(
+            "dependency",
+            `${dep.pack}@${rec.pack.manifest.version} does not satisfy ${dep.range}`,
+          ),
+        );
       } else checks.push(ok(`dependency:${dep.pack}`));
     }
 
@@ -110,7 +124,8 @@ export class CompatibilityService {
   ): Promise<{ checks: CompatCheck[]; rejections: CompatibilityReport["rejections"] }> {
     const checks: CompatCheck[] = [];
     const rejections: CompatibilityReport["rejections"] = [];
-    if (trust.requiredSignatures === 0) return { checks: [ok("signatures:not-required")], rejections };
+    if (trust.requiredSignatures === 0)
+      return { checks: [ok("signatures:not-required")], rejections };
 
     if (signatures.length < trust.requiredSignatures) {
       const msg = `need ${trust.requiredSignatures}, got ${signatures.length}`;
@@ -137,7 +152,9 @@ export class CompatibilityService {
     }
 
     if (!store || !bytes) {
-      checks.push(warn("signatures", "trust store or manifest bytes unavailable; treated as advisory"));
+      checks.push(
+        warn("signatures", "trust store or manifest bytes unavailable; treated as advisory"),
+      );
       return { checks, rejections };
     }
 
@@ -181,4 +198,3 @@ export class CompatibilityService {
 }
 
 export const compatibilityService = new CompatibilityService();
-

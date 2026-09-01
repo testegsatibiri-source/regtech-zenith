@@ -3,7 +3,18 @@
 // operators/auditors/CTOs — not a customer app view.
 import { createFileRoute, Outlet, Link, redirect, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Package, Rocket, Sliders, Flag, ClipboardList, ShieldAlert, LogOut, Activity, Brain } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Rocket,
+  Sliders,
+  Flag,
+  ClipboardList,
+  ShieldAlert,
+  LogOut,
+  Activity,
+  Brain,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -19,7 +30,12 @@ export const Route = createFileRoute("/platform")({
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id);
-    const allowed = new Set(["platform_admin", "country_cto", "platform_operator", "platform_auditor"]);
+    const allowed = new Set([
+      "platform_admin",
+      "country_cto",
+      "platform_operator",
+      "platform_auditor",
+    ]);
     if (!(roles ?? []).some((r) => allowed.has(r.role))) {
       throw redirect({ to: "/dashboard" });
     }
@@ -60,7 +76,9 @@ function PlatformLayout() {
           </span>
           <div className="leading-tight">
             <div>Compliance OS</div>
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Platform Backoffice</div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Platform Backoffice
+            </div>
           </div>
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">

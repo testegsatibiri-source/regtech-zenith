@@ -47,10 +47,10 @@ function lastDayOfMonth(year: number, month: number): number {
 
 /** Regular holidays with a fixed date (RA 9492 as amended). */
 const FIXED_REGULAR_HOLIDAYS: Array<[number, number]> = [
-  [1, 1],   // New Year's Day
-  [4, 9],   // Araw ng Kagitingan
-  [5, 1],   // Labor Day
-  [6, 12],  // Independence Day
+  [1, 1], // New Year's Day
+  [4, 9], // Araw ng Kagitingan
+  [5, 1], // Labor Day
+  [6, 12], // Independence Day
   [11, 30], // Bonifacio Day
   [12, 25], // Christmas Day
   [12, 30], // Rizal Day
@@ -67,9 +67,7 @@ function nationalHeroesDay(year: number): [number, number] {
 
 export function phRegularHolidays(year: number): string[] {
   const heroes = nationalHeroesDay(year);
-  return [...FIXED_REGULAR_HOLIDAYS, heroes]
-    .map(([m, d]) => iso(year, m, d))
-    .sort();
+  return [...FIXED_REGULAR_HOLIDAYS, heroes].map(([m, d]) => iso(year, m, d)).sort();
 }
 
 function isNonWorkingDay(dateISO: string): boolean {
@@ -139,12 +137,18 @@ export function pagibigDueDay(firstLetter: string, year: number, month: number):
 /** RR 26-2002 — eFPS staggered filing for 1601-C; non-eFPS files on the 10th. */
 export function birDueDay(efpsGroup?: string | null): number {
   switch ((efpsGroup ?? "").toUpperCase()) {
-    case "A": return 15;
-    case "B": return 14;
-    case "C": return 13;
-    case "D": return 12;
-    case "E": return 11;
-    default: return 10;
+    case "A":
+      return 15;
+    case "B":
+      return 14;
+    case "C":
+      return 13;
+    case "D":
+      return 12;
+    case "E":
+      return 11;
+    default:
+      return 10;
   }
 }
 
@@ -167,7 +171,9 @@ export function resolvePhMonthlyDeadline(
     const d = digitsOnly(s.sss);
     if (d.length !== 10) {
       return finalize(
-        dueYear, dueMonth, lastDayOfMonth(dueYear, dueMonth),
+        dueYear,
+        dueMonth,
+        lastDayOfMonth(dueYear, dueMonth),
         "SSS Circular 2021-005 — last digit of ER number",
         "needs_review",
         "Employer SSS number missing or malformed; assumed the latest statutory day (digit 9/0 bracket).",
@@ -175,7 +181,9 @@ export function resolvePhMonthlyDeadline(
     }
     const digit = Number(d[d.length - 1]);
     return finalize(
-      dueYear, dueMonth, sssDueDay(digit, dueYear, dueMonth),
+      dueYear,
+      dueMonth,
+      sssDueDay(digit, dueYear, dueMonth),
       `SSS Circular 2021-005 — ER number ends in ${digit}`,
       "resolved",
     );
@@ -185,7 +193,9 @@ export function resolvePhMonthlyDeadline(
     const d = digitsOnly(s.philhealth);
     if (d.length !== 12) {
       return finalize(
-        dueYear, dueMonth, 15,
+        dueYear,
+        dueMonth,
+        15,
         "PhilHealth Circular 2020-0025 — last digit of PEN",
         "needs_review",
         "Employer PhilHealth number (PEN) missing or malformed; assumed the earliest bracket (15th).",
@@ -193,24 +203,32 @@ export function resolvePhMonthlyDeadline(
     }
     const digit = Number(d[d.length - 1]);
     return finalize(
-      dueYear, dueMonth, philhealthDueDay(digit),
+      dueYear,
+      dueMonth,
+      philhealthDueDay(digit),
       `PhilHealth Circular 2020-0025 — PEN ends in ${digit}`,
       "resolved",
     );
   }
 
   if (code === "HDMF-MCRF") {
-    const letter = String(s.legalName ?? "").trim().charAt(0);
+    const letter = String(s.legalName ?? "")
+      .trim()
+      .charAt(0);
     if (!/[A-Za-z]/.test(letter)) {
       return finalize(
-        dueYear, dueMonth, 10,
+        dueYear,
+        dueMonth,
+        10,
         "HDMF Circular 274 — first letter of the employer name",
         "needs_review",
         "Registered employer name missing; assumed the earliest bracket (A–D).",
       );
     }
     return finalize(
-      dueYear, dueMonth, pagibigDueDay(letter, dueYear, dueMonth),
+      dueYear,
+      dueMonth,
+      pagibigDueDay(letter, dueYear, dueMonth),
       `HDMF Circular 274 — employer name starts with "${letter.toUpperCase()}"`,
       "resolved",
     );
@@ -219,7 +237,9 @@ export function resolvePhMonthlyDeadline(
   if (code === "BIR-1601C") {
     const group = s.efpsGroup ?? null;
     return finalize(
-      dueYear, dueMonth, birDueDay(group),
+      dueYear,
+      dueMonth,
+      birDueDay(group),
       group
         ? `RR 26-2002 — eFPS staggered group ${String(group).toUpperCase()}`
         : "RR 11-2018 — non-eFPS filer (10th of the following month)",
@@ -229,7 +249,9 @@ export function resolvePhMonthlyDeadline(
 
   // Unknown monthly code — keep a conservative 15th and flag it.
   return finalize(
-    dueYear, dueMonth, 15,
+    dueYear,
+    dueMonth,
+    15,
     "Default monthly remittance",
     "needs_review",
     `No stagger rule registered for ${code}`,
@@ -257,6 +279,6 @@ export function phSubjectFrom(
     philhealth: (m.philhealth as string) ?? null,
     tin: (m.tin as string) ?? null,
     efpsGroup: (m.efpsGroup as string) ?? null,
-    legalName: legalName ?? ((m.legalName as string) ?? null),
+    legalName: legalName ?? (m.legalName as string) ?? null,
   };
 }

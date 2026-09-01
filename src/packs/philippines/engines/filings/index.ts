@@ -4,17 +4,9 @@
 // their web portals, using fixed-layout files. This engine produces those files
 // deterministically from finalized payroll data. Transmission and the official
 // receipt are recorded by the Core, never faked here.
-import type {
-  FilingArtifact,
-  FilingForm,
-  FilingRequest,
-  FilingEmployeeRecord,
-} from "@/sdk";
+import type { FilingArtifact, FilingForm, FilingRequest, FilingEmployeeRecord } from "@/sdk";
 import { PH_PARAMS } from "../../params";
-import {
-  validatePhEmployeeIdentifiers,
-  validatePhEmployerIdentifiers,
-} from "../identifiers";
+import { validatePhEmployeeIdentifiers, validatePhEmployerIdentifiers } from "../identifiers";
 import { csvRow, digits, money, monthLabel, padAmount, padText, splitName } from "./layouts";
 
 const RULESET = `PH-${PH_PARAMS.version}`;
@@ -72,8 +64,11 @@ export const PH_FILING_FORMS: FilingForm[] = [
   },
 ];
 
-const contrib = (r: FilingEmployeeRecord, side: "employeeContributions" | "employerContributions", key: string) =>
-  Number(r[side]?.[key] ?? 0);
+const contrib = (
+  r: FilingEmployeeRecord,
+  side: "employeeContributions" | "employerContributions",
+  key: string,
+) => Number(r[side]?.[key] ?? 0);
 
 function collectWarnings(req: FilingRequest): string[] {
   const warnings: string[] = [];
@@ -105,11 +100,20 @@ function periodTag(req: FilingRequest): string {
 
 // ---------------------------------------------------------------- generators
 
-function bir1601c(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
+function bir1601c(req: FilingRequest): {
+  content: string;
+  rows: number;
+  totals: Record<string, number>;
+} {
   const totalGross = req.employees.reduce((s: number, e: FilingEmployeeRecord) => s + e.gross, 0);
-  const totalTax = req.employees.reduce((s: number, e: FilingEmployeeRecord) => s + e.taxWithheld, 0);
+  const totalTax = req.employees.reduce(
+    (s: number, e: FilingEmployeeRecord) => s + e.taxWithheld,
+    0,
+  );
   const totalStat = req.employees.reduce(
-    (s: number, e: FilingEmployeeRecord) => s + Object.values(e.employeeContributions ?? {}).reduce((a: number, b) => a + Number(b || 0), 0),
+    (s: number, e: FilingEmployeeRecord) =>
+      s +
+      Object.values(e.employeeContributions ?? {}).reduce((a: number, b) => a + Number(b || 0), 0),
     0,
   );
   const taxable = Math.max(0, totalGross - totalStat);
@@ -136,7 +140,11 @@ function bir1601c(req: FilingRequest): { content: string; rows: number; totals: 
   };
 }
 
-function alphalist1604c(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
+function alphalist1604c(req: FilingRequest): {
+  content: string;
+  rows: number;
+  totals: Record<string, number>;
+} {
   const tin = employerField(req, "tin");
   const branch = tin.length === 12 ? tin.slice(9) : "0000";
   const header = [
@@ -155,8 +163,9 @@ function alphalist1604c(req: FilingRequest): { content: string; rows: number; to
   const detail = req.employees.map((e: FilingEmployeeRecord) => {
     const { last, first, middle } = splitName(e.fullName);
     const empTin = digits(e.identifiers?.["tin"]);
-    const nonTaxable = Object.values(e.employeeContributions ?? {}).reduce((a: number, b) => a + Number(b || 0), 0)
-      + Math.min(e.thirteenthMonth ?? 0, PH_PARAMS.birExemptBenefitsCeiling);
+    const nonTaxable =
+      Object.values(e.employeeContributions ?? {}).reduce((a: number, b) => a + Number(b || 0), 0) +
+      Math.min(e.thirteenthMonth ?? 0, PH_PARAMS.birExemptBenefitsCeiling);
     gross += e.gross;
     tax += e.taxWithheld;
     thirteenth += e.thirteenthMonth ?? 0;
@@ -181,7 +190,11 @@ function alphalist1604c(req: FilingRequest): { content: string; rows: number; to
   };
 }
 
-function sssR3(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
+function sssR3(req: FilingRequest): {
+  content: string;
+  rows: number;
+  totals: Record<string, number>;
+} {
   const er = employerField(req, "sss");
   const header = [
     "H",
@@ -226,7 +239,11 @@ function sssR3(req: FilingRequest): { content: string; rows: number; totals: Rec
   };
 }
 
-function philhealthRf1(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
+function philhealthRf1(req: FilingRequest): {
+  content: string;
+  rows: number;
+  totals: Record<string, number>;
+} {
   let ee = 0;
   let er = 0;
   const rows = req.employees.map((r: FilingEmployeeRecord) => {
@@ -251,8 +268,14 @@ function philhealthRf1(req: FilingRequest): { content: string; rows: number; tot
     csvRow(["EMPLOYER", req.employer.legalName]),
     csvRow(["APPLICABLE_PERIOD", periodTag(req)]),
     csvRow([
-      "PIN", "LAST_NAME", "FIRST_NAME", "MIDDLE_NAME",
-      "MONTHLY_BASIC_SALARY", "PERSONAL_SHARE", "EMPLOYER_SHARE", "TOTAL",
+      "PIN",
+      "LAST_NAME",
+      "FIRST_NAME",
+      "MIDDLE_NAME",
+      "MONTHLY_BASIC_SALARY",
+      "PERSONAL_SHARE",
+      "EMPLOYER_SHARE",
+      "TOTAL",
     ]),
     ...rows,
     csvRow(["TOTAL", req.employees.length, "", "", "", money(ee), money(er), money(ee + er)]),
@@ -264,7 +287,11 @@ function philhealthRf1(req: FilingRequest): { content: string; rows: number; tot
   };
 }
 
-function pagibigMcrf(req: FilingRequest): { content: string; rows: number; totals: Record<string, number> } {
+function pagibigMcrf(req: FilingRequest): {
+  content: string;
+  rows: number;
+  totals: Record<string, number>;
+} {
   let ee = 0;
   let er = 0;
   const rows = req.employees.map((r: FilingEmployeeRecord) => {
@@ -289,8 +316,14 @@ function pagibigMcrf(req: FilingRequest): { content: string; rows: number; total
     csvRow(["EMPLOYER_NAME", req.employer.legalName]),
     csvRow(["PERIOD_COVERED", periodTag(req)]),
     csvRow([
-      "PAGIBIG_MID", "LAST_NAME", "FIRST_NAME", "MIDDLE_NAME",
-      "MONTHLY_COMPENSATION", "EE_SHARE", "ER_SHARE", "TOTAL",
+      "PAGIBIG_MID",
+      "LAST_NAME",
+      "FIRST_NAME",
+      "MIDDLE_NAME",
+      "MONTHLY_COMPENSATION",
+      "EE_SHARE",
+      "ER_SHARE",
+      "TOTAL",
     ]),
     ...rows,
     csvRow(["TOTAL", req.employees.length, "", "", "", money(ee), money(er), money(ee + er)]),
@@ -302,7 +335,10 @@ function pagibigMcrf(req: FilingRequest): { content: string; rows: number; total
   };
 }
 
-const GENERATORS: Record<string, (req: FilingRequest) => { content: string; rows: number; totals: Record<string, number> }> = {
+const GENERATORS: Record<
+  string,
+  (req: FilingRequest) => { content: string; rows: number; totals: Record<string, number> }
+> = {
   "BIR-1601C": bir1601c,
   "BIR-1604C-ALPHALIST": alphalist1604c,
   "SSS-R3": sssR3,
@@ -318,9 +354,8 @@ export function generatePhFiling(req: FilingRequest): FilingArtifact {
   }
   const generate = GENERATORS[form.code]!;
   const { content, rows, totals } = generate(req);
-  const suffix = form.scope === "period"
-    ? `${req.year}${String(req.month).padStart(2, "0")}`
-    : String(req.year);
+  const suffix =
+    form.scope === "period" ? `${req.year}${String(req.month).padStart(2, "0")}` : String(req.year);
   const tin = employerField(req, "tin") || "NOTIN";
   return {
     formCode: form.code,

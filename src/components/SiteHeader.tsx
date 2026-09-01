@@ -21,18 +21,39 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          <a href="/#platform" className="text-muted-foreground transition-colors hover:text-foreground">Platform</a>
-          <Link to="/packs" className="text-muted-foreground transition-colors hover:text-foreground">Country Packs</Link>
-          <Link to="/api-docs" className="text-muted-foreground transition-colors hover:text-foreground">Docs &amp; API</Link>
+          <a
+            href="/#platform"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Platform
+          </a>
+          <Link
+            to="/packs"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Country Packs
+          </Link>
+          <Link
+            to="/api-docs"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Docs &amp; API
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
           {user ? (
-            <Button asChild size="sm"><Link to="/dashboard">Dashboard</Link></Button>
+            <Button asChild size="sm">
+              <Link to="/dashboard">Dashboard</Link>
+            </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm"><Link to="/auth">Sign in</Link></Button>
-              <Button asChild size="sm"><a href="/#contact">Talk to us</a></Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/auth">Sign in</Link>
+              </Button>
+              <Button asChild size="sm">
+                <a href="/#contact">Talk to us</a>
+              </Button>
             </>
           )}
         </div>

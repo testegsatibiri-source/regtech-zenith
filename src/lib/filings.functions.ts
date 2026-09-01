@@ -92,9 +92,9 @@ export const generateFiling = createServerFn({ method: "POST" })
 
     const { data: items, error: iErr } = runIds.length
       ? await context.supabase
-        .from("payroll_items")
-        .select("employee_id, employee_name, gross, tax, bpjs_employee, bpjs_employer, net")
-        .in("run_id", runIds)
+          .from("payroll_items")
+          .select("employee_id, employee_name, gross, tax, bpjs_employee, bpjs_employer, net")
+          .in("run_id", runIds)
       : { data: [], error: null };
     if (iErr) throw new Error(iErr.message);
 
@@ -119,15 +119,19 @@ export const generateFiling = createServerFn({ method: "POST" })
         gross: Number(it.gross),
         taxWithheld: Number(it.tax),
         employeeContributions: (b
-          ? { sss: b.employee.sss ?? 0, philhealth: b.employee.philhealth ?? 0, pagibig: b.employee.pagibig ?? 0 }
+          ? {
+              sss: b.employee.sss ?? 0,
+              philhealth: b.employee.philhealth ?? 0,
+              pagibig: b.employee.pagibig ?? 0,
+            }
           : { total: Number(it.bpjs_employee) }) as Record<string, number>,
         employerContributions: (b
           ? {
-            sss: b.employer.sss ?? 0,
-            ec: (b.employer as Record<string, number>).ec ?? 0,
-            philhealth: b.employer.philhealth ?? 0,
-            pagibig: b.employer.pagibig ?? 0,
-          }
+              sss: b.employer.sss ?? 0,
+              ec: (b.employer as Record<string, number>).ec ?? 0,
+              philhealth: b.employer.philhealth ?? 0,
+              pagibig: b.employer.pagibig ?? 0,
+            }
           : { total: Number(it.bpjs_employer) }) as Record<string, number>,
         net: Number(it.net),
       };
@@ -246,7 +250,8 @@ export const flagStaleFilings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const stale = (rows ?? []).filter(
-      (r) => r.ruleset_version !== current && (r.status === "generated" || r.status === "submitted"),
+      (r) =>
+        r.ruleset_version !== current && (r.status === "generated" || r.status === "submitted"),
     );
     for (const row of stale) {
       await context.supabase.from("statutory_filings").update({ status: "stale" }).eq("id", row.id);

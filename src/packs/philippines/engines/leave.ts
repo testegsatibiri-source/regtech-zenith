@@ -218,11 +218,16 @@ export function phLeaveAccrual(input: LeaveEntitlementInput): LeaveAccrualSnapsh
 
 export function phLeaveConvert(input: LeaveConversionInput): LeaveConversionOutput {
   const type = PH_LEAVE_TYPES.find((t) => t.code === input.code);
-  const dailyRate =
-    Math.round((input.monthlySalary / PH_PARAMS.workingDaysPerMonth) * 100) / 100;
+  const dailyRate = Math.round((input.monthlySalary / PH_PARAMS.workingDaysPerMonth) * 100) / 100;
 
   if (!type) {
-    return { convertible: false, days: 0, dailyRate, amount: 0, reason: `Unknown leave type ${input.code}` };
+    return {
+      convertible: false,
+      days: 0,
+      dailyRate,
+      amount: 0,
+      reason: `Unknown leave type ${input.code}`,
+    };
   }
   if (!type.convertibleToCash) {
     return {
@@ -247,7 +252,10 @@ export function phLeaveConvert(input: LeaveConversionInput): LeaveConversionOutp
 export function phSalaryDifferential(input: SalaryDifferentialInput): SalaryDifferentialOutput {
   const dailyRate = input.monthlySalary / PH_PARAMS.leave.maternityDailyDivisor;
   const fullSalaryForLeave = Math.round(dailyRate * input.leaveDays * 100) / 100;
-  const employerCost = Math.max(0, Math.round((fullSalaryForLeave - input.agencyBenefit) * 100) / 100);
+  const employerCost = Math.max(
+    0,
+    Math.round((fullSalaryForLeave - input.agencyBenefit) * 100) / 100,
+  );
   return {
     fullSalaryForLeave,
     agencyBenefit: input.agencyBenefit,

@@ -49,7 +49,8 @@ export function runTaxProviderSuite(pack: CountryPack, cases: TaxCase[]): void {
         const out = tax.calculate(c.input);
         if (c.expected.rate !== undefined) expect(out.rate).toBeCloseTo(c.expected.rate, 4);
         if (c.expected.category !== undefined) expect(out.category).toBe(c.expected.category);
-        if (c.expected.taxMin !== undefined) expect(out.tax).toBeGreaterThanOrEqual(c.expected.taxMin);
+        if (c.expected.taxMin !== undefined)
+          expect(out.tax).toBeGreaterThanOrEqual(c.expected.taxMin);
         if (c.expected.taxMax !== undefined) expect(out.tax).toBeLessThanOrEqual(c.expected.taxMax);
         if (c.input.hasNpwp === false) expect(out.surcharge).toBeGreaterThan(0);
         if (c.input.hasNpwp === true && c.input.monthlyGross > 0 && out.rate > 0) {
@@ -122,8 +123,14 @@ function walk(dir: string, visit: (file: string) => void): void {
 
 function capabilityKey(cap: string): string | null {
   const map: Record<string, string> = {
-    tax: "tax", benefits: "benefits", payroll: "payroll", thirteenth: "thirteenth",
-    calendar: "calendar", contracts: "contracts", rules: "rules", audit: "audit",
+    tax: "tax",
+    benefits: "benefits",
+    payroll: "payroll",
+    thirteenth: "thirteenth",
+    calendar: "calendar",
+    contracts: "contracts",
+    rules: "rules",
+    audit: "audit",
   };
   return map[cap] ?? null;
 }

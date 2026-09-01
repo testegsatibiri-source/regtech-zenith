@@ -20,10 +20,11 @@ const inputSchema = z.object({
 export const Route = createFileRoute("/api/public/v1/calculate-tax")({
   server: {
     handlers: {
-      OPTIONS: async ({ request }) => new Response(null, {
-        status: 204,
-        headers: { ...API_CORS_HEADERS, ...corsHeadersFor(request.headers.get("origin"), ["*"]) },
-      }),
+      OPTIONS: async ({ request }) =>
+        new Response(null, {
+          status: 204,
+          headers: { ...API_CORS_HEADERS, ...corsHeadersFor(request.headers.get("origin"), ["*"]) },
+        }),
       POST: async ({ request }) => {
         const start = performance.now();
         const traceId = traceIdFromRequest(request);
@@ -31,7 +32,10 @@ export const Route = createFileRoute("/api/public/v1/calculate-tax")({
         if (!auth.ok) return auth.response;
         const authed = auth.auth;
 
-        if (request.headers.get("content-length") && Number(request.headers.get("content-length")) > 8192) {
+        if (
+          request.headers.get("content-length") &&
+          Number(request.headers.get("content-length")) > 8192
+        ) {
           return jsonResponse({ error: "Payload too large" }, 413);
         }
         let raw: unknown;
@@ -42,33 +46,44 @@ export const Route = createFileRoute("/api/public/v1/calculate-tax")({
         }
         const parsed = inputSchema.safeParse(raw);
         if (!parsed.success) {
-          return finish(jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422), 422);
+          return finish(
+            jsonResponse({ error: "Invalid input", details: parsed.error.flatten() }, 422),
+            422,
+          );
         }
 
         const pack = CountryRuntime.get(parsed.data.country);
         const tax = pack.providers.tax;
-        if (!tax) return finish(jsonResponse({ error: `No tax provider for ${pack.manifest.country}` }, 501), 501);
+        if (!tax)
+          return finish(
+            jsonResponse({ error: `No tax provider for ${pack.manifest.country}` }, 501),
+            501,
+          );
 
         const result = await timed("engine.tax", () => tax.calculate(parsed.data), {
           country: pack.manifest.country,
           trace_id: traceId,
         });
 
-        const response = jsonResponse({
-          schemaVersion: "1",
-          engine: "PPh21-TER",
-          country: pack.manifest.country,
-          rulesetVersion: pack.manifest.rulesetVersion,
-          providerVersion: tax.version,
-          input: parsed.data,
-          result: {
-            terCategory: result.category,
-            effectiveRate: result.rate,
-            npwpSurcharge: result.surcharge,
-            tax: result.tax,
-            currency: pack.manifest.currency,
+        const response = jsonResponse(
+          {
+            schemaVersion: "1",
+            engine: "PPh21-TER",
+            country: pack.manifest.country,
+            rulesetVersion: pack.manifest.rulesetVersion,
+            providerVersion: tax.version,
+            input: parsed.data,
+            result: {
+              terCategory: result.category,
+              effectiveRate: result.rate,
+              npwpSurcharge: result.surcharge,
+              tax: result.tax,
+              currency: pack.manifest.currency,
+            },
           },
-        }, 200, { "x-request-id": traceId, "x-ruleset-version": pack.manifest.rulesetVersion });
+          200,
+          { "x-request-id": traceId, "x-ruleset-version": pack.manifest.rulesetVersion },
+        );
         return finish(response, 200);
 
         async function finish(res: Response, status: number): Promise<Response> {

@@ -20,11 +20,15 @@ function AuditPage() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-3xl font-bold">Audit Log</h1>
-        <p className="text-muted-foreground">Every platform action is recorded with correlation id.</p>
+        <p className="text-muted-foreground">
+          Every platform action is recorded with correlation id.
+        </p>
       </header>
 
       <Card>
-        <CardHeader><CardTitle>Recent entries</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Recent entries</CardTitle>
+        </CardHeader>
         <CardContent>
           {isLoading ? (
             <p className="text-muted-foreground">Loading…</p>
@@ -51,11 +55,17 @@ function AuditPage() {
                         {new Date(r.at).toLocaleString()}
                       </td>
                       <td className="px-2 py-2 font-mono text-xs">{r.actor?.slice(0, 8) ?? "—"}</td>
-                      <td className="px-2 py-2"><Badge variant="outline" className="font-mono text-[10px]">{r.action}</Badge></td>
+                      <td className="px-2 py-2">
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {r.action}
+                        </Badge>
+                      </td>
                       <td className="px-2 py-2 text-xs">{r.component ?? "—"}</td>
                       <td className="px-2 py-2 text-xs">{r.country_code ?? "global"}</td>
                       <td className="px-2 py-2 font-mono text-xs">{r.target ?? "—"}</td>
-                      <td className="px-2 py-2 font-mono text-[10px] text-muted-foreground">{r.correlation_id?.slice(0, 12) ?? "—"}</td>
+                      <td className="px-2 py-2 font-mono text-[10px] text-muted-foreground">
+                        {r.correlation_id?.slice(0, 12) ?? "—"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

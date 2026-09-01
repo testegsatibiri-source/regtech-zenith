@@ -6,7 +6,13 @@ import { z } from "zod";
 const ALLOWED = new Set(["platform_admin", "platform_operator", "country_cto"]);
 
 async function assertRole(supabase: unknown, userId: string) {
-  const c = supabase as { from: (t: string) => { select: (s: string) => { eq: (k: string, v: string) => Promise<{ data: Array<{ role: string }> | null }> } } };
+  const c = supabase as {
+    from: (t: string) => {
+      select: (s: string) => {
+        eq: (k: string, v: string) => Promise<{ data: Array<{ role: string }> | null }>;
+      };
+    };
+  };
   const { data } = await c.from("user_roles").select("role").eq("user_id", userId);
   if (!(data ?? []).some((r) => ALLOWED.has(r.role))) throw new Error("Forbidden");
 }

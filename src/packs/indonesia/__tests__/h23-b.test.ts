@@ -46,7 +46,12 @@ describe("H23-B — THR by religion", () => {
   });
 
   it("keeps the amount rules intact and attaches the deadline", () => {
-    const r = calculateThr({ monthlySalary: 6_000_000, monthsOfService: 6, religion: "kristen", year: 2026 });
+    const r = calculateThr({
+      monthlySalary: 6_000_000,
+      monthsOfService: 6,
+      religion: "kristen",
+      year: 2026,
+    });
     expect(r.amount).toBe(3_000_000);
     expect(r.prorated).toBe(true);
     expect(r.due?.dueDate).toBe("2026-12-18");

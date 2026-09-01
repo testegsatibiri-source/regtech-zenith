@@ -96,7 +96,6 @@ export const computeFinalPay = createServerFn({ method: "POST" })
               },
               ctx,
             ) ?? null),
-
       },
       thirteenthAmount: data.thirteenthAmount,
       deductions: data.deductions ?? 0,

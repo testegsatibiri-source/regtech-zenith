@@ -53,7 +53,9 @@ export function evaluateContract(c: ContractLike, employeeName = "Employee"): Fi
       severity: "critical",
       passed: !!c.end_date,
       weight: 30,
-      message: c.end_date ? "End date set." : `${employeeName}: PKWT without end date — converts to PKWTT by law.`,
+      message: c.end_date
+        ? "End date set."
+        : `${employeeName}: PKWT without end date — converts to PKWTT by law.`,
     });
 
     // Rule 2: max 5 years
@@ -138,7 +140,10 @@ export function evaluateContracts(
     passed: missing.length === 0,
     weight: 30,
     message: missing.length
-      ? `${missing.length} employee(s) without active contract: ${missing.slice(0, 3).map((e) => e.full_name).join(", ")}${missing.length > 3 ? "…" : ""}`
+      ? `${missing.length} employee(s) without active contract: ${missing
+          .slice(0, 3)
+          .map((e) => e.full_name)
+          .join(", ")}${missing.length > 3 ? "…" : ""}`
       : "Every employee has a contract on file.",
   });
 

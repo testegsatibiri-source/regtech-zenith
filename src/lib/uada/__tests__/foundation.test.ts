@@ -16,22 +16,22 @@ import type { UadaResponse } from "@/lib/uada/contracts/response";
 describe("UADA H12.5 Foundation", () => {
   describe("CapabilityRegistry", () => {
     it("catalogs the 11 baseline capabilities", () => {
-      const ids = CapabilityRegistry.list().map((c) => c.id).sort();
-      expect(ids).toEqual(
-        [
-          "audit",
-          "capabilities",
-          "context",
-          "dependencies",
-          "docs",
-          "graph",
-          "impact",
-          "plan",
-          "review",
-          "score",
-          "search",
-        ],
-      );
+      const ids = CapabilityRegistry.list()
+        .map((c) => c.id)
+        .sort();
+      expect(ids).toEqual([
+        "audit",
+        "capabilities",
+        "context",
+        "dependencies",
+        "docs",
+        "graph",
+        "impact",
+        "plan",
+        "review",
+        "score",
+        "search",
+      ]);
     });
 
     it("each descriptor is v1.0.0 with input/output schemas", () => {
@@ -119,8 +119,20 @@ describe("UADA H12.5 Foundation", () => {
     it("archives multiple active snapshots down to one", () => {
       const now = new Date("2026-08-01T00:00:00Z");
       const snaps: SnapshotRecord[] = [
-        { id: "s1", version: 1, state: "active", createdAt: iso(new Date("2026-07-20T00:00:00Z")), activatedAt: iso(new Date("2026-07-20T00:00:00Z")) },
-        { id: "s2", version: 2, state: "active", createdAt: iso(new Date("2026-07-28T00:00:00Z")), activatedAt: iso(new Date("2026-07-28T00:00:00Z")) },
+        {
+          id: "s1",
+          version: 1,
+          state: "active",
+          createdAt: iso(new Date("2026-07-20T00:00:00Z")),
+          activatedAt: iso(new Date("2026-07-20T00:00:00Z")),
+        },
+        {
+          id: "s2",
+          version: 2,
+          state: "active",
+          createdAt: iso(new Date("2026-07-28T00:00:00Z")),
+          activatedAt: iso(new Date("2026-07-28T00:00:00Z")),
+        },
       ];
       const outcome = applyRetention(snaps, DEFAULT_RETENTION, now);
       expect(outcome.keep.map((s) => s.id)).toEqual(["s2"]);
@@ -130,7 +142,13 @@ describe("UADA H12.5 Foundation", () => {
     it("purges old archived snapshots beyond retention window", () => {
       const now = new Date("2027-08-01T00:00:00Z"); // >180d after
       const snaps: SnapshotRecord[] = [
-        { id: "s-old", version: 1, state: "archived", createdAt: iso(new Date("2026-01-01T00:00:00Z")), archivedAt: iso(new Date("2026-01-15T00:00:00Z")) },
+        {
+          id: "s-old",
+          version: 1,
+          state: "archived",
+          createdAt: iso(new Date("2026-01-01T00:00:00Z")),
+          archivedAt: iso(new Date("2026-01-15T00:00:00Z")),
+        },
       ];
       const outcome = applyRetention(snaps, DEFAULT_RETENTION, now);
       expect(outcome.purge.map((s) => s.id)).toEqual(["s-old"]);

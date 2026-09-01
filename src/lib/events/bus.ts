@@ -32,11 +32,31 @@ export async function emit(event: DomainEvent): Promise<void> {
 }
 
 // Default observability handlers.
-on("PayrollFinalized@1", (e) => getLogger().info("event", { type: e.type, companyId: e.companyId, runId: e.runId }));
-on("EmployeeUpserted@1", (e) => getLogger().info("event", { type: e.type, companyId: e.companyId }));
-on("ObligationStatusChanged@1", (e) => getLogger().info("event", { type: e.type, companyId: e.companyId, status: e.status }));
+on("PayrollFinalized@1", (e) =>
+  getLogger().info("event", { type: e.type, companyId: e.companyId, runId: e.runId }),
+);
+on("EmployeeUpserted@1", (e) =>
+  getLogger().info("event", { type: e.type, companyId: e.companyId }),
+);
+on("ObligationStatusChanged@1", (e) =>
+  getLogger().info("event", { type: e.type, companyId: e.companyId, status: e.status }),
+);
 on("ContractChanged@1", (e) => getLogger().info("event", { type: e.type, companyId: e.companyId }));
-on("CountryPackInstalled@1", (e) => getLogger().info("event", { type: e.type, country: e.country, version: e.version }));
-on("CountryPackValidated@1", (e) => getLogger().info("event", { type: e.type, country: e.country, ok: e.ok, errors: e.errors, warnings: e.warnings }));
-on("CountryPackFailed@1", (e) => getLogger().warn("event", { type: e.type, country: e.country, reason: e.reason }));
-on("CountryPackHealthChecked@1", (e) => getLogger().info("event", { type: e.type, country: e.country, status: e.status }));
+on("CountryPackInstalled@1", (e) =>
+  getLogger().info("event", { type: e.type, country: e.country, version: e.version }),
+);
+on("CountryPackValidated@1", (e) =>
+  getLogger().info("event", {
+    type: e.type,
+    country: e.country,
+    ok: e.ok,
+    errors: e.errors,
+    warnings: e.warnings,
+  }),
+);
+on("CountryPackFailed@1", (e) =>
+  getLogger().warn("event", { type: e.type, country: e.country, reason: e.reason }),
+);
+on("CountryPackHealthChecked@1", (e) =>
+  getLogger().info("event", { type: e.type, country: e.country, status: e.status }),
+);

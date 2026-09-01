@@ -6,9 +6,9 @@ import type { CountryPack, InstalledPack } from "./index";
 import { CORE_VERSION, satisfies } from "./version";
 
 export interface CompatibilityMatrix {
-  version: string;              // matrix version (semver)
-  runtime: string;              // required runtime semver range
-  sdk: string;                  // required SDK semver range
+  version: string; // matrix version (semver)
+  runtime: string; // required runtime semver range
+  sdk: string; // required SDK semver range
   packs: Record<string, string>; // country → semver range
 }
 
@@ -41,10 +41,18 @@ export function checkMatrix(
   ctx: { runtimeVersion: string; sdkVersion: string; installed: InstalledPack[] },
 ): MatrixReport {
   const checks: MatrixCheck[] = [
-    { target: "runtime", required: matrix.runtime, actual: ctx.runtimeVersion,
-      ok: satisfies(matrix.runtime, ctx.runtimeVersion) },
-    { target: "sdk", required: matrix.sdk, actual: ctx.sdkVersion,
-      ok: satisfies(matrix.sdk, ctx.sdkVersion) },
+    {
+      target: "runtime",
+      required: matrix.runtime,
+      actual: ctx.runtimeVersion,
+      ok: satisfies(matrix.runtime, ctx.runtimeVersion),
+    },
+    {
+      target: "sdk",
+      required: matrix.sdk,
+      actual: ctx.sdkVersion,
+      ok: satisfies(matrix.sdk, ctx.sdkVersion),
+    },
   ];
   for (const [country, range] of Object.entries(matrix.packs)) {
     const rec = ctx.installed.find((p) => p.pack.manifest.country === country);
@@ -67,7 +75,13 @@ export function checkPackAgainstMatrix(
   pack: CountryPack,
 ): MatrixCheck {
   const range = matrix.packs[pack.manifest.country];
-  if (!range) return { target: `pack:${pack.manifest.country}`, required: "—", actual: pack.manifest.version, ok: true };
+  if (!range)
+    return {
+      target: `pack:${pack.manifest.country}`,
+      required: "—",
+      actual: pack.manifest.version,
+      ok: true,
+    };
   return {
     target: `pack:${pack.manifest.country}`,
     required: range,

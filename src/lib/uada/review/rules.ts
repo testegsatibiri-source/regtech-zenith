@@ -41,9 +41,7 @@ function eachAdded(
   }
 }
 
-function finding(
-  partial: Omit<ReviewFinding, "origin">,
-): ReviewFinding {
+function finding(partial: Omit<ReviewFinding, "origin">): ReviewFinding {
   return { origin: "rule", ...partial };
 }
 
@@ -56,7 +54,10 @@ const RULES: RuleDescriptor[] = [
       const out: ReviewFinding[] = [];
       eachAdded(diff, (file, line, content) => {
         if (isUada(file.path)) return;
-        if (/from\s+["']@\/lib\/uada\//.test(content) || /import\(["']@\/lib\/uada\//.test(content)) {
+        if (
+          /from\s+["']@\/lib\/uada\//.test(content) ||
+          /import\(["']@\/lib\/uada\//.test(content)
+        ) {
           out.push(
             finding({
               id: "ARCH-001",
@@ -66,7 +67,8 @@ const RULES: RuleDescriptor[] = [
               path: file.path,
               line,
               references: ["ADR-0020"],
-              suggestion: "Expose the behaviour through a UADA server function instead of importing internals.",
+              suggestion:
+                "Expose the behaviour through a UADA server function instead of importing internals.",
             }),
           );
         }
@@ -108,7 +110,10 @@ const RULES: RuleDescriptor[] = [
       const out: ReviewFinding[] = [];
       eachAdded(diff, (file, line, content) => {
         if (!file.path.startsWith("src/lib/uada/engines/")) return;
-        if (/@\/lib\/uada\/gateway\//.test(content) || /@\/lib\/uada\/model\/router/.test(content)) {
+        if (
+          /@\/lib\/uada\/gateway\//.test(content) ||
+          /@\/lib\/uada\/model\/router/.test(content)
+        ) {
           out.push(
             finding({
               id: "ARCH-003",
@@ -145,7 +150,8 @@ const RULES: RuleDescriptor[] = [
                 path: file.path,
                 line,
                 references: ["ADR-0020"],
-                suggestion: "Use schema/structural metadata from the indexers instead of the data table.",
+                suggestion:
+                  "Use schema/structural metadata from the indexers instead of the data table.",
               }),
             );
           }
@@ -190,11 +196,19 @@ const RULES: RuleDescriptor[] = [
       for (const file of diff.files) {
         if (!/\.sql$/.test(file.path)) continue;
         const body = file.added.map((l) => l.content).join("\n");
-        const created = Array.from(body.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-z0-9_]+)/gi));
+        const created = Array.from(
+          body.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-z0-9_]+)/gi),
+        );
         for (const c of created) {
           const table = c[1];
-          const granted = new RegExp(`grant[\\s\\S]*?on\\s+(?:table\\s+)?public\\.${table}\\b`, "i").test(body);
-          const rls = new RegExp(`alter\\s+table\\s+public\\.${table}\\s+enable\\s+row\\s+level\\s+security`, "i").test(body);
+          const granted = new RegExp(
+            `grant[\\s\\S]*?on\\s+(?:table\\s+)?public\\.${table}\\b`,
+            "i",
+          ).test(body);
+          const rls = new RegExp(
+            `alter\\s+table\\s+public\\.${table}\\s+enable\\s+row\\s+level\\s+security`,
+            "i",
+          ).test(body);
           if (!granted) {
             out.push(
               finding({

@@ -51,16 +51,19 @@ class FeatureGatesRegistry {
       "config_service",
       "bootstrap_compare",
     ];
-    return Object.fromEntries(gates.map((g) => [g, this.isEnabled(g, env)])) as Record<FeatureGate, boolean>;
+    return Object.fromEntries(gates.map((g) => [g, this.isEnabled(g, env)])) as Record<
+      FeatureGate,
+      boolean
+    >;
   }
 }
 
 const DEFAULTS: Record<FeatureGate, Record<GateEnv, boolean>> = {
-  registry_enabled:     { preview: true,  staging: true,  production: false },
-  compatibility_matrix: { preview: true,  staging: true,  production: false },
-  signature_enforce:    { preview: false, staging: false, production: false },
-  config_service:       { preview: true,  staging: true,  production: true  },
-  bootstrap_compare:    { preview: true,  staging: true,  production: true  },
+  registry_enabled: { preview: true, staging: true, production: false },
+  compatibility_matrix: { preview: true, staging: true, production: false },
+  signature_enforce: { preview: false, staging: false, production: false },
+  config_service: { preview: true, staging: true, production: true },
+  bootstrap_compare: { preview: true, staging: true, production: true },
 };
 
 export function currentEnv(): GateEnv {

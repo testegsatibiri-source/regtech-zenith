@@ -17,4 +17,3 @@ export const EXPECTED_INTERFACES: Record<Capability, string> = {
   filings: "1.0",
   separation: "1.0",
 };
-

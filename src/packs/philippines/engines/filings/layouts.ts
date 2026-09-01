@@ -13,7 +13,10 @@ export const digits = (v: unknown): string => String(v ?? "").replace(/\D/g, "")
 
 /** Fixed-width left-aligned text field (SSS/Pag-IBIG text layouts). */
 export const padText = (v: unknown, width: number): string =>
-  String(v ?? "").toUpperCase().slice(0, width).padEnd(width, " ");
+  String(v ?? "")
+    .toUpperCase()
+    .slice(0, width)
+    .padEnd(width, " ");
 
 /** Fixed-width right-aligned numeric field in centavos, zero-filled. */
 export const padAmount = (n: number, width: number): string =>

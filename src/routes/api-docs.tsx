@@ -14,7 +14,8 @@ export const Route = createFileRoute("/api-docs")({
       { property: "og:title", content: "API Reference — UBoard Asia" },
       {
         property: "og:description",
-        content: "PPh 21 (TER) and BPJS calculation endpoints — request/response examples and a live try-it console.",
+        content:
+          "PPh 21 (TER) and BPJS calculation endpoints — request/response examples and a live try-it console.",
       },
     ],
     links: [

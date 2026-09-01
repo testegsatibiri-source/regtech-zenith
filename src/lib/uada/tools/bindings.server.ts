@@ -26,8 +26,7 @@ export async function bindTools(): Promise<void> {
   });
   ToolRegistry.bind("impact", {
     implementation: "ImpactEngine",
-    handler: (input) =>
-      ImpactEngine.impactOf(input as Parameters<typeof ImpactEngine.impactOf>[0]),
+    handler: (input) => ImpactEngine.impactOf(input as Parameters<typeof ImpactEngine.impactOf>[0]),
   });
   ToolRegistry.bind("plan", {
     implementation: "PlannerEngine",

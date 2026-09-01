@@ -30,9 +30,7 @@ export async function loadCatalogForRequest(): Promise<CatalogEntry[]> {
  * status attached. Consumers render `entry.tier` / `entry.statusLabel` — they
  * must never hardcode a status string.
  */
-export async function getRegionalPackCatalog(
-  scope: RegionScope = {},
-): Promise<CatalogEntry[]> {
+export async function getRegionalPackCatalog(scope: RegionScope = {}): Promise<CatalogEntry[]> {
   return selectRegionalCatalog(await loadCatalogForRequest(), scope.region);
 }
 

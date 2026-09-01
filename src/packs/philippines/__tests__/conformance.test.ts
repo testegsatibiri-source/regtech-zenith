@@ -12,14 +12,23 @@ import { PH_TAX_CASES, PH_BENEFITS_CASES } from "@/sdk/testkit/fixtures/PH";
 
 // Fixtures widened to the testkit's shape (surcharge unused in PH).
 runManifestSuite(philippinesPack);
-runTaxProviderSuite(philippinesPack, PH_TAX_CASES.map((c) => ({ ...c, expected: { ...c.expected } })));
-runBenefitsProviderSuite(philippinesPack, PH_BENEFITS_CASES.map((c) => ({ ...c, expected: { ...c.expected } })));
+runTaxProviderSuite(
+  philippinesPack,
+  PH_TAX_CASES.map((c) => ({ ...c, expected: { ...c.expected } })),
+);
+runBenefitsProviderSuite(
+  philippinesPack,
+  PH_BENEFITS_CASES.map((c) => ({ ...c, expected: { ...c.expected } })),
+);
 runIsolationSuite(philippinesPack, path.resolve(__dirname, ".."));
 
 // PH-specific invariants
 describe("[PH] pack-specific", () => {
   it("13th month is pro-rata for < 12 months of service", () => {
-    const r = philippinesPack.providers.thirteenth!.calculate({ monthlySalary: 30_000, monthsOfService: 6 });
+    const r = philippinesPack.providers.thirteenth!.calculate({
+      monthlySalary: 30_000,
+      monthsOfService: 6,
+    });
     expect(r.eligible).toBe(true);
     expect(r.prorated).toBe(true);
     expect(r.amount).toBe(15_000);
@@ -52,7 +61,11 @@ describe("[PH] pack-specific", () => {
   it("Tax applies BIR ₱90,000 annual benefits ceiling exemption", () => {
     const tax = philippinesPack.providers.tax!;
     const baseline = tax.calculate({ monthlyGross: 30_000, maritalStatus: "single" });
-    const withExempt = tax.calculate({ monthlyGross: 30_000, maritalStatus: "single", nonTaxableBenefits: 20_000 });
+    const withExempt = tax.calculate({
+      monthlyGross: 30_000,
+      maritalStatus: "single",
+      nonTaxableBenefits: 20_000,
+    });
     expect(withExempt.tax).toBeLessThan(baseline.tax);
     expect(withExempt.tax).toBe(0); // 30k - 20k = 10k, below 20,833 bracket
   });

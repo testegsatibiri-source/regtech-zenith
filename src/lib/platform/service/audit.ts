@@ -35,7 +35,9 @@ export const auditService = {
     permissionService.ensure("audit.view", ctx.policy);
     let q = ctx.supabase
       .from("platform_audit_log")
-      .select("id, actor, action, target, country_code, component, old_value, new_value, correlation_id, request_id, at")
+      .select(
+        "id, actor, action, target, country_code, component, old_value, new_value, correlation_id, request_id, at",
+      )
       .order("at", { ascending: false })
       .limit(filters.limit ?? 50);
     if (filters.country) q = q.eq("country_code", filters.country);

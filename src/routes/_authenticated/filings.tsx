@@ -3,11 +3,22 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  FileDown, Loader2, ShieldAlert, CheckCircle2, RefreshCw, Trash2, FileWarning,
+  FileDown,
+  Loader2,
+  ShieldAlert,
+  CheckCircle2,
+  RefreshCw,
+  Trash2,
+  FileWarning,
 } from "lucide-react";
 import {
-  listFilingForms, listFilings, generateFiling, getFilingArtifact,
-  markFilingSubmitted, deleteFiling, flagStaleFilings,
+  listFilingForms,
+  listFilings,
+  generateFiling,
+  getFilingArtifact,
+  markFilingSubmitted,
+  deleteFiling,
+  flagStaleFilings,
 } from "@/lib/filings.functions";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
@@ -17,10 +28,18 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -139,7 +158,9 @@ function FilingsPage() {
   async function onConfirmReceipt() {
     if (!receiptFor || !reference.trim()) return;
     try {
-      await markSubmitted({ data: { filingId: receiptFor, reference: reference.trim(), notes: notes || undefined } });
+      await markSubmitted({
+        data: { filingId: receiptFor, reference: reference.trim(), notes: notes || undefined },
+      });
       toast.success("Submission receipt recorded");
       setReceiptFor(null);
       setReference("");
@@ -197,10 +218,14 @@ function FilingsPage() {
               <div className="min-w-64 flex-1">
                 <Label className="mb-1 block text-xs">Form</Label>
                 <Select value={selected?.code ?? ""} onValueChange={setFormCode}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {available.map((f) => (
-                      <SelectItem key={f.code} value={f.code}>{f.code} — {f.agency}</SelectItem>
+                      <SelectItem key={f.code} value={f.code}>
+                        {f.code} — {f.agency}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -209,9 +234,15 @@ function FilingsPage() {
                 <div className="w-28">
                   <Label className="mb-1 block text-xs">Month</Label>
                   <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {MONTHS.map((m, i) => <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>)}
+                      {MONTHS.map((m, i) => (
+                        <SelectItem key={m} value={String(i + 1)}>
+                          {m}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -219,22 +250,31 @@ function FilingsPage() {
               <div className="w-28">
                 <Label className="mb-1 block text-xs">Year</Label>
                 <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {[year - 1, year, year + 1].map((y) => (
-                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      <SelectItem key={y} value={String(y)}>
+                        {y}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <Button onClick={() => onGenerate()} disabled={busy}>
-                {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileDown className="mr-1 h-4 w-4" />}
+                {busy ? (
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="mr-1 h-4 w-4" />
+                )}
                 Generate
               </Button>
             </div>
             {selected && (
               <p className="text-xs text-muted-foreground">
-                {selected.title} · {selected.legalBasis} · {selected.format.toUpperCase()} upload — {selected.description}
+                {selected.title} · {selected.legalBasis} · {selected.format.toUpperCase()} upload —{" "}
+                {selected.description}
               </p>
             )}
           </CardContent>
@@ -242,9 +282,15 @@ function FilingsPage() {
       )}
 
       <div className="space-y-3">
-        {filingsQuery.isLoading && <p className="text-sm text-muted-foreground">Loading filings…</p>}
+        {filingsQuery.isLoading && (
+          <p className="text-sm text-muted-foreground">Loading filings…</p>
+        )}
         {!filingsQuery.isLoading && filings.length === 0 && (
-          <Card><CardContent className="py-8 text-sm text-muted-foreground">No filings generated yet.</CardContent></Card>
+          <Card>
+            <CardContent className="py-8 text-sm text-muted-foreground">
+              No filings generated yet.
+            </CardContent>
+          </Card>
         )}
         {filings.map((f) => {
           const warnings = (f.warnings ?? []) as string[];
@@ -255,18 +301,23 @@ function FilingsPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{f.form_code}</span>
-                      <Badge variant="outline" className={STATUS_STYLE[f.status] ?? ""}>{f.status}</Badge>
+                      <Badge variant="outline" className={STATUS_STYLE[f.status] ?? ""}>
+                        {f.status}
+                      </Badge>
                       <Badge variant="outline">{f.ruleset_version}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{f.form_title}</p>
                     <p className="mt-1 font-mono text-xs text-muted-foreground">
-                      {f.period_month ? `${MONTHS[f.period_month - 1]} ` : ""}{f.period_year} · {f.row_count} row(s) ·
-                      {" "}sha256 {f.artifact_checksum.slice(0, 16)}…
+                      {f.period_month ? `${MONTHS[f.period_month - 1]} ` : ""}
+                      {f.period_year} · {f.row_count} row(s) · sha256{" "}
+                      {f.artifact_checksum.slice(0, 16)}…
                     </p>
                     {f.submission_reference && (
                       <p className="mt-1 text-xs text-success">
                         Receipt {f.submission_reference}
-                        {f.submitted_at ? ` · ${new Date(f.submitted_at).toLocaleDateString()}` : ""}
+                        {f.submitted_at
+                          ? ` · ${new Date(f.submitted_at).toLocaleDateString()}`
+                          : ""}
                       </p>
                     )}
                   </div>
@@ -280,7 +331,12 @@ function FilingsPage() {
                       </Button>
                     )}
                     {f.status === "stale" && (
-                      <Button size="sm" variant="secondary" onClick={() => onGenerate(f.id)} disabled={busy}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => onGenerate(f.id)}
+                        disabled={busy}
+                      >
                         <FileWarning className="mr-1 h-4 w-4" /> Amended filing
                       </Button>
                     )}
@@ -309,8 +365,8 @@ function FilingsPage() {
                 )}
                 {f.status === "stale" && (
                   <p className="text-xs text-muted-foreground">
-                    Generated under an earlier ruleset. Submitted artifacts are never rewritten — file an amended
-                    return instead (DEBT-023).
+                    Generated under an earlier ruleset. Submitted artifacts are never rewritten —
+                    file an amended return instead (DEBT-023).
                   </p>
                 )}
               </CardContent>
@@ -321,23 +377,37 @@ function FilingsPage() {
 
       <Dialog open={Boolean(receiptFor)} onOpenChange={(o) => !o && setReceiptFor(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Record submission receipt</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Record submission receipt</DialogTitle>
+          </DialogHeader>
           <div className="space-y-3">
             <div>
               <Label className="mb-1 block text-xs">Agency reference / confirmation number</Label>
-              <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="e.g. eFPS 2026-0000123" />
+              <Input
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                placeholder="e.g. eFPS 2026-0000123"
+              />
             </div>
             <div>
               <Label className="mb-1 block text-xs">Notes (optional)</Label>
-              <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Filed via eFPS by finance" />
+              <Input
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Filed via eFPS by finance"
+              />
             </div>
             <p className="text-xs text-muted-foreground">
               Once recorded, the artifact becomes immutable: corrections require an amended filing.
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReceiptFor(null)}>Cancel</Button>
-            <Button onClick={onConfirmReceipt} disabled={!reference.trim()}>Save receipt</Button>
+            <Button variant="outline" onClick={() => setReceiptFor(null)}>
+              Cancel
+            </Button>
+            <Button onClick={onConfirmReceipt} disabled={!reference.trim()}>
+              Save receipt
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

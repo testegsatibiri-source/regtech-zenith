@@ -18,7 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/leave")({
@@ -184,12 +190,16 @@ function LeavePage() {
                             <p className="text-xs text-muted-foreground">{e.legalBasis}</p>
                           </div>
                           <Badge variant={e.eligible ? "default" : "secondary"}>
-                            {e.eligible ? `${e.remainingDays}/${e.entitledDays} days` : "Not eligible"}
+                            {e.eligible
+                              ? `${e.remainingDays}/${e.entitledDays} days`
+                              : "Not eligible"}
                           </Badge>
                         </div>
                         <p className="mt-2 text-xs text-muted-foreground">{e.reason}</p>
                         {e.convertibleToCash && (
-                          <p className="mt-1 text-xs text-primary">Unused days convert to cash on final pay</p>
+                          <p className="mt-1 text-xs text-primary">
+                            Unused days convert to cash on final pay
+                          </p>
                         )}
                       </div>
                     ))}
@@ -226,15 +236,28 @@ function LeavePage() {
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-2">
                       <Label>Start</Label>
-                      <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>End</Label>
-                      <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                      <Input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Days</Label>
-                      <Input type="number" step="0.5" value={days} onChange={(e) => setDays(e.target.value)} />
+                      <Input
+                        type="number"
+                        step="0.5"
+                        value={days}
+                        onChange={(e) => setDays(e.target.value)}
+                      />
                     </div>
                   </div>
                   <Button type="submit" disabled={busy} className="w-full">
@@ -255,7 +278,10 @@ function LeavePage() {
               ) : (
                 <div className="space-y-2">
                   {(requestsQuery.data ?? []).map((r) => (
-                    <div key={r.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border p-3"
+                    >
                       <div>
                         <p className="text-sm font-medium">
                           {types.find((t) => t.code === r.leave_code)?.title ?? r.leave_code}
@@ -266,13 +292,23 @@ function LeavePage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={r.status === "approved" ? "default" : "secondary"}>{r.status}</Badge>
+                        <Badge variant={r.status === "approved" ? "default" : "secondary"}>
+                          {r.status}
+                        </Badge>
                         {r.status === "submitted" && (
                           <>
-                            <Button size="icon" variant="ghost" onClick={() => decide(r.id, "approved")}>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => decide(r.id, "approved")}
+                            >
                               <Check className="h-4 w-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" onClick={() => decide(r.id, "rejected")}>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => decide(r.id, "rejected")}
+                            >
                               <X className="h-4 w-4" />
                             </Button>
                           </>

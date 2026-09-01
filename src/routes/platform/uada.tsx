@@ -76,7 +76,9 @@ function UadaPage() {
               <dt className="text-muted-foreground">Promotion state</dt>
               <dd>{summary.data.active.promotion_state}</dd>
               <dt className="text-muted-foreground">Model</dt>
-              <dd>{summary.data.active.embedding_model} · {summary.data.active.embedding_dimensions}d</dd>
+              <dd>
+                {summary.data.active.embedding_model} · {summary.data.active.embedding_dimensions}d
+              </dd>
               <dt className="text-muted-foreground">Documents</dt>
               <dd>{(summary.data.active.stats as { documents?: number })?.documents ?? 0}</dd>
               <dt className="text-muted-foreground">Nodes / edges</dt>
@@ -108,18 +110,21 @@ function UadaPage() {
               <option value="full">Full</option>
               <option value="incremental">Incremental</option>
             </select>
-            <Button
-              onClick={() => mutation.mutate()}
-              disabled={mutation.isPending || gateOff}
-            >
+            <Button onClick={() => mutation.mutate()} disabled={mutation.isPending || gateOff}>
               {mutation.isPending ? "Running…" : "Run reindex"}
             </Button>
           </div>
           {mutation.data && (
             <div className="rounded border p-3 text-xs">
-              <div><b>Snapshot:</b> {mutation.data.snapshotId}</div>
-              <div><b>Promotion:</b> {mutation.data.promotionState}</div>
-              <div><b>Duration:</b> {mutation.data.durationMs} ms</div>
+              <div>
+                <b>Snapshot:</b> {mutation.data.snapshotId}
+              </div>
+              <div>
+                <b>Promotion:</b> {mutation.data.promotionState}
+              </div>
+              <div>
+                <b>Duration:</b> {mutation.data.durationMs} ms
+              </div>
               {mutation.data.reasons && (
                 <div className="text-destructive">Reasons: {mutation.data.reasons.join(", ")}</div>
               )}
@@ -166,7 +171,9 @@ function UadaPage() {
                       <td className="p-1">{r.mode}</td>
                       <td className="p-1 text-right">{r.docs_upserted}</td>
                       <td className="p-1 text-right">{r.docs_denied}</td>
-                      <td className="p-1 text-right">{r.graph_nodes}/{r.graph_edges}</td>
+                      <td className="p-1 text-right">
+                        {r.graph_nodes}/{r.graph_edges}
+                      </td>
                       <td className="p-1 text-right">{r.embedding_tokens}</td>
                       <td className="p-1 text-right">{r.duration_ms ?? "—"} ms</td>
                       <td className="p-1">

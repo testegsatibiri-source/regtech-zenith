@@ -95,7 +95,9 @@ export const listLeaveRequests = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("leave_requests")
-      .select("id, employee_id, leave_code, start_date, end_date, days, paid, status, reason, decided_at, created_at")
+      .select(
+        "id, employee_id, leave_code, start_date, end_date, days, paid, status, reason, decided_at, created_at",
+      )
       .eq("company_id", data.companyId)
       .order("start_date", { ascending: false })
       .limit(200);
@@ -130,7 +132,10 @@ export const createLeaveRequest = createServerFn({ method: "POST" })
 
     const pack = CountryRuntime.find(company.country_code);
     const type = pack?.providers.leave?.types().find((t) => t.code === data.leaveCode);
-    if (!type) throw new Error(`Leave type ${data.leaveCode} is not offered by the ${company.country_code} pack`);
+    if (!type)
+      throw new Error(
+        `Leave type ${data.leaveCode} is not offered by the ${company.country_code} pack`,
+      );
 
     const { data: row, error } = await supabase
       .from("leave_requests")
@@ -165,7 +170,11 @@ export const decideLeaveRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("leave_requests")
-      .update({ status: data.status, decided_by: context.userId, decided_at: new Date().toISOString() })
+      .update({
+        status: data.status,
+        decided_by: context.userId,
+        decided_at: new Date().toISOString(),
+      })
       .eq("id", data.requestId);
     if (error) throw new Error(error.message);
     return { ok: true };

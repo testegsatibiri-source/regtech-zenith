@@ -52,8 +52,12 @@ let cached: ReadinessReport = {
 class RuntimeReadiness {
   private ready = false;
 
-  markReady(v: boolean): void { this.ready = v; }
-  isReady(): boolean { return this.ready; }
+  markReady(v: boolean): void {
+    this.ready = v;
+  }
+  isReady(): boolean {
+    return this.ready;
+  }
 }
 
 export const Readiness = new RuntimeReadiness();
@@ -69,11 +73,18 @@ export interface RegistryPackRow {
   checksum: string;
 }
 
-export async function runBootGate(opts: {
-  loadGates?: () => Promise<Array<{ gate: FeatureGate; environment: string; enabled: boolean }>>;
-  loadRegistry?: () => Promise<RegistryPackRow[]>;
-  onDivergence?: (evt: { country: string; reason: string; matrixVersion: string; engineVersion: string }) => void | Promise<void>;
-} = {}): Promise<ReadinessReport> {
+export async function runBootGate(
+  opts: {
+    loadGates?: () => Promise<Array<{ gate: FeatureGate; environment: string; enabled: boolean }>>;
+    loadRegistry?: () => Promise<RegistryPackRow[]>;
+    onDivergence?: (evt: {
+      country: string;
+      reason: string;
+      matrixVersion: string;
+      engineVersion: string;
+    }) => void | Promise<void>;
+  } = {},
+): Promise<ReadinessReport> {
   const steps: ReadinessStep[] = [];
   const env = currentEnv();
   const trust = currentTrustPolicy();
@@ -89,7 +100,9 @@ export async function runBootGate(opts: {
 
   // Step 2 — Registry (H11.1a = coexistence + divergence detection)
   if (FeatureGates.isEnabled("registry_enabled", env)) {
-    const registry = opts.loadRegistry ? await opts.loadRegistry().catch(() => [] as RegistryPackRow[]) : [];
+    const registry = opts.loadRegistry
+      ? await opts.loadRegistry().catch(() => [] as RegistryPackRow[])
+      : [];
     const installed = CountryRuntime.list();
     const divergences: Array<Record<string, string | number | boolean>> = [];
     for (const rec of installed) {
@@ -110,7 +123,13 @@ export async function runBootGate(opts: {
           reason,
           ts: new Date().toISOString(),
         } as never);
-        if (opts.onDivergence) void opts.onDivergence({ country: m.country, reason, matrixVersion: COMPATIBILITY_MATRIX_V1.version, engineVersion: CORE_VERSION });
+        if (opts.onDivergence)
+          void opts.onDivergence({
+            country: m.country,
+            reason,
+            matrixVersion: COMPATIBILITY_MATRIX_V1.version,
+            engineVersion: CORE_VERSION,
+          });
       }
     }
     steps.push({
@@ -121,7 +140,12 @@ export async function runBootGate(opts: {
       details: divergences,
     });
   } else {
-    steps.push({ name: "registry", ok: true, severity: "info", message: "registry_enabled=off — bootstrap only" });
+    steps.push({
+      name: "registry",
+      ok: true,
+      severity: "info",
+      message: "registry_enabled=off — bootstrap only",
+    });
   }
 
   // Step 3 — Compatibility Matrix
@@ -155,7 +179,12 @@ export async function runBootGate(opts: {
       message: `PACK_SIG_ENFORCE=on, trust=${trust.environment} sigs≥${trust.requiredSignatures}`,
     });
   } else {
-    steps.push({ name: "signatures", ok: true, severity: "info", message: "enforcement off (warn-only)" });
+    steps.push({
+      name: "signatures",
+      ok: true,
+      severity: "info",
+      message: "enforcement off (warn-only)",
+    });
   }
 
   // Step 5 — Health per installed pack

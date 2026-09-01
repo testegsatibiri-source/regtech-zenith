@@ -4,11 +4,11 @@
 import type { SigningCapability } from "./trust-policy";
 
 export interface PackSignatureRecord {
-  signer: string;         // publisher metadata (audit / display)
-  keyId: string;          // primary lookup id
-  publicKey: string;      // base64 (kept for fallback verification)
+  signer: string; // publisher metadata (audit / display)
+  keyId: string; // primary lookup id
+  publicKey: string; // base64 (kept for fallback verification)
   algo: "ed25519";
-  signature: string;      // base64 signature
+  signature: string; // base64 signature
   capability: SigningCapability;
   ts: string;
 }
@@ -19,7 +19,8 @@ export type VerificationResult =
   | { ok: true; verified: false; reason: "crypto-unavailable" };
 
 function base64ToBytes(b64: string): Uint8Array {
-  const bin = typeof atob === "function" ? atob(b64) : Buffer.from(b64, "base64").toString("binary");
+  const bin =
+    typeof atob === "function" ? atob(b64) : Buffer.from(b64, "base64").toString("binary");
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;

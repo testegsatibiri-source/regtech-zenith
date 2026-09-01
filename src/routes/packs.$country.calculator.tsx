@@ -17,7 +17,12 @@ export const Route = createFileRoute("/packs/$country/calculator")({
   head: ({ loaderData }) => {
     const p = (loaderData as { pack?: CatalogEntry } | undefined)?.pack;
     if (!p) {
-      return { meta: [{ title: "Calculator unavailable | UBoard Asia" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "Calculator unavailable | UBoard Asia" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const title = `${p.name} Payroll Calculator — Country Pack v${p.version} | UBoard Asia`;
     const description = `Gross-to-net payroll simulation for ${p.name}, computed by the ${p.name} Country Pack (${p.rulesetVersion}) running on the UBoard global compliance core.`;
@@ -68,7 +73,8 @@ function PackCalculator() {
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Estimates for guidance only. Every rate and threshold is a versioned Country Pack parameter.
+            Estimates for guidance only. Every rate and threshold is a versioned Country Pack
+            parameter.
           </p>
         </main>
         <SiteFooter />

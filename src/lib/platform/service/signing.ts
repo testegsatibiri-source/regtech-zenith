@@ -10,23 +10,33 @@ export class DbTrustStore implements TrustStore {
   async listActive(): Promise<TrustedKey[]> {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
-      .from("pack_signing_keys").select(COLS).eq("active", true).is("revoked_at", null);
+      .from("pack_signing_keys")
+      .select(COLS)
+      .eq("active", true)
+      .is("revoked_at", null);
     if (error) throw error;
     return (data ?? []).map(rowToKey);
   }
   async find(publisher: string, publicKey: string): Promise<TrustedKey | undefined> {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
-      .from("pack_signing_keys").select(COLS)
-      .eq("publisher", publisher).eq("public_key", publicKey).maybeSingle();
+      .from("pack_signing_keys")
+      .select(COLS)
+      .eq("publisher", publisher)
+      .eq("public_key", publicKey)
+      .maybeSingle();
     if (error) throw error;
     return data ? rowToKey(data) : undefined;
   }
   async findByKeyId(keyId: string): Promise<TrustedKey | undefined> {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
-      .from("pack_signing_keys").select(COLS)
-      .eq("key_id", keyId).eq("active", true).is("revoked_at", null).maybeSingle();
+      .from("pack_signing_keys")
+      .select(COLS)
+      .eq("key_id", keyId)
+      .eq("active", true)
+      .is("revoked_at", null)
+      .maybeSingle();
     if (error) throw error;
     return data ? rowToKey(data) : undefined;
   }

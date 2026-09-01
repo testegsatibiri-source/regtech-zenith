@@ -21,7 +21,10 @@ export interface ConfigProvider {
 
 export class ConfigMissing extends Error {
   code = "CONFIG_MISSING" as const;
-  constructor(public key: string, public country: string) {
+  constructor(
+    public key: string,
+    public country: string,
+  ) {
     super(`missing config '${key}' for country '${country}'`);
   }
 }
@@ -31,7 +34,9 @@ export class ConfigService {
   constructor(providers: ConfigProvider[]) {
     this.ordered = [...providers].sort((a, b) => a.priority - b.priority);
   }
-  providers(): readonly ConfigProvider[] { return this.ordered; }
+  providers(): readonly ConfigProvider[] {
+    return this.ordered;
+  }
 
   async resolve(key: string, ctx: ConfigContext): Promise<ConfigValue> {
     for (const p of this.ordered) {

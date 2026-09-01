@@ -16,7 +16,9 @@ export interface BenchmarkRunResult {
   regressions: number;
 }
 
-export async function runBenchmark(opts: { snapshotVersion?: number } = {}): Promise<BenchmarkRunResult> {
+export async function runBenchmark(
+  opts: { snapshotVersion?: number } = {},
+): Promise<BenchmarkRunResult> {
   const c = await db();
 
   // Resolve target snapshot
@@ -30,7 +32,14 @@ export async function runBenchmark(opts: { snapshotVersion?: number } = {}): Pro
     .from("uada_search_benchmarks")
     .select("id, slug, query, expected_paths, benchmark_version");
   if (!fixtures || fixtures.length === 0) {
-    return { snapshotId: snap.id, snapshotVersion: snap.version, ran: 0, hits: 0, avgPrecision: 0, regressions: 0 };
+    return {
+      snapshotId: snap.id,
+      snapshotVersion: snap.version,
+      ran: 0,
+      hits: 0,
+      avgPrecision: 0,
+      regressions: 0,
+    };
   }
 
   let hits = 0;

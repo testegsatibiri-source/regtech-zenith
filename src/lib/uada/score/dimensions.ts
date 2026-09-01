@@ -148,7 +148,8 @@ function testDimension(facts: ArchitectureFacts): ScoreDimension {
       /\.(ts|tsx)$/.test(d.path) &&
       (layerOf(d.path) === "sdk" || layerOf(d.path) === "pack" || layerOf(d.path) === "uada"),
   );
-  const ratio = modules.length === 0 ? 0 : Math.min(1, tests.length / Math.max(1, modules.length / 4));
+  const ratio =
+    modules.length === 0 ? 0 : Math.min(1, tests.length / Math.max(1, modules.length / 4));
   return {
     name: "test_coverage",
     weight: SCORE_WEIGHTS.test_coverage,
@@ -197,7 +198,6 @@ export function computeDimensions(facts: ArchitectureFacts): ScoreDimension[] {
     regulatoryAccuracyDimension(facts),
   ];
 }
-
 
 export function computeScoreReport(
   facts: ArchitectureFacts,

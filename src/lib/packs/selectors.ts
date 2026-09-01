@@ -22,7 +22,10 @@ import type { CatalogEntry } from "@/lib/packs/catalog";
 import { toAvailablePack, type AvailablePack } from "./onboarding-contract";
 
 export function regionSlug(region: string): string {
-  return region.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return region
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 /**
@@ -42,10 +45,7 @@ export function matchesRegion(entry: CatalogEntry, region?: string): boolean {
  * in scope, whatever its status. A pack can be visible here and NOT be
  * selectable — that is invariant I4.
  */
-export function selectRegionalCatalog(
-  catalog: CatalogEntry[],
-  region?: string,
-): CatalogEntry[] {
+export function selectRegionalCatalog(catalog: CatalogEntry[], region?: string): CatalogEntry[] {
   return catalog.filter((e) => matchesRegion(e, region));
 }
 
@@ -54,10 +54,7 @@ export function selectRegionalCatalog(
  * production-grade packs only, i.e. the cumulative gate passed including live
  * health. Region, when supplied, only scopes this set.
  */
-export function selectAvailablePacks(
-  catalog: CatalogEntry[],
-  region?: string,
-): AvailablePack[] {
+export function selectAvailablePacks(catalog: CatalogEntry[], region?: string): AvailablePack[] {
   return catalog
     .filter((e) => e.tier === "production" && matchesRegion(e, region))
     .map(toAvailablePack);

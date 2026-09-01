@@ -48,10 +48,9 @@ function extractIp(request: Request): string {
   );
 }
 
-export async function authenticateRequest(request: Request): Promise<
-  | { ok: true; auth: AuthResult }
-  | { ok: false; response: Response }
-> {
+export async function authenticateRequest(
+  request: Request,
+): Promise<{ ok: true; auth: AuthResult } | { ok: false; response: Response }> {
   const ip = extractIp(request);
   const authHeader = request.headers.get("authorization") ?? "";
   const bearer = authHeader.toLowerCase().startsWith("bearer ") ? authHeader.slice(7).trim() : "";
@@ -60,9 +59,13 @@ export async function authenticateRequest(request: Request): Promise<
     if (!takeAnonToken(ip)) {
       return {
         ok: false,
-        response: json({ error: "Rate limit exceeded for anonymous access. Provide an API key." }, 429, {
-          "Retry-After": "60",
-        }),
+        response: json(
+          { error: "Rate limit exceeded for anonymous access. Provide an API key." },
+          429,
+          {
+            "Retry-After": "60",
+          },
+        ),
       };
     }
     return { ok: true, auth: { kind: "anon", ip } };
@@ -125,7 +128,10 @@ export async function recordApiUsage(params: {
       ip: params.ip,
     });
     if (params.keyId) {
-      await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", params.keyId);
+      await supabaseAdmin
+        .from("api_keys")
+        .update({ last_used_at: new Date().toISOString() })
+        .eq("id", params.keyId);
     }
   } catch (e) {
     getLogger().warn("api_usage_write_failed", { err: (e as Error).message });

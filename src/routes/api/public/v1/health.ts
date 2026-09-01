@@ -15,7 +15,9 @@ export const Route = createFileRoute("/api/public/v1/health")({
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const t0 = performance.now();
-          const { error } = await supabaseAdmin.from("companies").select("id", { count: "exact", head: true });
+          const { error } = await supabaseAdmin
+            .from("companies")
+            .select("id", { count: "exact", head: true });
           dbLatencyMs = Math.round(performance.now() - t0);
           if (error) dbStatus = "degraded";
         } catch {
@@ -27,7 +29,11 @@ export const Route = createFileRoute("/api/public/v1/health")({
           packRecords.map(async (r) => {
             let health: { status: string } | undefined;
             if (r.status === "installed" || r.status === "degraded") {
-              try { health = await CountryRuntime.health(r.pack.manifest.country); } catch { /* ignore */ }
+              try {
+                health = await CountryRuntime.health(r.pack.manifest.country);
+              } catch {
+                /* ignore */
+              }
             }
             return {
               code: r.pack.manifest.country,
@@ -40,7 +46,8 @@ export const Route = createFileRoute("/api/public/v1/health")({
           }),
         );
 
-        const anyDegraded = dbStatus !== "ok" || packs.some((p) => p.status !== "installed" || p.health !== "ok");
+        const anyDegraded =
+          dbStatus !== "ok" || packs.some((p) => p.status !== "installed" || p.health !== "ok");
         return jsonResponse({
           status: anyDegraded ? "degraded" : "ok",
           uptime_ms: Math.round(performance.now() - start),

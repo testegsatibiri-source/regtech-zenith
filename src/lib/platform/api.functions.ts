@@ -56,18 +56,25 @@ export const runPackHealth = createServerFn({ method: "POST" })
 
 export const recordPackInstallation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: {
-    country: string; packVersion: string; installedFrom?: "manual" | "pipeline" | "rollback" | "marketplace";
-    manifestChecksum?: string | null; manifestSignature?: string | null; notes?: string;
-  }) =>
-    z.object({
-      country: CountryCode,
-      packVersion: z.string().min(1),
-      installedFrom: z.enum(["manual", "pipeline", "rollback", "marketplace"]).optional(),
-      manifestChecksum: z.string().nullable().optional(),
-      manifestSignature: z.string().nullable().optional(),
-      notes: z.string().max(500).optional(),
-    }).parse(data),
+  .inputValidator(
+    (data: {
+      country: string;
+      packVersion: string;
+      installedFrom?: "manual" | "pipeline" | "rollback" | "marketplace";
+      manifestChecksum?: string | null;
+      manifestSignature?: string | null;
+      notes?: string;
+    }) =>
+      z
+        .object({
+          country: CountryCode,
+          packVersion: z.string().min(1),
+          installedFrom: z.enum(["manual", "pipeline", "rollback", "marketplace"]).optional(),
+          manifestChecksum: z.string().nullable().optional(),
+          manifestSignature: z.string().nullable().optional(),
+          notes: z.string().max(500).optional(),
+        })
+        .parse(data),
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId, {
@@ -80,7 +87,12 @@ export const recordPackInstallation = createServerFn({ method: "POST" })
 export const listReleases = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { country?: string; limit?: number }) =>
-    z.object({ country: CountryCode.optional(), limit: z.number().int().min(1).max(500).optional() }).parse(data),
+    z
+      .object({
+        country: CountryCode.optional(),
+        limit: z.number().int().min(1).max(500).optional(),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId, {
@@ -92,11 +104,21 @@ export const listReleases = createServerFn({ method: "POST" })
 export const transitionRelease = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string; to: ReleaseStatus; notes?: string }) =>
-    z.object({
-      id: z.string().uuid(),
-      to: z.enum(["draft", "candidate", "approved", "released", "deprecated", "archived", "rolled_back"]),
-      notes: z.string().max(500).optional(),
-    }).parse(data),
+    z
+      .object({
+        id: z.string().uuid(),
+        to: z.enum([
+          "draft",
+          "candidate",
+          "approved",
+          "released",
+          "deprecated",
+          "archived",
+          "rolled_back",
+        ]),
+        notes: z.string().max(500).optional(),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId);
@@ -126,30 +148,42 @@ export const listRegisterParameters = createServerFn({ method: "POST" })
 
 export const diffRegisterParameters = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { country: string; parameterKey: string; versionA: number; versionB: number }) =>
-    z.object({
-      country: CountryCode,
-      parameterKey: z.string().min(1),
-      versionA: z.number().int().min(1),
-      versionB: z.number().int().min(1),
-    }).parse(data),
+  .inputValidator(
+    (data: { country: string; parameterKey: string; versionA: number; versionB: number }) =>
+      z
+        .object({
+          country: CountryCode,
+          parameterKey: z.string().min(1),
+          versionA: z.number().int().min(1),
+          versionB: z.number().int().min(1),
+        })
+        .parse(data),
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId, {
       targetCountry: data.country,
     });
-    return parametersService.diff(platform, data.country, data.parameterKey, data.versionA, data.versionB);
+    return parametersService.diff(
+      platform,
+      data.country,
+      data.parameterKey,
+      data.versionA,
+      data.versionB,
+    );
   });
 
 export const importParameters = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { country: string; parameterKey: string; payload: unknown; notes?: string }) =>
-    z.object({
-      country: CountryCode,
-      parameterKey: z.string().min(1),
-      payload: z.unknown(),
-      notes: z.string().max(500).optional(),
-    }).parse(data) as { country: string; parameterKey: string; payload: unknown; notes?: string },
+  .inputValidator(
+    (data: { country: string; parameterKey: string; payload: unknown; notes?: string }) =>
+      z
+        .object({
+          country: CountryCode,
+          parameterKey: z.string().min(1),
+          payload: z.unknown(),
+          notes: z.string().max(500).optional(),
+        })
+        .parse(data) as { country: string; parameterKey: string; payload: unknown; notes?: string },
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId, {
@@ -173,20 +207,27 @@ export const listFlags = createServerFn({ method: "POST" })
 
 export const upsertFlag = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: {
-    country: string; flag: string; enabled: boolean;
-    rollout_percentage?: number; environment?: "preview" | "production" | "all";
-    effective_from?: string | null; effective_to?: string | null;
-  }) =>
-    z.object({
-      country: CountryCode,
-      flag: z.string().min(1).max(100),
-      enabled: z.boolean(),
-      rollout_percentage: z.number().int().min(0).max(100).optional(),
-      environment: z.enum(["preview", "production", "all"]).optional(),
-      effective_from: z.string().nullable().optional(),
-      effective_to: z.string().nullable().optional(),
-    }).parse(data),
+  .inputValidator(
+    (data: {
+      country: string;
+      flag: string;
+      enabled: boolean;
+      rollout_percentage?: number;
+      environment?: "preview" | "production" | "all";
+      effective_from?: string | null;
+      effective_to?: string | null;
+    }) =>
+      z
+        .object({
+          country: CountryCode,
+          flag: z.string().min(1).max(100),
+          enabled: z.boolean(),
+          rollout_percentage: z.number().int().min(0).max(100).optional(),
+          environment: z.enum(["preview", "production", "all"]).optional(),
+          effective_from: z.string().nullable().optional(),
+          effective_to: z.string().nullable().optional(),
+        })
+        .parse(data),
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId, {
@@ -199,11 +240,13 @@ export const upsertFlag = createServerFn({ method: "POST" })
 export const listAudit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { country?: string; limit?: number; component?: string }) =>
-    z.object({
-      country: CountryCode.optional(),
-      limit: z.number().int().min(1).max(500).optional(),
-      component: z.string().optional(),
-    }).parse(data),
+    z
+      .object({
+        country: CountryCode.optional(),
+        limit: z.number().int().min(1).max(500).optional(),
+        component: z.string().optional(),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const platform = await buildPlatformContext(context.supabase, context.userId);

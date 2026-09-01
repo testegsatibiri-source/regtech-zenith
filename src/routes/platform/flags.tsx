@@ -7,7 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,8 +43,11 @@ function FlagsPage() {
 
   const mutate = useMutation({
     mutationFn: (input: {
-      country: string; flag: string; enabled: boolean;
-      rollout_percentage?: number; environment?: "preview" | "production" | "all";
+      country: string;
+      flag: string;
+      enabled: boolean;
+      rollout_percentage?: number;
+      environment?: "preview" | "production" | "all";
     }) => upsertFn({ data: input }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["platform", "flags"] });
@@ -52,18 +61,28 @@ function FlagsPage() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-3xl font-bold">Feature Flags</h1>
-        <p className="text-muted-foreground">Per-country, per-environment. Rollout percentages advisory.</p>
+        <p className="text-muted-foreground">
+          Per-country, per-environment. Rollout percentages advisory.
+        </p>
       </header>
 
       <Card>
-        <CardHeader><CardTitle>Create / update</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Create / update</CardTitle>
+        </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-5">
           <div>
             <Label>Country</Label>
             <Select value={country} onValueChange={setCountry}>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
               <SelectContent>
-                {(packs ?? []).map((p) => <SelectItem key={p.country} value={p.country}>{p.country}</SelectItem>)}
+                {(packs ?? []).map((p) => (
+                  <SelectItem key={p.country} value={p.country}>
+                    {p.country}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -73,8 +92,13 @@ function FlagsPage() {
           </div>
           <div>
             <Label>Environment</Label>
-            <Select value={environment} onValueChange={(v) => setEnvironment(v as typeof environment)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={environment}
+              onValueChange={(v) => setEnvironment(v as typeof environment)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">all</SelectItem>
                 <SelectItem value="preview">preview</SelectItem>
@@ -84,24 +108,52 @@ function FlagsPage() {
           </div>
           <div>
             <Label>Rollout %</Label>
-            <Input type="number" min={0} max={100} value={rollout} onChange={(e) => setRollout(Number(e.target.value))} />
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={rollout}
+              onChange={(e) => setRollout(Number(e.target.value))}
+            />
           </div>
           <div className="flex items-end gap-2">
             <Button
               disabled={!country || !flag || mutate.isPending}
-              onClick={() => mutate.mutate({ country, flag, enabled: true, rollout_percentage: rollout, environment })}
-            >Enable</Button>
+              onClick={() =>
+                mutate.mutate({
+                  country,
+                  flag,
+                  enabled: true,
+                  rollout_percentage: rollout,
+                  environment,
+                })
+              }
+            >
+              Enable
+            </Button>
             <Button
               variant="outline"
               disabled={!country || !flag || mutate.isPending}
-              onClick={() => mutate.mutate({ country, flag, enabled: false, rollout_percentage: rollout, environment })}
-            >Disable</Button>
+              onClick={() =>
+                mutate.mutate({
+                  country,
+                  flag,
+                  enabled: false,
+                  rollout_percentage: rollout,
+                  environment,
+                })
+              }
+            >
+              Disable
+            </Button>
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Configured flags</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Configured flags</CardTitle>
+        </CardHeader>
         <CardContent>
           {isLoading ? (
             <p className="text-muted-foreground">Loading…</p>
@@ -112,7 +164,9 @@ function FlagsPage() {
               {(flags ?? []).map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2">
                   <div>
-                    <div className="font-mono text-xs">{f.country_code} · {f.flag}</div>
+                    <div className="font-mono text-xs">
+                      {f.country_code} · {f.flag}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {f.environment} · rollout {f.rollout_percentage}%
                     </div>

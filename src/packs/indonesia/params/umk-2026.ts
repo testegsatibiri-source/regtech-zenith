@@ -27,12 +27,7 @@ export interface UmkEntry {
   legalBasis: string;
 }
 
-const U = (
-  province: string,
-  region: string,
-  amount: number,
-  effectiveYear = 2025,
-): UmkEntry => ({
+const U = (province: string, region: string, amount: number, effectiveYear = 2025): UmkEntry => ({
   province,
   region,
   amount,

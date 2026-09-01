@@ -2,9 +2,10 @@
 // the caller's origin only when it matches the api_keys.allowed_origins list.
 const BASE_HEADERS = {
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Request-Id",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Request-Id",
   "Access-Control-Max-Age": "86400",
-  "Vary": "Origin",
+  Vary: "Origin",
 } as const;
 
 export const API_CORS_HEADERS = {
@@ -12,9 +13,16 @@ export const API_CORS_HEADERS = {
   ...BASE_HEADERS,
 } as const;
 
-export function corsHeadersFor(origin: string | null, allowedOrigins: string[]): Record<string, string> {
+export function corsHeadersFor(
+  origin: string | null,
+  allowedOrigins: string[],
+): Record<string, string> {
   if (!origin) return { ...BASE_HEADERS };
-  if (allowedOrigins.length === 0 || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+  if (
+    allowedOrigins.length === 0 ||
+    allowedOrigins.includes("*") ||
+    allowedOrigins.includes(origin)
+  ) {
     return { "Access-Control-Allow-Origin": origin, ...BASE_HEADERS };
   }
   return { ...BASE_HEADERS };

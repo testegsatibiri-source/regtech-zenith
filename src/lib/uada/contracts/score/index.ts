@@ -22,14 +22,13 @@ export const SCORE_DIMENSIONS: readonly ScoreDimensionName[] = [
 
 /** Frozen weights. MUST sum to exactly 1. Enforced by tests. */
 export const SCORE_WEIGHTS: Readonly<Record<ScoreDimensionName, number>> = {
-  coupling: 0.20,
-  boundary_integrity: 0.20,
+  coupling: 0.2,
+  boundary_integrity: 0.2,
   documentation_coverage: 0.15,
   knowledge_freshness: 0.15,
   test_coverage: 0.15,
   regulatory_accuracy: 0.15,
 };
-
 
 export interface ScoreDimension {
   name: ScoreDimensionName;

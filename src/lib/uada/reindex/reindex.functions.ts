@@ -14,10 +14,7 @@ export const reindex = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // AuthZ: only platform_admin or platform_operator can trigger.
     const { supabase, userId } = context;
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     const allowed = new Set(["platform_admin", "platform_operator"]);
     if (!(roles ?? []).some((r) => allowed.has(r.role))) {
       throw new Error("Forbidden: platform_admin or platform_operator required");
@@ -45,7 +42,9 @@ export const listRecentRuns = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data, error } = await supabase
       .from("uada_index_runs")
-      .select("id, snapshot_id, mode, reason, started_at, finished_at, duration_ms, docs_upserted, docs_denied, graph_nodes, graph_edges, embedding_batches, embedding_tokens, coverage, ok, error")
+      .select(
+        "id, snapshot_id, mode, reason, started_at, finished_at, duration_ms, docs_upserted, docs_denied, graph_nodes, graph_edges, embedding_batches, embedding_tokens, coverage, ok, error",
+      )
       .order("started_at", { ascending: false })
       .limit(10);
     if (error) throw new Error(error.message);
@@ -58,7 +57,9 @@ export const getActiveSnapshotSummary = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data: active } = await supabase
       .from("uada_snapshots")
-      .select("id, version, state, promotion_state, embedding_model, embedding_dimensions, stats, activated_at, created_at")
+      .select(
+        "id, version, state, promotion_state, embedding_model, embedding_dimensions, stats, activated_at, created_at",
+      )
       .eq("state", "active")
       .maybeSingle();
     const env = (process.env.LOVABLE_ENV as string) ?? "preview";

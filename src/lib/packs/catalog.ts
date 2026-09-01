@@ -69,8 +69,12 @@ export const STATUS_LABELS: Record<PackTier, string> = {
 
 /** Commercial region per jurisdiction (presentation only). */
 const REGIONS: Record<string, string> = {
-  ID: "Southeast Asia", MY: "Southeast Asia", PH: "Southeast Asia",
-  SG: "Southeast Asia", VN: "Southeast Asia", TH: "Southeast Asia",
+  ID: "Southeast Asia",
+  MY: "Southeast Asia",
+  PH: "Southeast Asia",
+  SG: "Southeast Asia",
+  VN: "Southeast Asia",
+  TH: "Southeast Asia",
 };
 
 /** Coverage lines shown on production cards. */
@@ -93,7 +97,10 @@ const PLANNED_CAPABILITIES: Record<string, string[]> = {
 
 /** Locales per planned market (installed packs read theirs from the manifest). */
 const LOCALES: Record<string, string[]> = {
-  MY: ["ms", "en"], VN: ["vi", "en"], TH: ["th", "en"], SG: ["en"],
+  MY: ["ms", "en"],
+  VN: ["vi", "en"],
+  TH: ["th", "en"],
+  SG: ["en"],
 };
 
 /**
@@ -109,16 +116,26 @@ const DOMAINS: Record<string, string> = {
 };
 
 /** Countries on the roadmap that have no installed pack yet. */
-const ROADMAP: Array<{ code: string; name: string; nameLocal: string; flag: string; currency: string }> = [
+const ROADMAP: Array<{
+  code: string;
+  name: string;
+  nameLocal: string;
+  flag: string;
+  currency: string;
+}> = [
   { code: "VN", name: "Vietnam", nameLocal: "Việt Nam", flag: "🇻🇳", currency: "VND" },
   { code: "TH", name: "Thailand", nameLocal: "ประเทศไทย", flag: "🇹🇭", currency: "THB" },
   { code: "SG", name: "Singapore", nameLocal: "Singapura", flag: "🇸🇬", currency: "SGD" },
 ];
 
 const FLAGS: Record<string, string> = {
-  ID: "🇮🇩", MY: "🇲🇾", PH: "🇵🇭", SG: "🇸🇬", VN: "🇻🇳", TH: "🇹🇭",
+  ID: "🇮🇩",
+  MY: "🇲🇾",
+  PH: "🇵🇭",
+  SG: "🇸🇬",
+  VN: "🇻🇳",
+  TH: "🇹🇭",
 };
-
 
 function major(v?: string): number {
   return Number.parseInt((v ?? "0").split(".")[0] ?? "0", 10) || 0;
@@ -161,7 +178,6 @@ export async function classifyWithHealth(
   if (health !== "ok") blockers.push(`structural: health check is "${health}"`);
   return { tier: blockers.length === 0 ? "production" : "beta", blockers, health };
 }
-
 
 function toEntry(
   rec: InstalledPack,
@@ -213,7 +229,6 @@ function roadmapEntries(installedCodes: Set<string>): CatalogEntry[] {
     blockers: ["pack not implemented yet"],
   }));
 }
-
 
 /** Synchronous catalog — no health gate. Safe for instant renders. */
 export function listCatalog(): CatalogEntry[] {

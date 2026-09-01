@@ -6,7 +6,10 @@ import { POLICIES } from "./policy/policies";
 
 export class ForbiddenError extends Error {
   code = "FORBIDDEN" as const;
-  constructor(public action: PlatformAction, public reason: string) {
+  constructor(
+    public action: PlatformAction,
+    public reason: string,
+  ) {
     super(`Forbidden: ${action} — ${reason}`);
   }
 }

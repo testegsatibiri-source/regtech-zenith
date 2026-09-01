@@ -42,7 +42,11 @@ export interface PhBenefitsCase {
 }
 
 export const PH_BENEFITS_CASES: PhBenefitsCase[] = [
-  { name: "Zero salary", input: { salary: 0 }, expected: { employeeTotalGt: -1, employerTotalGt: -1 } },
+  {
+    name: "Zero salary",
+    input: { salary: 0 },
+    expected: { employeeTotalGt: -1, employerTotalGt: -1 },
+  },
   {
     name: "₱15,000 mid-range",
     input: { salary: 15_000 },

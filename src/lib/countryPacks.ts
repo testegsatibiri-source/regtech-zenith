@@ -28,8 +28,8 @@ export const ID_PARAMS: IndonesiaParams = {
     "Jawa Barat": 2057495,
     "Jawa Tengah": 2036947,
     "Jawa Timur": 2165244,
-    "Banten": 2727812,
-    "Bali": 2813672,
+    Banten: 2727812,
+    Bali: 2813672,
     Other: 2000000,
   },
   bpjs: {
@@ -45,20 +45,50 @@ export const ID_PARAMS: IndonesiaParams = {
 };
 
 export const COUNTRIES = [
-  { code: "ID", name: "Indonesia", nameLocal: "Indonesia", currency: "IDR", flag: "🇮🇩", active: true },
-  { code: "MY", name: "Malaysia", nameLocal: "Malaysia", currency: "MYR", flag: "🇲🇾", active: false },
-  { code: "SG", name: "Singapore", nameLocal: "Singapura", currency: "SGD", flag: "🇸🇬", active: false },
-  { code: "PH", name: "Philippines", nameLocal: "Filipina", currency: "PHP", flag: "🇵🇭", active: false },
+  {
+    code: "ID",
+    name: "Indonesia",
+    nameLocal: "Indonesia",
+    currency: "IDR",
+    flag: "🇮🇩",
+    active: true,
+  },
+  {
+    code: "MY",
+    name: "Malaysia",
+    nameLocal: "Malaysia",
+    currency: "MYR",
+    flag: "🇲🇾",
+    active: false,
+  },
+  {
+    code: "SG",
+    name: "Singapore",
+    nameLocal: "Singapura",
+    currency: "SGD",
+    flag: "🇸🇬",
+    active: false,
+  },
+  {
+    code: "PH",
+    name: "Philippines",
+    nameLocal: "Filipina",
+    currency: "PHP",
+    flag: "🇵🇭",
+    active: false,
+  },
   { code: "VN", name: "Vietnam", nameLocal: "Vietnam", currency: "VND", flag: "🇻🇳", active: false },
-  { code: "TH", name: "Thailand", nameLocal: "Thailand", currency: "THB", flag: "🇹🇭", active: false },
+  {
+    code: "TH",
+    name: "Thailand",
+    nameLocal: "Thailand",
+    currency: "THB",
+    flag: "🇹🇭",
+    active: false,
+  },
 ] as const;
 
 // PTKP marital/dependent status options
-export const MARITAL_STATUS = [
-  "TK/0", "TK/1", "TK/2", "TK/3",
-  "K/0", "K/1", "K/2", "K/3",
-] as const;
+export const MARITAL_STATUS = ["TK/0", "TK/1", "TK/2", "TK/3", "K/0", "K/1", "K/2", "K/3"] as const;
 
-export const RELIGIONS = [
-  "Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu",
-] as const;
+export const RELIGIONS = ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"] as const;

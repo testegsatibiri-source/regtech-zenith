@@ -47,13 +47,18 @@ async function persistCompatReports(): Promise<void> {
     .eq("state", "published");
   const registryById = new Map<string, { id: string; sigs: unknown[] }>();
   for (const r of packsInRegistry.data ?? []) {
-    registryById.set(`${r.country_code}@${r.pack_version}`, { id: r.id, sigs: (r.signatures as unknown[]) ?? [] });
+    registryById.set(`${r.country_code}@${r.pack_version}`, {
+      id: r.id,
+      sigs: (r.signatures as unknown[]) ?? [],
+    });
   }
 
   for (const rec of installed) {
     const m = rec.pack.manifest;
     const regEntry = registryById.get(`${m.country}@${m.version}`);
-    const signatures = (regEntry?.sigs ?? []) as Parameters<typeof compatibilityService.check>[0]["signatures"];
+    const signatures = (regEntry?.sigs ?? []) as Parameters<
+      typeof compatibilityService.check
+    >[0]["signatures"];
     try {
       const report = await compatibilityService.check({
         pack: rec.pack,

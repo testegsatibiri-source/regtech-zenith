@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { CatalogEntry } from "@/lib/packs/catalog";
-import {
-  selectAvailablePacks,
-  selectRegionalCatalog,
-  matchesRegion,
-} from "@/lib/packs/selectors";
+import { selectAvailablePacks, selectRegionalCatalog, matchesRegion } from "@/lib/packs/selectors";
 import { variantForTier } from "@/components/packs/CountryPackCard";
 
 function entry(over: Partial<CatalogEntry> & Pick<CatalogEntry, "code">): CatalogEntry {
@@ -31,15 +27,37 @@ function entry(over: Partial<CatalogEntry> & Pick<CatalogEntry, "code">): Catalo
 const STATE_A: CatalogEntry[] = [
   entry({ code: "ID", name: "Indonesia", currency: "IDR" }),
   entry({ code: "PH", name: "Philippines", currency: "PHP" }),
-  entry({ code: "MY", name: "Malaysia", currency: "MYR", tier: "beta", statusLabel: "Validation", health: "warn", blockers: ["pre-1.0"] }),
+  entry({
+    code: "MY",
+    name: "Malaysia",
+    currency: "MYR",
+    tier: "beta",
+    statusLabel: "Validation",
+    health: "warn",
+    blockers: ["pre-1.0"],
+  }),
   entry({ code: "BR", name: "Brazil", currency: "BRL", region: "South America" }),
-  entry({ code: "VN", name: "Vietnam", currency: "VND", tier: "roadmap", statusLabel: "Roadmap", installed: false, signed: false }),
+  entry({
+    code: "VN",
+    name: "Vietnam",
+    currency: "VND",
+    tier: "roadmap",
+    statusLabel: "Roadmap",
+    installed: false,
+    signed: false,
+  }),
 ];
 
 /** Same runtime, PH health degraded. */
 const STATE_B: CatalogEntry[] = STATE_A.map((e) =>
   e.code === "PH"
-    ? { ...e, tier: "beta" as const, statusLabel: "Validation", health: "warn" as const, blockers: ['health check is "degraded"'] }
+    ? {
+        ...e,
+        tier: "beta" as const,
+        statusLabel: "Validation",
+        health: "warn" as const,
+        blockers: ['health check is "degraded"'],
+      }
     : e,
 );
 
@@ -85,7 +103,9 @@ describe("H19 — runtime invariants", () => {
 
 describe("H19.5 — production -> degraded transition (PH)", () => {
   it("state A: PH is production on the showcase and selectable", () => {
-    expect(selectRegionalCatalog(STATE_A, "asia").find((e) => e.code === "PH")!.tier).toBe("production");
+    expect(selectRegionalCatalog(STATE_A, "asia").find((e) => e.code === "PH")!.tier).toBe(
+      "production",
+    );
     expect(selectAvailablePacks(STATE_A, "asia").map((p) => p.countryCode)).toContain("PH");
   });
 

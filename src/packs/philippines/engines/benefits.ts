@@ -4,7 +4,9 @@ import type { BenefitsInput, BenefitsOutput } from "@/sdk";
 
 function findSssRow(salary: number) {
   // Lookup in descending order to match the correct bracket.
-  return [...PH_PARAMS.sss.table].reverse().find((r) => salary >= r.salaryMin) ?? PH_PARAMS.sss.table[0]!;
+  return (
+    [...PH_PARAMS.sss.table].reverse().find((r) => salary >= r.salaryMin) ?? PH_PARAMS.sss.table[0]!
+  );
 }
 
 export function calculatePhBenefits({ salary }: BenefitsInput): BenefitsOutput {
@@ -17,7 +19,8 @@ export function calculatePhBenefits({ salary }: BenefitsInput): BenefitsOutput {
   const sssEC = sssRow ? sssRow.ec : 0;
 
   // PhilHealth — 5% split 50/50 with floor/cap
-  const phBase = s <= 0 ? 0 : Math.min(Math.max(s, PH_PARAMS.philhealth.floor), PH_PARAMS.philhealth.cap);
+  const phBase =
+    s <= 0 ? 0 : Math.min(Math.max(s, PH_PARAMS.philhealth.floor), PH_PARAMS.philhealth.cap);
   const phTotal = Math.round(phBase * PH_PARAMS.philhealth.rate);
   const phEE = Math.round(phTotal / 2);
   const phER = phTotal - phEE;
@@ -28,7 +31,10 @@ export function calculatePhBenefits({ salary }: BenefitsInput): BenefitsOutput {
 
   const employee = { sss: sssEE, philhealth: phEE, pagibig: pagEE, total: sssEE + phEE + pagEE };
   const employer = {
-    sss: sssER, ec: sssEC, philhealth: phER, pagibig: pagER,
+    sss: sssER,
+    ec: sssEC,
+    philhealth: phER,
+    pagibig: pagER,
     total: sssER + sssEC + phER + pagER,
   };
   return { employee, employer };
