@@ -34,21 +34,29 @@ import type { CountryManifest } from "../src/sdk/manifest";
 const MANIFEST_PATH = path.join(import.meta.dir, "../src/packs/indonesia/index.ts");
 const SIGNATURE_PATH = path.join(import.meta.dir, "../src/packs/indonesia/signature.ts");
 
+const SRC = fs.readFileSync(MANIFEST_PATH, "utf8");
+
+// Only the top-level `const manifest: CountryManifest = { ... }` literal is
+// authoritative — capability descriptors further down also carry `version`.
+const MANIFEST_BLOCK = (() => {
+  const m = SRC.match(/const manifest: CountryManifest = \{([\s\S]*?)\n\};/);
+  if (!m) throw new Error(`manifest literal not found in ${MANIFEST_PATH}`);
+  return m[1];
+})();
+
 function readFromManifest(key: string): string {
-  const src = fs.readFileSync(MANIFEST_PATH, "utf8");
-  const direct = src.match(new RegExp(`^\\s*${key}:\\s*"([^"]+)"`, "m"));
+  const direct = MANIFEST_BLOCK.match(new RegExp(`^\\s*${key}:\\s*"([^"]+)"`, "m"));
   if (direct) return direct[1];
-  const viaConst = src.match(new RegExp(`^\\s*${key}:\\s*([A-Z_]+),`, "m"));
+  const viaConst = MANIFEST_BLOCK.match(new RegExp(`^\\s*${key}:\\s*([A-Z_]+),`, "m"));
   if (viaConst) {
-    const value = src.match(new RegExp(`const ${viaConst[1]} = "([^"]+)"`));
+    const value = SRC.match(new RegExp(`const ${viaConst[1]} = "([^"]+)"`));
     if (value) return value[1];
   }
   throw new Error(`Could not read ${key} from ${MANIFEST_PATH}`);
 }
 
 function readBoolFromManifest(key: string): boolean {
-  const src = fs.readFileSync(MANIFEST_PATH, "utf8");
-  const m = src.match(new RegExp(`^\\s*${key}:\\s*(true|false)`, "m"));
+  const m = MANIFEST_BLOCK.match(new RegExp(`^\\s*${key}:\\s*(true|false)`, "m"));
   if (!m) throw new Error(`Could not read ${key} from ${MANIFEST_PATH}`);
   return m[1] === "true";
 }
