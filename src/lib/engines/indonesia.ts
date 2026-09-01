@@ -166,3 +166,71 @@ export function buildPayslip({ baseSalary, allowances = 0, maritalStatus, hasNpw
 export function monthsBetween(from: Date, to: Date): number {
   return Math.max(0, (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()));
 }
+
+// ---------- Annual PPh 21 reconciliation (esqueleto H23-A) ----------
+// Monthly TER is an estimate; year-end reconciliation compares the sum of
+// monthly TER withholdings against the annual progressive tax liability.
+// A positive `underpaid` means the employer must withhold the difference in
+// December; a negative value means a refund/offset is due.
+export interface AnnualReconciliationInput {
+  year: number;
+  /** Sum of monthly gross salaries across the year. */
+  annualGross: number;
+  /** Sum of PPh 21 already withheld via TER each month. */
+  withheldTerTotal: number;
+  /** Annual progressive tax brackets (simplified; to be sourced from PMK). */
+  annualBrackets?: { bound: number; rate: number }[];
+  ptkp?: number;
+}
+
+export interface AnnualReconciliationResult {
+  annualTaxableIncome: number;
+  annualTaxLiability: number;
+  withheldTerTotal: number;
+  underpaid: number;
+  message: string;
+}
+
+const DEFAULT_ANNUAL_BRACKETS: AnnualReconciliationInput["annualBrackets"] = [
+  { bound: 60_000_000, rate: 0.05 },
+  { bound: 250_000_000, rate: 0.15 },
+  { bound: 500_000_000, rate: 0.25 },
+  { bound: 5_000_000_000, rate: 0.30 },
+];
+
+export function reconcileAnnualPph21({
+  annualGross,
+  withheldTerTotal,
+  annualBrackets = DEFAULT_ANNUAL_BRACKETS,
+  ptkp = 54_000_000,
+}: AnnualReconciliationInput): AnnualReconciliationResult {
+  const annualTaxableIncome = Math.max(0, annualGross - ptkp);
+  let remaining = annualTaxableIncome;
+  let previousBound = 0;
+  let annualTaxLiability = 0;
+  for (const { bound, rate } of annualBrackets) {
+    if (remaining <= 0) break;
+    const slice = Math.min(remaining, bound - previousBound);
+    annualTaxLiability += Math.round(slice * rate);
+    remaining -= slice;
+    previousBound = bound;
+  }
+  if (remaining > 0) {
+    annualTaxLiability += Math.round(remaining * 0.35);
+  }
+  const underpaid = annualTaxLiability - withheldTerTotal;
+  return {
+    annualTaxableIncome,
+    annualTaxLiability,
+    withheldTerTotal,
+    underpaid,
+    message:
+      underpaid > 0
+        ? `Annual liability exceeds withheld TER by ${underpaid.toLocaleString("id-ID")}; collect in December.`
+        : `Annual liability reconciled; ${Math.abs(underpaid).toLocaleString("id-ID")} over-withheld (refund/offset).`,
+  };
+}
+
+// Re-export overtime engine from the pack for convenience.
+export { calculateOvertime } from "@/packs/indonesia/engines/overtime";
+export type { OvertimeInput, OvertimeResult, WorkWeekPattern, DayType } from "@/packs/indonesia/engines/overtime";
