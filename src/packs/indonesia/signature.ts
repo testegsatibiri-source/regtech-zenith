@@ -1,4 +1,4 @@
-// H11.1a — Dual-signature block for the Indonesia pack 1.0.0.
+// H11.1a — Dual-signature block for the Indonesia pack 2.0.0.
 // Signatures were generated over the canonical manifest bytes; kept in a
 // separate module so validators/tests can import without pulling the pack.
 import type { SignatureBlock } from "@/sdk/manifest";
@@ -6,16 +6,16 @@ import type { SignatureBlock } from "@/sdk/manifest";
 export const ID_SIGNATURE_BLOCK: SignatureBlock = {
   "author": {
     "publisher": "uboard-id",
-    "keyId": "WA+LXrzHR/Gh0X9bOIuiKQ==",
+    "keyId": "gksfG1yRQhy5MTjRHvnaCA==",
     "algorithm": "Ed25519",
-    "signature": "jkisBWkSQhGGbyagfDsPgBd9Tgc7HTCBIp85Re4RjGS5jh0rZHfpuZkUxHd96ElMCySht6wTyNsFLnTMzTHcCg==",
-    "ts": "2026-09-01T00:13:44Z"
+    "signature": "a7Q3c0oO6Enl8aMLeSZxQrTgauto4Edrs9PwFmhj21TY481yjX2HCTcv89sOh9aDMugu/atfmYruXuBBsiH9Dg==",
+    "ts": "2026-09-01T00:14:10Z"
   },
   "countersign": {
     "publisher": "platform-cto-id",
-    "keyId": "R+jeXN+JTRuuPbY9ybjT4g==",
+    "keyId": "DZCuff74TjCujLdp3e9I8A==",
     "algorithm": "Ed25519",
-    "signature": "36Dq0PA1U6aUdqUYmnTgkIAupMbw4wRodVihVgYcy0sGUDRya7haPbh227InuVqQkR/qy0OWoe2yt8HiCLpYAg==",
-    "ts": "2026-09-01T00:13:44Z"
+    "signature": "EymGhKrOY9Ip/SiRJbDkQA4eIAnUyiqZKgLQonpvvMQWlip4WhOQdxLzIs7mGiMIjk1PO+FU6sNhoF+OZK8aCQ==",
+    "ts": "2026-09-01T00:14:10Z"
   }
 };
