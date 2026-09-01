@@ -51,31 +51,53 @@ const TER_A: TerTable = {
 };
 
 /**
- * TER B — PP 58/2023 lampiran B. Values below are the skeleton required to
- * bootstrap the pack; a per-bracket reconciliation against the official PMK
- * table is tracked as DEBT (id: ID-TER-B-RECON). The zeroThreshold + category
- * classification are correct — see conformance suite.
+ * TER B — PP 58/2023 lampiran B (transcribed from the official DJP PDF:
+ * pajak.go.id/sites/default/files/lampiran/Lampiran%20PP58TAHUN2023.pdf).
+ * Applies to PTKP TK/2, TK/3, K/1, K/2.
  */
 const TER_B: TerTable = {
   category: "B",
-  paramsVersion: "2026.1",
+  paramsVersion: "2026.2",
   legalBasis: "PP 58/2023 lampiran B; PMK 168/2023",
-  sourceStatus: "needs-review",
+  sourceStatus: "official",
   zeroThreshold: 6_200_000,
-  brackets: TER_A.brackets, // provisional — engine must not treat as golden
+  brackets: [
+    [6_500_000, 0.0025], [6_850_000, 0.005], [7_300_000, 0.0075], [9_200_000, 0.01],
+    [10_750_000, 0.015], [11_250_000, 0.02], [11_600_000, 0.025], [12_600_000, 0.03],
+    [13_600_000, 0.04], [14_950_000, 0.05], [16_400_000, 0.06], [18_450_000, 0.07],
+    [21_850_000, 0.08], [26_000_000, 0.09], [27_700_000, 0.1], [29_350_000, 0.11],
+    [31_450_000, 0.12], [33_950_000, 0.13], [37_100_000, 0.14], [41_100_000, 0.15],
+    [45_800_000, 0.16], [49_500_000, 0.17], [53_800_000, 0.18], [58_500_000, 0.19],
+    [64_000_000, 0.2], [71_000_000, 0.21], [80_000_000, 0.22], [93_000_000, 0.23],
+    [109_000_000, 0.24], [129_000_000, 0.25], [163_000_000, 0.26], [211_000_000, 0.27],
+    [374_000_000, 0.28], [459_000_000, 0.29], [555_000_000, 0.3], [704_000_000, 0.31],
+    [957_000_000, 0.32], [1_405_000_000, 0.33],
+  ] as const,
   topRate: TOP_RATE,
 };
 
-/** TER C — same status note as TER B. */
+/** TER C — PP 58/2023 lampiran C (same primary source). Applies to K/3. */
 const TER_C: TerTable = {
   category: "C",
-  paramsVersion: "2026.1",
+  paramsVersion: "2026.2",
   legalBasis: "PP 58/2023 lampiran C; PMK 168/2023",
-  sourceStatus: "needs-review",
+  sourceStatus: "official",
   zeroThreshold: 6_600_000,
-  brackets: TER_A.brackets, // provisional
+  brackets: [
+    [6_950_000, 0.0025], [7_350_000, 0.005], [7_800_000, 0.0075], [8_850_000, 0.01],
+    [9_800_000, 0.0125], [10_950_000, 0.015], [11_200_000, 0.0175], [12_050_000, 0.02],
+    [12_950_000, 0.03], [14_150_000, 0.04], [15_550_000, 0.05], [17_050_000, 0.06],
+    [19_500_000, 0.07], [22_700_000, 0.08], [26_600_000, 0.09], [28_100_000, 0.1],
+    [30_100_000, 0.11], [32_600_000, 0.12], [35_400_000, 0.13], [38_900_000, 0.14],
+    [43_000_000, 0.15], [47_400_000, 0.16], [51_200_000, 0.17], [55_800_000, 0.18],
+    [60_400_000, 0.19], [66_700_000, 0.2], [74_500_000, 0.21], [83_200_000, 0.22],
+    [95_600_000, 0.23], [110_000_000, 0.24], [134_000_000, 0.25], [169_000_000, 0.26],
+    [221_000_000, 0.27], [390_000_000, 0.28], [463_000_000, 0.29], [561_000_000, 0.3],
+    [709_000_000, 0.31], [965_000_000, 0.32], [1_419_000_000, 0.33],
+  ] as const,
   topRate: TOP_RATE,
 };
+
 
 export const TER_TABLES: Record<TerCategory, TerTable> = { A: TER_A, B: TER_B, C: TER_C };
 

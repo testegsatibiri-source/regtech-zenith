@@ -13,8 +13,13 @@ _Last audit: 2026-08-30 (H23-A0 + H23-A — ID fiscal parity: BPJS 2026, overtim
 - `src/packs/indonesia/params/bpjs-2026.ts` — official Ketenagakerjaan 2026 rates (JHT 2%/3.7%, JP 1%/2% with cap Rp 10.547.000, JKK 5 risk levels, JKM 0.3%, JKP government 0.22% + recomposition). BPJS Kesehatan ceiling marked `media-report` pending primary decree.
 - `calculateBpjs` accepts `{ salary, jkkRiskLevel, params, includeJkp }` and reports `sourceStatus` per component.
 - `src/packs/indonesia/engines/overtime.ts` — Lembur engine (1/173 base, weekday 1.5×/2×, rest/holiday 2×/3×, 5×8 and 6×7 patterns).
-- `reconcileAnnualPph21` — year-end TER vs annual progressive liability skeleton.
-- Tests: `src/packs/indonesia/__tests__/h23-a.test.ts` (186 total passing).
+- **TER B and TER C are now official** (`sourceStatus: "official"`, paramsVersion 2026.2), transcribed from the primary DJP PDF of PP 58/2023 lampiran B/C (38 and 39 brackets, zero thresholds Rp 6.200.000 / Rp 6.600.000, top rate 34%). They no longer mirror TER A; `ID-TER-B-RECON` is closed.
+  - Residual caveat (DEBT-026): the DJP PDF is a scanned/OCR copy; a human visual re-check of the transcribed bounds against the rendered PDF is required before the ID pack flips `commercialReady`.
+- `src/packs/indonesia/params/pph21-annual.ts` — PTKP (PMK 101/2016: base 54M, +4,5M married, +4,5M per dependent, max 3), biaya jabatan (PMK 250/2008, 5% capped 6M/year) and UU HPP art. 17 progressive brackets, all served through the ConfigService.
+- `reconcileAnnualPph21` now applies PTKP by status code, optional biaya jabatan and deductible JHT/JP contributions, and returns a `deductions` breakdown + `legalBasis`. Gross-only call sites keep the previous behaviour.
+- Pack bumped to **v2.2.0 / ID-2026.4** and re-signed (trust store rotated).
+- Tests: `src/packs/indonesia/__tests__/h23-a.test.ts`, `h23-a2.test.ts` (217 total passing).
+
 
 ## H22 delivered (PH HR Track — Phase A)
 
