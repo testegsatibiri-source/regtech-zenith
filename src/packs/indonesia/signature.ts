@@ -6,16 +6,16 @@ import type { SignatureBlock } from "@/sdk/manifest";
 export const ID_SIGNATURE_BLOCK: SignatureBlock = {
   "author": {
     "publisher": "uboard-id",
-    "keyId": "yAs2xWZpQW6ToVyaoeSmUw==",
+    "keyId": "TFX50fxqTtqJkKj9MVau5g==",
     "algorithm": "Ed25519",
-    "signature": "U3m6jLKeHmPzmyXkoE0S4Hy5+46cwkBMDm4wPMGUHAaGweEkDmMs381W8qfpVSg/BMrdss2XwcwzGgrvt5ztBw==",
-    "ts": "2026-09-01T00:13:21Z"
+    "signature": "n4iXilBsqfQrsl3w0lj/s9Vl6xwwQF2yE9vRNQP8DoQUUqBKnMqBEC9Sn4VP7Lf6TvNE7T+GAAHxvTeDkS8dAw==",
+    "ts": "2026-09-01T00:13:33Z"
   },
   "countersign": {
     "publisher": "platform-cto-id",
-    "keyId": "3fEA2Or3RXaZPAIzchRZeQ==",
+    "keyId": "Vf3p82HJSX2LASZ4DeHmDg==",
     "algorithm": "Ed25519",
-    "signature": "F3XXq8lP/JQ4OjK5j78Eo/6rvxH+mipr0DxZbt0CG1vt1djIZoC/aMHDuumbPfNwmgLkL4XVexMnx1yi5erjDg==",
-    "ts": "2026-09-01T00:13:21Z"
+    "signature": "YuzFznbfysijEni/9NNqOIIATUh4n6dcc8P3QSyExqetAYL/qqf76u9ull1rYfhlsncwS94GisY1UB5XVDSBAw==",
+    "ts": "2026-09-01T00:13:33Z"
   }
 };
