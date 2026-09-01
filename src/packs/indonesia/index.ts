@@ -73,11 +73,14 @@ const tax: TaxProvider = {
 
 const benefits: BenefitsProvider = {
   version: "1.0.0",
-  calculate: ({ salary }) => {
-    const r = calculateBpjs(salary);
+  calculate: ({ salary, metadata }) => {
+    const jkkRiskLevel = (metadata?.jkkRiskLevel as BpjsRiskLevelCode) ?? "very-low";
+    const r = calculateBpjs({ salary, jkkRiskLevel, includeJkp: true });
     return {
       employee: { ...r.employee } as Record<string, number> & { total: number },
       employer: { ...r.employer } as Record<string, number> & { total: number },
+      sourceStatus: r.sourceStatus,
+      jkp: r.jkp,
     };
   },
 };
