@@ -24,11 +24,12 @@ Os 11 warnings (9× `react-refresh/only-export-components` de componentes shadcn
 ## Sequência de execução
 
 1. `eslint --fix-dry-run` e inspeção do diff
-2. Commit A (formatação)
-3. Commit B (cinco `any` tipados)
-4. Commit C (`prefer-const` desligado só para o arquivo gerado)
-5. Gate local completo (abaixo)
-6. Push e validação do CI no GitHub
+2. Commit A (formatação, **excluindo** `previewAuthStorage.ts`)
+3. Commit B (cinco `any` tipados — `KeyObject` de `node:crypto` nas chaves Ed25519; cast tipado no fixture `signatureBlock`; sem alterar asserções)
+4. **Teste de tamper isolado** (`bunx vitest run src/packs/__tests__/signature-tamper.test.ts`) — baseline pré-mudança já verde (5/5); deve seguir 5/5 antes do commit
+5. Commit C (`previewAuthStorage.ts` adicionado aos `ignores` do eslint, com comentário)
+6. Gate local completo (abaixo)
+7. Push e validação do CI no GitHub
 
 ## Critério de conclusão (gate)
 
