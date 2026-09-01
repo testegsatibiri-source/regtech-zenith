@@ -8,6 +8,13 @@ import { UMK_TABLE, umkConfigKey } from "./umk-2026";
 import { ID_EID_AL_FITR, eidAlFitrConfigKey } from "./eid-al-fitr";
 import { BPJS_2026 } from "./bpjs-2026";
 import { RELIGIONS, resolveThrHoliday, religiousHolidayConfigKey } from "./religious-holidays";
+import {
+  ANNUAL_BRACKETS_HPP,
+  ANNUAL_BRACKETS_META,
+  PTKP_2026,
+  BIAYA_JABATAN,
+  PPH21_ANNUAL_CONFIG_KEYS,
+} from "./pph21-annual";
 
 export * from "./ter-tables";
 export * from "./ump-2026";
@@ -15,6 +22,7 @@ export * from "./umk-2026";
 export * from "./eid-al-fitr";
 export * from "./bpjs-2026";
 export * from "./religious-holidays";
+export * from "./pph21-annual";
 
 export function buildIndonesiaParamsMap(): Record<string, unknown> {
   const map: Record<string, unknown> = {};
