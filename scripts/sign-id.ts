@@ -82,9 +82,8 @@ function loadPrivateKey(envName: string): KeyObject | null {
 }
 
 function derivePublicKey(privateKey: KeyObject): KeyObject {
-  // node:crypto derives the public key from a private Ed25519 key object.
-  return createPrivateKey(privateKey.export({ type: "pkcs8", format: "pem" }) as string) &&
-    (require("node:crypto").createPublicKey(privateKey) as KeyObject);
+  // node:crypto derives the public key directly from the private key object.
+  return createPublicKey(privateKey);
 }
 
 // `keyId` is the trust-store lookup handle. It is derived from the public key
