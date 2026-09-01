@@ -123,20 +123,39 @@ export function calculateBpjs(input: BpjsInput | number): BpjsResult {
   return result;
 }
 
+import {
+  thrDueDateForReligion,
+  type Religion,
+  type ThrDueResolution,
+} from "@/packs/indonesia/params/religious-holidays";
+
 // ---------- THR Engine (13th religious pay) ----------
 export interface ThrInput {
   monthlySalary: number;
   monthsOfService: number; // full months worked
+  /** H23-B — declared religion drives the statutory deadline (PP 36/2021 art. 9). */
+  religion?: Religion;
+  /** Year of the THR cycle; defaults to the current year. */
+  year?: number;
 }
 export interface ThrResult {
   eligible: boolean;
   amount: number;
   prorated: boolean;
+  /** Present when a religion is declared: deadline + provenance. */
+  due?: ThrDueResolution;
 }
-export function calculateThr({ monthlySalary, monthsOfService }: ThrInput): ThrResult {
-  if (monthsOfService < 1) return { eligible: false, amount: 0, prorated: false };
-  if (monthsOfService >= 12) return { eligible: true, amount: Math.round(monthlySalary), prorated: false };
-  return { eligible: true, amount: Math.round((monthsOfService / 12) * monthlySalary), prorated: true };
+export function calculateThr({ monthlySalary, monthsOfService, religion, year }: ThrInput): ThrResult {
+  const due = religion
+    ? thrDueDateForReligion(religion, year ?? new Date().getUTCFullYear())
+    : undefined;
+  const base: ThrResult =
+    monthsOfService < 1
+      ? { eligible: false, amount: 0, prorated: false }
+      : monthsOfService >= 12
+        ? { eligible: true, amount: Math.round(monthlySalary), prorated: false }
+        : { eligible: true, amount: Math.round((monthsOfService / 12) * monthlySalary), prorated: true };
+  return due ? { ...base, due } : base;
 }
 
 // ---------- Full payslip ----------
@@ -233,5 +252,7 @@ export function reconcileAnnualPph21({
 }
 
 // Re-export overtime engine from the pack for convenience.
+export { thrDueDateForReligion, resolveThrHoliday, RELIGIONS } from "@/packs/indonesia/params/religious-holidays";
+export type { Religion, ThrDueResolution } from "@/packs/indonesia/params/religious-holidays";
 export { calculateOvertime } from "@/packs/indonesia/engines/overtime";
 export type { OvertimeInput, OvertimeResult, WorkWeekPattern, DayType } from "@/packs/indonesia/engines/overtime";

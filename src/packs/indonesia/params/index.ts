@@ -7,12 +7,14 @@ import { UMP_2026, UMP_FALLBACK, umpConfigKey } from "./ump-2026";
 import { UMK_TABLE, umkConfigKey } from "./umk-2026";
 import { ID_EID_AL_FITR, eidAlFitrConfigKey } from "./eid-al-fitr";
 import { BPJS_2026 } from "./bpjs-2026";
+import { RELIGIONS, resolveThrHoliday, religiousHolidayConfigKey } from "./religious-holidays";
 
 export * from "./ter-tables";
 export * from "./ump-2026";
 export * from "./umk-2026";
 export * from "./eid-al-fitr";
 export * from "./bpjs-2026";
+export * from "./religious-holidays";
 
 export function buildIndonesiaParamsMap(): Record<string, unknown> {
   const map: Record<string, unknown> = {};
@@ -32,6 +34,13 @@ export function buildIndonesiaParamsMap(): Record<string, unknown> {
   map[BPJS_2026.jkk.key] = BPJS_2026.jkk;
   map[BPJS_2026.jkm.key] = BPJS_2026.jkm;
   map[BPJS_2026.jkp.key] = BPJS_2026.jkp;
+  // H23-B — THR anchor holidays per declared religion.
+  for (const religion of RELIGIONS) {
+    for (const year of [2025, 2026, 2027]) {
+      const entry = resolveThrHoliday(religion, year);
+      if (entry) map[religiousHolidayConfigKey(religion, year)] = entry;
+    }
+  }
   return map;
 }
 

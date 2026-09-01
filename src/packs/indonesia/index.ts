@@ -26,6 +26,7 @@ import { calculateOvertime, type WorkWeekPattern } from "./engines/overtime";
 
 import { TER_TABLES } from "./params/ter-tables";
 import { thrDueDate } from "./params/eid-al-fitr";
+import { RELIGIONS, thrDueDateForReligion, type Religion, religiousHolidayConfigKey } from "./params/religious-holidays";
 import { buildIndonesiaParamsMap } from "./params";
 import { ID_SIGNATURE_BLOCK } from "./signature";
 
@@ -38,8 +39,8 @@ const PROVIDES: Capability[] = [
   "calendar", "contracts", "audit", "rules",
 ];
 
-const RULESET_VERSION = "ID-2026.2";
-const PACK_VERSION = "2.0.0";
+const RULESET_VERSION = "ID-2026.3";
+const PACK_VERSION = "2.1.0";
 
 const manifest: CountryManifest = {
   country: "ID",
@@ -56,7 +57,7 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["ter-2024", "thr", "bpjs-2026", "jkp", "ump-2026", "overtime", "annual-reconciliation"],
+  features: ["ter-2024", "thr", "thr-by-religion", "bpjs-2026", "jkp", "ump-2026", "overtime", "annual-reconciliation"],
   supportedLanguages: ["id", "en"],
   requiresCore: ">=2.2.0",
   commercialReady: false,
@@ -89,8 +90,27 @@ const benefits: BenefitsProvider = {
 };
 
 const thirteenth: ThirteenthProvider = {
-  version: "1.0.0",
-  calculate: (input) => calculateThr(input),
+  version: "1.1.0",
+  calculate: ({ monthlySalary, monthsOfService, metadata }) => {
+    const religion = metadata?.religion as Religion | undefined;
+    const year = metadata?.year as number | undefined;
+    const r = calculateThr({ monthlySalary, monthsOfService, religion, year });
+    return {
+      eligible: r.eligible,
+      amount: r.amount,
+      prorated: r.prorated,
+      due: r.due
+        ? {
+            holiday: r.due.holiday,
+            dueDate: r.due.dueDate,
+            sourceStatus: r.due.sourceStatus,
+            needsReview: r.due.needsReview,
+            legalBasis: r.due.legalBasis,
+            message: r.due.message,
+          }
+        : undefined,
+    };
+  },
 };
 
 const payroll: PayrollProvider = {

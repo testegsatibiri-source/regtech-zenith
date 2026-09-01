@@ -7,6 +7,8 @@ export interface ThirteenthInput {
    *  earned in the calendar year. When absent, the engine may fall back to
    *  current monthlySalary and report the fallback in the output. */
   annualGrossEarned?: number;
+  /** Pack-specific modifiers (e.g. Indonesia declared religion + THR year). */
+  metadata?: Record<string, unknown>;
 }
 export interface ThirteenthOutput {
   eligible: boolean;
@@ -17,6 +19,15 @@ export interface ThirteenthOutput {
   fallbackToMonthly?: boolean;
   /** Statutory annual base used, if available. */
   base?: number;
+  /** Optional statutory deadline with provenance (e.g. Indonesia THR keagamaan). */
+  due?: {
+    holiday: string | null;
+    dueDate: string | null;
+    sourceStatus: string;
+    needsReview: boolean;
+    legalBasis: string;
+    message: string;
+  };
 }
 
 export interface ThirteenthProvider {
