@@ -17,6 +17,7 @@ import type { AuditProvider } from "@/sdk/providers/AuditProvider";
 
 import { ID_PARAMS } from "@/lib/countryPacks";
 import { calculateTax, calculateBpjs, calculateThr, buildPayslip } from "@/lib/engines/indonesia";
+import type { BpjsRiskLevelCode } from "@/lib/engines/indonesia";
 import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
 import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
