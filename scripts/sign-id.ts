@@ -21,7 +21,7 @@
 //
 // Generate a custody key pair once:
 //   bun run scripts/sign-id.ts --new-keys
-import { generateKeyPairSync, sign, createPrivateKey, type KeyObject } from "node:crypto";
+import { generateKeyPairSync, sign, createPrivateKey, createPublicKey, type KeyObject } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalManifestBytes } from "../src/packs/indonesia/params/canonical-manifest";
@@ -34,21 +34,29 @@ import type { CountryManifest } from "../src/sdk/manifest";
 const MANIFEST_PATH = path.join(import.meta.dir, "../src/packs/indonesia/index.ts");
 const SIGNATURE_PATH = path.join(import.meta.dir, "../src/packs/indonesia/signature.ts");
 
+const SRC = fs.readFileSync(MANIFEST_PATH, "utf8");
+
+// Only the top-level `const manifest: CountryManifest = { ... }` literal is
+// authoritative — capability descriptors further down also carry `version`.
+const MANIFEST_BLOCK = (() => {
+  const m = SRC.match(/const manifest: CountryManifest = \{([\s\S]*?)\n\};/);
+  if (!m) throw new Error(`manifest literal not found in ${MANIFEST_PATH}`);
+  return m[1];
+})();
+
 function readFromManifest(key: string): string {
-  const src = fs.readFileSync(MANIFEST_PATH, "utf8");
-  const direct = src.match(new RegExp(`^\\s*${key}:\\s*"([^"]+)"`, "m"));
+  const direct = MANIFEST_BLOCK.match(new RegExp(`^\\s*${key}:\\s*"([^"]+)"`, "m"));
   if (direct) return direct[1];
-  const viaConst = src.match(new RegExp(`^\\s*${key}:\\s*([A-Z_]+),`, "m"));
+  const viaConst = MANIFEST_BLOCK.match(new RegExp(`^\\s*${key}:\\s*([A-Z_]+),`, "m"));
   if (viaConst) {
-    const value = src.match(new RegExp(`const ${viaConst[1]} = "([^"]+)"`));
+    const value = SRC.match(new RegExp(`const ${viaConst[1]} = "([^"]+)"`));
     if (value) return value[1];
   }
   throw new Error(`Could not read ${key} from ${MANIFEST_PATH}`);
 }
 
 function readBoolFromManifest(key: string): boolean {
-  const src = fs.readFileSync(MANIFEST_PATH, "utf8");
-  const m = src.match(new RegExp(`^\\s*${key}:\\s*(true|false)`, "m"));
+  const m = MANIFEST_BLOCK.match(new RegExp(`^\\s*${key}:\\s*(true|false)`, "m"));
   if (!m) throw new Error(`Could not read ${key} from ${MANIFEST_PATH}`);
   return m[1] === "true";
 }
@@ -82,9 +90,8 @@ function loadPrivateKey(envName: string): KeyObject | null {
 }
 
 function derivePublicKey(privateKey: KeyObject): KeyObject {
-  // node:crypto derives the public key from a private Ed25519 key object.
-  return createPrivateKey(privateKey.export({ type: "pkcs8", format: "pem" }) as string) &&
-    (require("node:crypto").createPublicKey(privateKey) as KeyObject);
+  // node:crypto derives the public key directly from the private key object.
+  return createPublicKey(privateKey);
 }
 
 // `keyId` is the trust-store lookup handle. It is derived from the public key
