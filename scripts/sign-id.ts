@@ -21,7 +21,7 @@
 //
 // Generate a custody key pair once:
 //   bun run scripts/sign-id.ts --new-keys
-import { generateKeyPairSync, sign, createPrivateKey, type KeyObject } from "node:crypto";
+import { generateKeyPairSync, sign, createPrivateKey, createPublicKey, type KeyObject } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalManifestBytes } from "../src/packs/indonesia/params/canonical-manifest";
