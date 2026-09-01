@@ -1,21 +1,21 @@
-// H11.1a — Dual-signature block for the Indonesia pack v1.9.0.
+// H11.1a — Dual-signature block for the Indonesia pack PACK_VERSION.
 // Signatures were generated over the canonical manifest bytes; kept in a
 // separate module so validators/tests can import without pulling the pack.
 import type { SignatureBlock } from "@/sdk/manifest";
 
 export const ID_SIGNATURE_BLOCK: SignatureBlock = {
-  author: {
-    publisher: "uboard-id",
-    keyId: "d86fbf3c326bcf49cc38309cf86504fc",
-    algorithm: "Ed25519",
-    signature: "HGTHBKXnUfCEgF8ObigVsggQZT6LUiXE2Gn7Xh8DpXYIfgNZ/dDZHWow+nn9WZYJXQdo5XbBP957UrdlYUfJAw==",
-    ts: "2026-08-13T01:02:19Z",
+  "author": {
+    "publisher": "uboard-id",
+    "keyId": "WzJzZXLXSHSvfz0PZSPC4w==",
+    "algorithm": "Ed25519",
+    "signature": "YVVEOITOH9ddBSsJcfXuABhis8aeIck7P1eEvrBgO+kht5ax+WaNDkdoYiD6UgyJcoPJcGn6h5iJjo2KNdBWCA==",
+    "ts": "2026-09-01T00:05:13.028Z"
   },
-  countersign: {
-    publisher: "platform-cto-id",
-    keyId: "5f1e549effaeb382d9042778f5201fcd",
-    algorithm: "Ed25519",
-    signature: "NbKo1LzPOIv2ESIAqlOwl0gJ0svMowrdwZbJ0WUWcW3ZBI1o2waYDaJOVLYUzUTBcjJBrc98jaj1ECbULMrLBA==",
-    ts: "2026-08-13T01:02:19Z",
-  },
+  "countersign": {
+    "publisher": "platform-cto-id",
+    "keyId": "TZ1+YHHpTMWnbL6fLQdMNw==",
+    "algorithm": "Ed25519",
+    "signature": "GM/OUNSLTXRK+KD0swK4vAJXosyKvTnX2awaG/Gn0f3AOQgtjYocqryW/75ovBCCwaKXavND94WHfQNRl5P+CQ==",
+    "ts": "2026-09-01T00:05:13.028Z"
+  }
 };
