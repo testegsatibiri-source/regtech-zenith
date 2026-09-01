@@ -17,6 +17,7 @@ import type { AuditProvider } from "@/sdk/providers/AuditProvider";
 
 import { ID_PARAMS } from "@/lib/countryPacks";
 import { calculateTax, calculateBpjs, calculateThr, buildPayslip } from "@/lib/engines/indonesia";
+import type { BpjsRiskLevelCode } from "@/lib/engines/indonesia";
 import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
 import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
@@ -35,8 +36,8 @@ const PROVIDES: Capability[] = [
   "calendar", "contracts", "audit", "rules",
 ];
 
-const RULESET_VERSION = "ID-2026.1";
-const PACK_VERSION = "1.9.0";
+const RULESET_VERSION = "ID-2026.2";
+const PACK_VERSION = "2.0.0";
 
 const manifest: CountryManifest = {
   country: "ID",
@@ -53,10 +54,10 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["ter-2024", "thr", "bpjs", "ump-2026"],
+  features: ["ter-2024", "thr", "bpjs-2026", "jkp", "ump-2026", "overtime", "annual-reconciliation"],
   supportedLanguages: ["id", "en"],
-  requiresCore: ">=2.0.0",
-  commercialReady: true,
+  requiresCore: ">=2.2.0",
+  commercialReady: false,
   signatureBlock: ID_SIGNATURE_BLOCK as SignatureBlock,
 };
 
@@ -73,11 +74,14 @@ const tax: TaxProvider = {
 
 const benefits: BenefitsProvider = {
   version: "1.0.0",
-  calculate: ({ salary }) => {
-    const r = calculateBpjs(salary);
+  calculate: ({ salary, metadata }) => {
+    const jkkRiskLevel = (metadata?.jkkRiskLevel as BpjsRiskLevelCode) ?? "very-low";
+    const r = calculateBpjs({ salary, jkkRiskLevel, includeJkp: true });
     return {
       employee: { ...r.employee } as Record<string, number> & { total: number },
       employer: { ...r.employer } as Record<string, number> & { total: number },
+      sourceStatus: r.sourceStatus,
+      jkp: r.jkp,
     };
   },
 };

@@ -1,8 +1,20 @@
 # UBoard Asia — Compliance OS · Technical Debt Register
 
-_Last audit: 2026-08-30 (H23-A0 — ID UMP 2026 epistemic update + ADR-0038 privacy extension)._
+_Last audit: 2026-08-30 (H23-A0 + H23-A — ID fiscal parity: BPJS 2026, overtime, annual PPh 21 reconciliation; UMP 2026 epistemic update + ADR-0038 privacy extension)._
 
+## H23-A0 delivered
 
+- `src/packs/indonesia/params/ump-2026.ts` — 38 provinces with 2026 values rounded to the nearest hundred-thousand IDR, all tagged `sourceStatus: "media-report"` (CNN Indonesia / DDTC). `UMP_FALLBACK` remains `stale`.
+- `ID-UMR-01` compliance rule returns `conclusive: false` while `sourceStatus !== "official"`; dashboard shows the non-conclusive message.
+- Tests: `src/packs/indonesia/__tests__/ump.test.ts`.
+
+## H23-A delivered
+
+- `src/packs/indonesia/params/bpjs-2026.ts` — official Ketenagakerjaan 2026 rates (JHT 2%/3.7%, JP 1%/2% with cap Rp 10.547.000, JKK 5 risk levels, JKM 0.3%, JKP government 0.22% + recomposition). BPJS Kesehatan ceiling marked `media-report` pending primary decree.
+- `calculateBpjs` accepts `{ salary, jkkRiskLevel, params, includeJkp }` and reports `sourceStatus` per component.
+- `src/packs/indonesia/engines/overtime.ts` — Lembur engine (1/173 base, weekday 1.5×/2×, rest/holiday 2×/3×, 5×8 and 6×7 patterns).
+- `reconcileAnnualPph21` — year-end TER vs annual progressive liability skeleton.
+- Tests: `src/packs/indonesia/__tests__/h23-a.test.ts` (186 total passing).
 
 ## H22 delivered (PH HR Track — Phase A)
 
