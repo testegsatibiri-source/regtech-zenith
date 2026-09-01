@@ -62,3 +62,11 @@ Validator, and Health Check must all pass; the "Approve Release" role signs.
 - `docs/governance/architecture-freeze.md`
 - `docs/governance/release-process.md`
 - `docs/architecture/repository-strategy.md`
+
+## Lint policy
+
+- CI runs `bunx eslint .` without `--max-warnings 0`: **warnings are non-fatal**, errors block merge.
+- Do not add `eslint-disable` comments; fix types properly or raise the rule question in review.
+- `src/integrations/supabase/previewAuthStorage.ts` is platform-generated and excluded from lint
+  (see DEBT-027 in `docs/tech-debt.md`). Never edit it manually.
+- Current tolerated warnings are tracked under DEBT-027; keep the count at or below 11.
