@@ -186,20 +186,28 @@ export function monthsBetween(from: Date, to: Date): number {
   return Math.max(0, (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()));
 }
 
-// ---------- Annual PPh 21 reconciliation (esqueleto H23-A) ----------
+// ---------- Annual PPh 21 reconciliation (H23-A) ----------
 // Monthly TER is an estimate; year-end reconciliation compares the sum of
-// monthly TER withholdings against the annual progressive tax liability.
-// A positive `underpaid` means the employer must withhold the difference in
-// December; a negative value means a refund/offset is due.
+// monthly TER withholdings against the annual progressive tax liability
+// (UU HPP 7/2021 art. 17). A positive `underpaid` means the employer must
+// withhold the difference in December; a negative value means a refund/offset.
 export interface AnnualReconciliationInput {
   year: number;
   /** Sum of monthly gross salaries across the year. */
   annualGross: number;
   /** Sum of PPh 21 already withheld via TER each month. */
   withheldTerTotal: number;
-  /** Annual progressive tax brackets (simplified; to be sourced from PMK). */
+  /** Annual progressive tax brackets. Defaults to UU HPP art. 17. */
   annualBrackets?: { bound: number; rate: number }[];
+  /** Explicit PTKP override; takes precedence over `maritalStatus`. */
   ptkp?: number;
+  /** PTKP status code (TK/0 … K/3) used to derive the allowance. */
+  maritalStatus?: string;
+  /** Apply biaya jabatan (5%, capped Rp 6.000.000/year). Default false for
+   *  backwards compatibility with gross-only call sites. */
+  applyOccupationalAllowance?: boolean;
+  /** Deductible employee contributions for the year (JHT 2% + JP 1%). */
+  deductibleContributions?: number;
 }
 
 export interface AnnualReconciliationResult {
@@ -207,49 +215,42 @@ export interface AnnualReconciliationResult {
   annualTaxLiability: number;
   withheldTerTotal: number;
   underpaid: number;
+  /** Breakdown of the statutory deductions applied. */
+  deductions: { ptkp: number; occupationalAllowance: number; contributions: number };
+  legalBasis: string;
   message: string;
 }
-
-const DEFAULT_ANNUAL_BRACKETS: { bound: number; rate: number }[] = [
-  { bound: 60_000_000, rate: 0.05 },
-  { bound: 250_000_000, rate: 0.15 },
-  { bound: 500_000_000, rate: 0.25 },
-  { bound: 5_000_000_000, rate: 0.30 },
-];
 
 export function reconcileAnnualPph21({
   annualGross,
   withheldTerTotal,
-  annualBrackets = DEFAULT_ANNUAL_BRACKETS,
-  ptkp = 54_000_000,
+  annualBrackets,
+  ptkp,
+  maritalStatus,
+  applyOccupationalAllowance = false,
+  deductibleContributions = 0,
 }: AnnualReconciliationInput): AnnualReconciliationResult {
-  const brackets = annualBrackets ?? DEFAULT_ANNUAL_BRACKETS;
-  const annualTaxableIncome = Math.max(0, annualGross - ptkp);
-  let remaining = annualTaxableIncome;
-  let previousBound = 0;
-  let annualTaxLiability = 0;
-  for (const { bound, rate } of brackets) {
-    if (remaining <= 0) break;
-    const slice = Math.min(remaining, bound - previousBound);
-    annualTaxLiability += Math.round(slice * rate);
-    remaining -= slice;
-    previousBound = bound;
-  }
-  if (remaining > 0) {
-    annualTaxLiability += Math.round(remaining * 0.35);
-  }
+  const brackets = annualBrackets ?? ANNUAL_BRACKETS_HPP;
+  const allowance = ptkp ?? (maritalStatus ? ptkpForStatus(maritalStatus) : PTKP_2026.base);
+  const occupational = applyOccupationalAllowance ? biayaJabatanFor(annualGross) : 0;
+  const netIncome = Math.max(0, annualGross - occupational - deductibleContributions);
+  const annualTaxableIncome = Math.max(0, netIncome - allowance);
+  const annualTaxLiability = progressiveAnnualTax(annualTaxableIncome, brackets, ANNUAL_TOP_RATE);
   const underpaid = annualTaxLiability - withheldTerTotal;
   return {
     annualTaxableIncome,
     annualTaxLiability,
     withheldTerTotal,
     underpaid,
+    deductions: { ptkp: allowance, occupationalAllowance: occupational, contributions: deductibleContributions },
+    legalBasis: "UU 7/2021 (HPP) art. 17; PMK 101/2016 (PTKP); PMK 250/2008 (biaya jabatan)",
     message:
       underpaid > 0
         ? `Annual liability exceeds withheld TER by ${underpaid.toLocaleString("id-ID")}; collect in December.`
         : `Annual liability reconciled; ${Math.abs(underpaid).toLocaleString("id-ID")} over-withheld (refund/offset).`,
   };
 }
+
 
 // Re-export overtime engine from the pack for convenience.
 export { thrDueDateForReligion, resolveThrHoliday, RELIGIONS } from "@/packs/indonesia/params/religious-holidays";
