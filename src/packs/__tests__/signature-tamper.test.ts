@@ -3,7 +3,7 @@
 // commercialReady field, or with a flipped value, fails verification against
 // the current signed manifest.
 import { describe, expect, it } from "vitest";
-import { generateKeyPairSync, sign } from "node:crypto";
+import { generateKeyPairSync, sign, type KeyObject } from "node:crypto";
 import { verifyEd25519 } from "@/sdk/signing";
 import { canonicalManifestBytes } from "@/packs/indonesia/params/canonical-manifest";
 import type { CountryManifest } from "@/sdk/manifest";

@@ -66,7 +66,6 @@ const manifest: CountryManifest = {
   supportedLanguages: ["en"],
   requiresCore: ">=2.0.0",
   commercialReady: false,
-  signatureBlock: undefined as any,
 };
 
 const bytes = canonicalManifestBytes(manifest);
