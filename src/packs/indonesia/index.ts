@@ -14,6 +14,7 @@ import type { CalendarProvider, ObligationTemplate } from "@/sdk/providers/Calen
 import type { ContractProvider } from "@/sdk/providers/ContractProvider";
 import type { RuleProvider } from "@/sdk/providers/RuleProvider";
 import type { AuditProvider } from "@/sdk/providers/AuditProvider";
+import type { OvertimeProvider } from "@/sdk/providers/OvertimeProvider";
 
 import { ID_PARAMS } from "@/lib/countryPacks";
 import { calculateTax, calculateBpjs, calculateThr, buildPayslip } from "@/lib/engines/indonesia";
@@ -21,6 +22,7 @@ import type { BpjsRiskLevelCode } from "@/lib/engines/indonesia";
 import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
 import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
+import { calculateOvertime, type WorkWeekPattern } from "./engines/overtime";
 
 import { TER_TABLES } from "./params/ter-tables";
 import { thrDueDate } from "./params/eid-al-fitr";
@@ -163,6 +165,15 @@ const contracts: ContractProvider = {
   },
 };
 
+const overtime: OvertimeProvider = {
+  version: "1.0.0",
+  calculate: ({ monthlySalary, hours, dayType, metadata }) => {
+    const pattern = (metadata?.pattern as WorkWeekPattern) ?? "5x8";
+    const r = calculateOvertime({ monthlySalary, hours, dayType, pattern });
+    return { ...r, legalBasis: "UU 6/2023 (Cipta Kerja); Kepmenaker 102/MEN/VI/2004" };
+  },
+};
+
 const rules: RuleProvider = {
   version: "1.0.0",
   rules: () => legacyEnginesPack.complianceRules,
@@ -173,7 +184,7 @@ const audit: AuditProvider = {
   heuristics: () => [],
 };
 
-const providers: Providers = { tax, benefits, payroll, thirteenth, calendar, contracts, rules, audit };
+const providers: Providers = { tax, benefits, payroll, thirteenth, overtime, calendar, contracts, rules, audit };
 
 function health(): HealthReport {
   const checks = [

@@ -12,6 +12,7 @@ import type { AuditProvider } from "./providers/AuditProvider";
 import type { FilingProvider } from "./providers/FilingProvider";
 import type { SeparationProvider } from "./providers/SeparationProvider";
 import type { LeaveProvider } from "./providers/LeaveProvider";
+import type { OvertimeProvider } from "./providers/OvertimeProvider";
 
 export interface Providers {
   tax?: TaxProvider;
@@ -28,6 +29,8 @@ export interface Providers {
   separation?: SeparationProvider;
   /** H22 Phase B — optional statutory leave (PH first). */
   leave?: LeaveProvider;
+  /** H23 Phase A — optional statutory overtime / lembur (ID first). */
+  overtime?: OvertimeProvider;
 }
 
 
