@@ -39,8 +39,8 @@ const PROVIDES: Capability[] = [
   "calendar", "contracts", "audit", "rules",
 ];
 
-const RULESET_VERSION = "ID-2026.3";
-const PACK_VERSION = "2.1.0";
+const RULESET_VERSION = "ID-2026.4";
+const PACK_VERSION = "2.2.0";
 
 const manifest: CountryManifest = {
   country: "ID",
@@ -57,7 +57,7 @@ const manifest: CountryManifest = {
     consumes: ["EmployeeUpserted@1", "ObligationStatusChanged@1"],
   },
   permissions: ["employees.read", "payroll.write"],
-  features: ["ter-2024", "thr", "thr-by-religion", "bpjs-2026", "jkp", "ump-2026", "overtime", "annual-reconciliation"],
+  features: ["ter-2024", "thr", "thr-by-religion", "bpjs-2026", "jkp", "ump-2026", "overtime", "annual-reconciliation", "ter-official-bc", "pph21-ptkp-deductions"],
   supportedLanguages: ["id", "en"],
   requiresCore: ">=2.2.0",
   commercialReady: false,
