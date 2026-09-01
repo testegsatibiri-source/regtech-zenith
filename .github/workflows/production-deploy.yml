@@ -109,6 +109,10 @@ jobs:
 
       - name: Build production
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          # Pins nitro's `vercel` preset (see vite.config.ts). Absent elsewhere
+          # means Lovable/Cloudflare — do not set this in other workflows.
+          BUILD_TARGET: vercel
 
       - name: Deploy production
         id: deploy
