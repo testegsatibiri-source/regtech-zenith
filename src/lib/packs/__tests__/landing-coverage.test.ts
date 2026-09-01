@@ -11,12 +11,15 @@ describe("landing coverage data", () => {
   it("reports only commercial-ready packs as production", async () => {
     const catalog = await listCatalogWithHealth();
     const production = catalog.filter((p) => p.tier === "production").map((p) => p.code);
+    const id = catalog.find((p) => p.code === "ID");
     const ph = catalog.find((p) => p.code === "PH");
 
-    expect(production.length).toBeGreaterThan(0);
-    expect(production).toContain("ID");
-    // H20: PH is structurally sound but not yet commercially ready.
+    // H23-A: ID is under fiscal-parity hardening; commercialReady is false until H23-D.
+    expect(production).not.toContain("ID");
     expect(production).not.toContain("PH");
+    expect(id?.blockers).toEqual(
+      expect.arrayContaining([expect.stringContaining("regulatory correction pending")]),
+    );
     expect(ph?.blockers).toEqual(
       expect.arrayContaining([expect.stringContaining("regulatory correction pending")]),
     );
