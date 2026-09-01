@@ -4,6 +4,7 @@ import { calculateTax, calculateBpjs, calculateThr, terCategory } from "./indone
 import type { CountryPack, ComplianceRule } from "./types";
 
 import { UMP_2026, UMP_FALLBACK } from "@/packs/indonesia/params/ump-2026";
+import { resolveWageFloor } from "@/packs/indonesia/params/umk-2026";
 
 const UMP_BY_PROVINCE = new Map<string, number>(
   [...UMP_2026, UMP_FALLBACK].map((e) => [e.province, e.amount]),
