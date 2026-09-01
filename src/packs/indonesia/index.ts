@@ -26,7 +26,7 @@ import { calculateOvertime, type WorkWeekPattern } from "./engines/overtime";
 
 import { TER_TABLES } from "./params/ter-tables";
 import { thrDueDate } from "./params/eid-al-fitr";
-import { RELIGIONS, thrDueDateForReligion, type Religion, religiousHolidayConfigKey } from "./params/religious-holidays";
+import type { Religion } from "./params/religious-holidays";
 import { buildIndonesiaParamsMap } from "./params";
 import { ID_SIGNATURE_BLOCK } from "./signature";
 
