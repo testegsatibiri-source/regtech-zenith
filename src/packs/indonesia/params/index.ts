@@ -4,10 +4,12 @@
 import { StaticConfigProvider, ConfigService } from "@/sdk/config";
 import { TER_TABLES, TER_CONFIG_KEYS, type TerCategory } from "./ter-tables";
 import { UMP_2026, UMP_FALLBACK, umpConfigKey } from "./ump-2026";
+import { UMK_TABLE, umkConfigKey } from "./umk-2026";
 import { ID_EID_AL_FITR, eidAlFitrConfigKey } from "./eid-al-fitr";
 
 export * from "./ter-tables";
 export * from "./ump-2026";
+export * from "./umk-2026";
 export * from "./eid-al-fitr";
 
 export function buildIndonesiaParamsMap(): Record<string, unknown> {
@@ -18,6 +20,7 @@ export function buildIndonesiaParamsMap(): Record<string, unknown> {
   });
   for (const entry of UMP_2026) map[umpConfigKey(entry.province)] = entry;
   map[umpConfigKey("Other")] = UMP_FALLBACK;
+  for (const entry of UMK_TABLE) map[umkConfigKey(entry.province, entry.region)] = entry;
   for (const entry of ID_EID_AL_FITR) map[eidAlFitrConfigKey(entry.year)] = entry;
   return map;
 }

@@ -200,6 +200,13 @@ Anything not tagged is not tracked — either tag it or delete it.
 
 **Remaining for DEBT-024 close:** reconcile each provincial figure against the official Gubernatorial Decree and flip `sourceStatus` to `"official"` before Indonesia can advance past A0.
 
+### DEBT-025 — UMK layer not reconciled (H23-A0)
+`src/packs/indonesia/params/umk-2026.ts` ships the UMP→UMK resolution hierarchy (PP 36/2021 jo. Permenaker 16/2024 Art. 8) with 16 high-headcount regencies/cities carrying the last reported **2025** figures, all marked `sourceStatus: "stale"`. `resolveWageFloor()` takes the worst status across the chain, so a stale UMK contaminates an official UMP and `ID-UMR-01` degrades to `conclusive: false` with a printed resolution trail. Absence of a row means "not reconciled", never "no UMK exists".
+
+**Remaining for DEBT-025 close:** load the 2026 SK Gubernur UMK decrees for all 38 provinces, flip entries to `"official"`, and confirm `umkConclusive()` returns true.
+
+
+
 ## Fast follow-ups (< 1 hour each)
 1. Build `/settings/api-keys` route (DEBT-003).
 2. Emit `PayrollFinalized@1` inside `finalizePayrollRun` (unlocks DEBT-007).

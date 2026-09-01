@@ -29,7 +29,7 @@ describe("ID UMP 2026", () => {
     expect(ump).toBeDefined();
     expect(ump!.conclusive).toBe(false);
     expect(ump!.passed).toBe(false);
-    expect(ump!.message).toContain("non-conclusive");
+    expect(ump!.message.toLowerCase()).toContain("non-conclusive");
   });
 
   it("would pass conclusively if an official source were present", () => {
