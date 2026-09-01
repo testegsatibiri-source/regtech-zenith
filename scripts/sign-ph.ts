@@ -1,13 +1,13 @@
-import { generateKeyPairSync, sign } from "node:crypto";
+import { generateKeyPairSync, sign, type KeyObject } from "node:crypto";
 import { canonicalManifestBytes } from "../src/packs/indonesia/params/canonical-manifest";
 import type { CountryManifest } from "../src/sdk/manifest";
 
-function exportRawPublicKey(publicKey: any): string {
+function exportRawPublicKey(publicKey: KeyObject): string {
   const spki = publicKey.export({ type: "spki", format: "der" }) as Buffer;
   return spki.slice(-32).toString("base64");
 }
 
-function signBytes(bytes: Uint8Array, privateKey: any): string {
+function signBytes(bytes: Uint8Array, privateKey: KeyObject): string {
   return sign(null, bytes, privateKey).toString("base64");
 }
 
