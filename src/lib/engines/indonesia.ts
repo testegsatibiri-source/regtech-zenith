@@ -191,7 +191,7 @@ export interface AnnualReconciliationResult {
   message: string;
 }
 
-const DEFAULT_ANNUAL_BRACKETS: AnnualReconciliationInput["annualBrackets"] = [
+const DEFAULT_ANNUAL_BRACKETS: { bound: number; rate: number }[] = [
   { bound: 60_000_000, rate: 0.05 },
   { bound: 250_000_000, rate: 0.15 },
   { bound: 500_000_000, rate: 0.25 },
