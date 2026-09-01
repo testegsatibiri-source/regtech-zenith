@@ -1,9 +1,12 @@
-// Indonesia Rule Engines: PPh 21 (TER), BPJS, THR + Compliance validators.
+// Indonesia Rule Engines: PPh 21 (TER), BPJS, THR, overtime + Compliance validators.
 // H11.1a — TER tables no longer embedded here; they arrive as parameters from
 // the Country Pack (StaticConfigProvider). Historical exports remain valid
 // because we resolve default tables from the pack params for legacy call sites.
+// H23-A — BPJS parameters are now sourced from `BPJS_2026` with sourceStatus
+// tracking; legacy `ID_PARAMS.bpjs` is kept for backwards compatibility.
 import { ID_PARAMS } from "../countryPacks";
 import { TER_TABLES, type TerTable } from "@/packs/indonesia/params/ter-tables";
+import { BPJS_2026, type BpjsParams } from "@/packs/indonesia/params/bpjs-2026";
 
 // ---------- Tax Engine: PPh 21 via TER (Tarif Efektif Rata-rata, PP 58/2023) ----------
 
