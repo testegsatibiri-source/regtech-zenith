@@ -204,11 +204,12 @@ export function reconcileAnnualPph21({
   annualBrackets = DEFAULT_ANNUAL_BRACKETS,
   ptkp = 54_000_000,
 }: AnnualReconciliationInput): AnnualReconciliationResult {
+  const brackets = annualBrackets ?? DEFAULT_ANNUAL_BRACKETS;
   const annualTaxableIncome = Math.max(0, annualGross - ptkp);
   let remaining = annualTaxableIncome;
   let previousBound = 0;
   let annualTaxLiability = 0;
-  for (const { bound, rate } of annualBrackets) {
+  for (const { bound, rate } of brackets) {
     if (remaining <= 0) break;
     const slice = Math.min(remaining, bound - previousBound);
     annualTaxLiability += Math.round(slice * rate);
