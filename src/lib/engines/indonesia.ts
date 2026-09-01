@@ -7,6 +7,14 @@
 import { ID_PARAMS } from "../countryPacks";
 import { TER_TABLES, type TerTable } from "@/packs/indonesia/params/ter-tables";
 import { BPJS_2026, type BpjsParams } from "@/packs/indonesia/params/bpjs-2026";
+import {
+  ANNUAL_BRACKETS_HPP,
+  ANNUAL_TOP_RATE,
+  PTKP_2026,
+  ptkpForStatus,
+  biayaJabatanFor,
+  progressiveAnnualTax,
+} from "@/packs/indonesia/params/pph21-annual";
 
 // ---------- Tax Engine: PPh 21 via TER (Tarif Efektif Rata-rata, PP 58/2023) ----------
 
