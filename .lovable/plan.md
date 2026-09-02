@@ -67,7 +67,8 @@ Produção permanece **push real** (sem `--dry-run`), somente no job `deploy-pro
 
 ## NOTAS TÉCNICAS
 
-- `--dry-run` na CLI do Supabase executa as migrations dentro de uma transação que é revertida ao final — valida sintaxe/ordem sem persistir nada. Efeito colateral aceito: o dry-run não confirma que o push real vai passar em 100% dos casos (ex.: locks concorrentes), mas é o máximo de validação sem tocar o banco. Consequência: **staging deixa de ter migrations aplicadas por este job**; o apply real em staging passa a acontecer apenas quando promovido via produção ou por execução deliberada. Se a intenção for que staging receba as migrations de verdade, o correto é manter push real em staging — decisão registrada aqui como dry-run conforme solicitado.
+- `supabase db push --dry-run` **lista as migrations que seriam aplicadas sem persistir alterações**. Ele valida o alinhamento do histórico remoto e a seleção das migrations, mas **não** executa o SQL de forma transacional e **não** garante que o push real passará (erros de DDL, dependências, permissões ou locks só aparecem no push real). Correção da descrição anterior, que afirmava execução em transação revertida — não é o comportamento da CLI.
+- Consequência operacional: **staging deixa de ter migrations aplicadas por este job**; o job passa a ser um gate de consistência de histórico. O apply real em staging precisa de uma execução deliberada separada, se e quando você quiser. Registrado como dry-run conforme solicitado.
 - `::add-mask::` faz o GitHub Actions redigir o valor em todos os logs do job, inclusive se a CLI ecoar a connection string num erro.
 - `curl -fsS` falha (exit != 0) em respostas HTTP 4xx/5xx, evitando que um corpo de erro da Management API seja parseado como região.
 - `sslmode=require` força TLS na conexão com o pooler.
