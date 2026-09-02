@@ -15,6 +15,8 @@ export default tseslint.config(
       // platform regenerates it, so lint/format fixes would be reverted and
       // break CI again. Runtime-required, stays versioned, just not linted.
       "src/integrations/supabase/previewAuthStorage.ts",
+      // Same case: generated database types, rewritten on every migration.
+      "src/integrations/supabase/types.ts",
     ],
   },
   {
