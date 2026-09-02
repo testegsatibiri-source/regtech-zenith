@@ -29,6 +29,7 @@ jobs:
   preflight-supabase:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment: staging
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     steps:
@@ -57,6 +58,7 @@ jobs:
   preflight-vercel:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment: staging
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     steps:
