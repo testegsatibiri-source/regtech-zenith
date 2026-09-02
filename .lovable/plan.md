@@ -27,7 +27,10 @@ Mantendo inalterados:
 - Mensagem: `fix(ci): add staging environment to preflight jobs`
 
 ## PUSH
-- Push para branch atual (`main` ou `release`, conforme contexto do repositório).
+- **PUSH = `main`** (branch única usada por este staging, a mesma do run #1 disparado via `workflow_dispatch`).
+- O push ocorre pela sincronização automática Lovable → GitHub (`testegsatibiri-source/regtech-zenith`), sem `git push` manual e sem criar branch nova.
+- Nenhuma outra branch (`release`, `develop`) é tocada nesta correção.
 
-## READY TO RE-RE-RUN
-Após push bem-sucedido, informar o hash do commit e aguardar execução manual do workflow "Release Validation → Staging" no GitHub Actions.
+## READY TO RE-RUN
+Após o sync do commit em `main`, informar o hash e aguardar execução manual do workflow "Release Validation → Staging" (`workflow_dispatch` a partir de `main`, com `force_deploy: false`).
+
