@@ -103,14 +103,15 @@ jobs:
         run: |
           set -euo pipefail
           REF="${{ secrets.SUPABASE_PROJECT_REF_STAGING }}"
-          REGION=$(curl -sS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+          REGION=$(curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
             https://api.supabase.com/v1/projects | jq -r --arg ref "$REF" '.[] | select(.id==$ref) | .region')
           if [ -z "$REGION" ] || [ "$REGION" = "null" ]; then
             echo "::error::Could not resolve region for project $REF"; exit 1
           fi
           PW_ENC=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri')
-          DB_URL="postgresql://postgres.${REF}:${PW_ENC}@aws-0-${REGION}.pooler.supabase.com:5432/postgres"
-          supabase db push --db-url "$DB_URL"
+          echo "::add-mask::$PW_ENC"
+          DB_URL="postgresql://postgres.${REF}:${PW_ENC}@aws-0-${REGION}.pooler.supabase.com:5432/postgres?sslmode=require"
+          supabase db push --db-url "$DB_URL" --dry-run
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD_STAGING }}
