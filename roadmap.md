@@ -6,7 +6,7 @@ Plano aprovado: `.lovable/plan/acesso-por-convite-resend-fase-2-auditoria-de-sch
 - [ ] Fase 1 — Aprovar matriz RBAC + decidir eixo do convite (A plataforma / B organização / C ambos)
 - [x] Fase 2 — Auditoria read-only do schema
 - [x] Fase 3 — Fechar autocadastro: `handle_new_user` sem `admin`, `disable_signup`, UI sem Sign up
-- [ ] Fase 4 — Migration do modelo de convite (token_hash, status, idempotência)
+- [x] Fase 4 — Migration do modelo de convite (token_hash, status, idempotência) — Onda A (plataforma)
 - [ ] Fase 5 — Resend SMTP no Supabase Auth (staging)
 - [ ] Fase 6 — Server function de envio de convite
 - [ ] Fase 7 — Rota `/invite/accept` + RPC transacional
