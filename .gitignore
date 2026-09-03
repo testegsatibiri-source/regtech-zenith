@@ -33,3 +33,10 @@ dist-ssr
 
 # Vercel
 .vercel
+
+# Package manager: Bun is canonical (see docs/governance/deploy-vercel.md).
+# Never commit an npm/pnpm/yarn lockfile — Vercel would pick it over bun.lock.
+package-lock.json
+npm-shrinkwrap.json
+pnpm-lock.yaml
+yarn.lock

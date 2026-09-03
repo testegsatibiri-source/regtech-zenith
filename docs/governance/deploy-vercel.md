@@ -85,3 +85,38 @@ To re-enable automatic deploys later: populate the secrets listed in
 `docs/governance/secrets-inventory.md` inside the matching GitHub Environment
 (`preview` / `staging` / `production`). No YAML changes needed.
 
+## Package manager: Bun is canonical
+
+The repository has exactly **one** lockfile: `bun.lock`. Bun is declared
+explicitly in three places so nothing depends on heuristics:
+
+| Where | Declaration |
+| ----- | ----------- |
+| `package.json` | `"packageManager": "bun@1.3.3"`, `"engines": { "bun": ">=1.2.0" }` |
+| `vercel.json`  | `"installCommand": "bun install --frozen-lockfile"` |
+| `.gitignore`   | `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock` |
+
+**Why this is enforced.** A stale `package-lock.json` (generated once in
+July 2026, never refreshed) stayed in the tree while `package.json` kept
+evolving. Vercel's auto-detection prefers `package-lock.json` over
+`bun.lock`, so every Vercel build ran `npm install` against a lockfile
+missing five packages, and npm's arborist crashed with:
+
+```
+npm error Cannot read properties of null (reading 'edgesOut')
+Error: Command "npm install" exited with 1
+```
+
+GitHub Actions never saw it, because `ci-shared.yml` runs
+`bun install --frozen-lockfile` and ignores npm lockfiles entirely.
+
+**Rules.**
+
+- Never commit an npm, pnpm, or yarn lockfile. They are git-ignored; do not
+  force-add them.
+- `package.json` and `bun.lock` change together, in the same commit.
+  `--frozen-lockfile` turns any drift into a build failure by design.
+- `bunfig.toml` sets `minimumReleaseAge = 86400` (24h supply-chain guard).
+  It applies during resolution only; a frozen install is unaffected.
+- Bumping Bun means updating `packageManager` and `engines` together, and
+  confirming Vercel supports the target version.
