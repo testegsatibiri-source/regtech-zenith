@@ -1,101 +1,127 @@
-# Auditoria READ-ONLY — E-mail no regtech-zenith e viabilidade do Resend
+# Acesso por convite + Resend — Fase 2 (auditoria de schema) e plano completo
 
-Nenhum arquivo foi alterado. Nenhum e-mail enviado, nenhum secret consultado.
+Auditoria executada em modo leitura no banco. Nenhuma migration, nenhum envio, nenhum secret consultado.
 
-## 1. Estado atual comprovado
+## Fase 2 — Relatório read-only do schema real
 
-### Dependências
-- `resend`: **não instalado**. `@react-email/*`: **não instalado**. Nenhum `nodemailer`, `sendgrid`, `postmark`, `mailgun` (`package.json` completo revisado).
-- `bunfig.toml:7` cita `@lovable.dev/email-js` e `@lovable.dev/webhooks-js` apenas numa allowlist de idade mínima de release — **não são dependências do projeto**.
+### `platform_invitations` (existe, órfã, 0 linhas)
 
-### Código de e-mail
-- Não existe nenhuma chamada de envio de e-mail no projeto. Zero referências a `RESEND`, SMTP, templates de e-mail, filas de e-mail ou webhooks de e-mail.
-- Único ponto próximo: `src/lib/observability/alerts.ts:45-49` — `fireEmail()` é um **stub** que só grava log (`log.info("alert:email", ...)`); o comentário diz "reuses future email connector". `Channel` inclui `"email"` (linha 6) e a migration `20260721114102...sql:315` aceita `channel IN ('slack','email',...)` em `alert_notifications`.
-- Sem diretório `supabase/functions` — **nenhuma Edge Function** existe.
+Colunas: `id`, `email`, `role` (`app_role`), `country_code`, `invited_by` (FK `auth.users`, ON DELETE CASCADE), `token`, `accepted_at`, `expires_at` (default `now() + 7 days`), `created_at`, `updated_at`.
+Constraints: PK `id`, UNIQUE `token`, FK `invited_by`. Índices: PK, unique token, `platform_invitations_email_idx`. Trigger: `updated_at`.
+RLS: habilitada, **uma única policy** — `platform_admin manages invitations`, `FOR ALL TO authenticated USING/WITH CHECK is_platform_admin()`.
 
-### Código server-side adequado para API key secreta
-Sim, abundante: ~20 módulos `*.functions.ts` (`createServerFn`) e rotas `src/routes/api/public/*` (TanStack server handlers). Padrão do projeto lê secrets com `process.env[...]` **dentro do handler**. Existe `src/integrations/supabase/auth-middleware.ts` (`requireSupabaseAuth`) para autenticar chamadas, e `src/lib/apiAuth.ts` + `check_api_quota()` (rate limit/quota por API key) para endpoints públicos.
+**Colisões com o modelo desejado:**
+1. **Não tem organização/tenant.** Só `country_code`. O convite é de papel de plataforma, não de membro de empresa.
+2. **`token` em texto puro e único.** O desenho pedido exige hash seguro; um `UNIQUE(token)` em claro guarda o segredo no banco.
+3. **Sem coluna de estado.** Só existe `accepted_at`; não há `pending/accepted/expired/revoked`, nem `revoked_at`, nem `accepted_by`.
+4. **Sem chave de idempotência** e sem índice único parcial que impeça dois convites ativos para o mesmo (org, e-mail).
+5. **Sem contador/limite de reenvio.**
+6. **Sem policy de leitura para o convidado** — o aceite terá de ser feito exclusivamente por server function privilegiada (o que é aceitável e até desejável), mas precisa ser decisão explícita.
+7. `invited_by` é `NOT NULL` com `ON DELETE CASCADE`: apagar o convidador apaga o histórico de convites. Para auditoria, `ON DELETE SET NULL` + nullable é o correto.
 
-## 2. Supabase Auth
+### Organizações / vínculos / papéis
 
-Fluxos hoje:
-- **Cadastro/confirmação**: `src/routes/auth.tsx:38-51` — `supabase.auth.signUp` com `emailRedirectTo: window.location.origin + "/dashboard"`. O e-mail é enviado pelo GoTrue com o remetente **padrão da plataforma** (Lovable Cloud), template padrão.
-- **Recuperação de senha**: **não implementada** — nenhuma chamada a `resetPasswordForEmail`.
-- **Convite de usuário**: **não implementado por e-mail**. A tabela `platform_invitations` (migration `20260721114102...sql:89-99`, expiração 7 dias) existe mas **não é lida nem escrita por nenhum código da aplicação** — nenhuma chamada a `inviteUserByEmail`.
-- **Alteração de e-mail**: **não implementada** (nenhum `updateUser({email})`).
-- **Magic link / OTP**: não implementado.
+- **Não existe nenhuma tabela de membership, organization ou tenant** (busca por `%member%`, `%organiz%`, `%tenant%` retornou vazio).
+- O tenant de fato é `companies`, com **um único `owner_id`** (FK `auth.users`). Toda a RLS de negócio deriva daí: `owns_company(_company_id)` = `companies.owner_id = auth.uid()`, usada por `employees`, `payroll_runs`, `leave_*`, `statutory_filings`, etc.
+- **Consequência estrutural:** hoje uma empresa tem exatamente um usuário com acesso. Não existe "convidar um colega para a minha empresa" — não há onde registrar o vínculo. Convite multi-usuário exige uma tabela de membership nova **e** revisão de `owns_company()`, que é o predicado de dezenas de policies.
+- `user_roles` (`app_role`: admin, manager, viewer, auditor, platform_admin, country_cto, platform_operator, platform_auditor) é **global, não por empresa**. RLS: só `SELECT` do próprio (`auth.uid() = user_id`); INSERT/UPDATE/DELETE negados via Data API — mutação só por service role.
+- `country_cto_scopes` escopa `country_cto` por país. `role_capabilities` mapeia papel → capability (`global`/`country`), lido por `has_capability()`.
+- `profiles`: `id` (FK auth.users), `display_name`, `email`. Policy `FOR ALL USING auth.uid() = id`.
 
-Configuração: `supabase/config.toml` contém apenas `project_id`. **Sem `[auth.email]`, sem Custom SMTP declarado, sem Auth Hook (`hook_send_email`)**, sem migrations tocando `auth`. Conclusão: hoje o projeto depende 100% do remetente padrão gerenciado.
+### Achado crítico de segurança (bloqueia "somente por convite")
 
-## 3. Lovable Cloud
+`public.handle_new_user()` — trigger `on_auth_user_created` em `auth.users` — executa:
 
-- `@lovable.dev/cloud-auth-js` (usado em `src/integrations/lovable/index.ts`) é **apenas o broker de OAuth social** (Google/Apple/Microsoft): faz o fluxo OAuth e chama `supabase.auth.setSession`. **Não envia e-mail nenhum.**
-- Não há integração de e-mail do Lovable ativa neste projeto (sem `src/routes/lovable/email/*`, sem templates, sem domínio de e-mail configurado).
-- **Risco de duplicação ao migrar para Resend: baixo.** Como nenhum fluxo customizado existe, trocar o SMTP do Auth substitui o remetente padrão em vez de duplicar. Duplicação só apareceria se, no futuro, coexistissem um Auth Hook e um Custom SMTP para o mesmo evento — evitar escolher os dois.
+```sql
+INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'admin')
+```
 
-## 4. Separação arquitetural recomendada
+**Todo usuário que se cadastrar recebe o papel `admin` automaticamente.** Confirmado nos dados: 4 usuários em `auth.users`, 4 linhas em `user_roles`, todas com role `admin`. Com o formulário público de signUp ativo em `/auth`, qualquer pessoa que se cadastre vira admin. Isto precisa ser desfeito na mesma etapa em que o autocadastro for fechado — é a lacuna mais urgente de todo o plano.
 
-| Classe | Fluxos | Recomendação |
-|---|---|---|
-| **Auth (GoTrue)** | confirmação de cadastro, recuperação de senha, convite, alteração de e-mail | **Resend via Custom SMTP** no Supabase Auth. Zero código, mantém os fluxos nativos e o controle de tokens dentro do GoTrue (não passam pela aplicação). Templates customizados via Auth → Email Templates. |
-| **Transacional da aplicação** | alertas de observabilidade (`fireEmail`), avisos de filings/prazos, convites de plataforma se um dia forem enviados | **Resend API**, exclusivamente em código server-side (`*.functions.ts` / rota `src/routes/api/*`), com `RESEND_API_KEY` em `process.env` lido dentro do handler. |
-| **Marketing/newsletter** | — | Fora de escopo. Não misturar com o domínio transacional (reputação de envio). |
+### Outro achado
 
-## 5. Secrets e ambientes (somente nomes)
+Todas as tabelas verificadas têm RLS ativa, mas o grant de tabela para `anon` é amplo (`arwdDxtm`). Não há exposição direta porque nenhuma policy concede a `anon`, mas o correto é revogar os grants de `anon` nas tabelas que não têm nenhuma policy `TO anon`. Hardening, não incidente.
 
-| Variável | Onde deve existir |
+### Estado atual dos dados
+`platform_invitations`: 0 linhas · `companies`: 3 · `profiles`: 4 · `user_roles`: 4 (todas `admin`) · `auth.users`: 4.
+
+## Decisão de arquitetura que a auditoria força
+
+Antes de qualquer migration, é preciso escolher o eixo do convite, porque hoje eles não coexistem:
+
+- **(A) Convite de plataforma** (papéis `platform_*`, `country_cto`): `platform_invitations` serve com ajustes moderados (hash, estado, idempotência). Não resolve multi-usuário por empresa.
+- **(B) Convite de organização** (membros de uma `company`): exige tabela `company_members` nova, `platform_invitations` estendida com `company_id` **ou** uma tabela `company_invitations` separada, e substituição de `owns_company()` por um predicado de membership — mudança que toca a RLS de praticamente todas as tabelas de negócio.
+- **(C) Ambos**, em duas ondas: A primeiro (baixo risco), B depois (alto risco, migração de RLS).
+
+Recomendação: **(C)**, nesta ordem. B é uma refatoração de autorização, não um recurso de e-mail, e merece sprint própria com testes de acesso cruzado.
+
+## Plano por fases (consolidado)
+
+### Fase 0 — Incidente de teste
+Revogar a conta cujo token vazou (Auth → Users → delete), sign-out global, confirmar Site URL de produção, redirect `/dashboard`, wildcard de preview e ausência de URL de auth em `localhost` (já verificado no código: `emailRedirectTo` é derivado de `window.location.origin`, sem hardcode). Criar usuário novo para testes.
+Gate: nenhum token exposto permanece renovável.
+
+### Fase 1 — RBAC formal
+Aprovar a matriz de papéis e responder: convite vale para plataforma, para organização ou ambos; usuário pertence a uma ou várias empresas; duração e limite de reenvio; política de suspensão/reativação. Gate obrigatório antes de migrations.
+
+### Fase 2 — Auditoria de schema
+**Concluída acima.**
+
+### Fase 3 — Fechar o autocadastro (prioridade máxima)
+1. Migration: `handle_new_user()` deixa de atribuir `admin`. Primeiro usuário/bootstrap de admin passa a ser um passo deliberado.
+2. Backfill deliberado dos papéis reais dos 4 usuários existentes (`run_sql`, não migration).
+3. `supabase--configure_auth` com `disable_signup: true`.
+4. Remover a aba "Sign up" de `src/routes/auth.tsx`, manter login e adicionar "Esqueci minha senha".
+Gate: cadastro público impossível; nenhum papel concedido automaticamente.
+
+### Fase 4 — Modelo de convite (migration)
+Onda A, sobre `platform_invitations`: `token_hash` (SHA-256) substituindo `token` em claro, `status` (`pending|accepted|expired|revoked`), `revoked_at`, `accepted_by`, `resend_count`, `last_sent_at`, `idempotency_key`, índice único parcial em `(lower(email), role, coalesce(country_code,''))` onde `status='pending'`, `invited_by` nullable com `ON DELETE SET NULL`, GRANTs explícitos, policies revistas (admin gerencia; aceite via server function). Onda B (`company_members` + convite por organização) fica para depois do gate da Fase 1.
+
+### Fase 5 — Resend para Auth (staging primeiro)
+Subdomínio dedicado, verificação no Resend (SPF/DKIM/DMARC), chave exclusiva de staging, Supabase Auth → Custom SMTP, personalização dos 5 templates. **Não** habilitar Auth Hook para os mesmos eventos. Gate: entrega confirmada, links corretos, nenhum token em log.
+
+### Fase 6 — Envio do convite
+`src/lib/invitations.functions.ts` com `requireSupabaseAuth`: valida sessão, autoriza via `permissionService`/`has_capability` (nunca papel vindo do browser), normaliza e-mail, checa duplicidade, grava convite com hash, dispara o e-mail e registra em `platform_audit_log` sem token nem link.
+Usuário inexistente → `inviteUserByEmail` via `supabaseAdmin` importado **dentro** do handler. Usuário já confirmado → convite próprio + notificação transacional via Resend API (o convite administrativo do Supabase falha para e-mail já confirmado).
+
+### Fase 7 — Aceite
+Rota pública `/invite/accept` + server function pública que valida hash, estado e expiração, exige e-mail autenticado igual ao do convite, revalida papel/organização no servidor, cria o vínculo e marca aceite **numa única transação idempotente** (RPC `SECURITY DEFINER` é o caminho correto aqui), audita e redireciona.
+
+### Fase 8 — Recuperação de senha
+`resetPasswordForEmail` com `redirectTo: origin + "/reset-password"`, rota pública `/reset-password` que detecta `type=recovery` e chama `updateUser({ password })` sem `current_password`. Mensagem genérica sempre. Encerrar demais sessões conforme política.
+
+### Fase 9 — Sessões e revogação
+`getUser()` no servidor para toda decisão sensível; RLS nega imediatamente após revogação do vínculo (não depender do JWT expirar); logout global disponível.
+
+### Fase 10 — RLS
+Nenhuma policy `TO authenticated` sem predicado de propriedade; autorização nunca em `user_metadata`; `service_role` jamais no frontend. Revogar grants de `anon` nas tabelas sem policy `TO anon`.
+
+### Fase 11 — Reenvio e expiração
+`supabase.auth.resend` para confirmação, cooldown, limite por e-mail/IP, resposta genérica, invalidação lógica do convite anterior, expiração automática, revogação pelo admin.
+
+### Fase 12 — Auditoria
+Eventos de convite, login/logout relevantes, reset de senha, mudança de papel, suspensão/reativação em `platform_audit_log`. Proibido registrar senha, API key, tokens, magic link, token completo de convite ou corpo do e-mail.
+
+### Fase 13 — Testes
+Positivos e negativos conforme a lista aprovada. Gate: zero acesso cruzado entre empresas, zero vínculo criado sem convite válido, aceite duplo não gera segundo vínculo.
+
+### Fase 14 — Implantação
+Homologar em staging (migrations aplicadas deliberadamente — o dry-run atual não aplica), SMTP de staging, testes completos, criar Supabase de produção, domínio e SMTP de produção, migrations, publicação com rollback preparado, monitorar bounces e abuso.
+
+## Sobre conectores
+
+O Resend está disponível como conector de workspace: em vez de gerenciar `RESEND_API_KEY` manualmente, a chamada pode ir pelo gateway (`Authorization: Bearer $LOVABLE_API_KEY` + `X-Connection-Api-Key: $RESEND_API_KEY`), sempre em código server-side. Isso agiliza os **e-mails transacionais da aplicação**.
+Não ajuda no SMTP do Supabase Auth: ali a credencial é digitada no painel do Supabase, fora do alcance de conectores. Ou seja: conector para a Fase 6, painel manual para a Fase 5.
+
+## Variáveis necessárias (somente nomes)
+
+| Nome | Onde |
 |---|---|
-| `RESEND_SMTP_USER` (`resend`) e `RESEND_SMTP_PASSWORD` (= API key) | **Supabase → Auth → SMTP Settings**, por projeto (staging e prod, chaves distintas). Não vai para o repositório. |
-| `RESEND_API_KEY` | **Vercel Preview** + **Vercel Production** (server-only, sem `VITE_`); e GitHub Environment Secrets `staging`/`production` se o CI precisar. **Não** em Supabase Edge Function secrets — o projeto não usa Edge Functions. |
-| `RESEND_FROM_EMAIL` | Vercel Preview + Vercel Production (não é secret, mas por ambiente). |
-| `RESEND_WEBHOOK_SECRET` | **Somente se** for criado um endpoint de eventos (bounce/complaint). Não é necessário na etapa inicial. |
+| `RESEND_SMTP_USER` / `RESEND_SMTP_PASSWORD` | Supabase → Auth → SMTP (staging e prod, chaves distintas) |
+| `RESEND_API_KEY` | Vercel Preview e Production (server-only) ou via conector Resend |
+| `RESEND_FROM_EMAIL` | Vercel Preview e Production |
+| `APP_PUBLIC_URL` | Vercel Preview e Production (montar links de convite no servidor) |
 
-Nomenclatura do projeto exige sufixo por ambiente em GitHub Environments (`RESEND_API_KEY_STAGING` / `_PROD`), consistente com `docs/governance/secrets-inventory.md`.
+## Próxima ação proposta
 
-## 6. Domínio e remetente
-
-- Nenhum remetente de e-mail configurado em código. As únicas referências a domínio são de **conteúdo**, não de envio: `src/routes/index.tsx:50,54` (`https://uboardasia.com/` em og:url/canonical), `src/routes/index.tsx:323` (`mailto:enterprise@uboardasia.com`), `src/routes/__root.tsx:98` (`@UBoardAsia`).
-- `uboardasia.com` aparece como domínio customizado do projeto, mas **não presumo propriedade nem adequação como domínio de envio** — isso precisa ser confirmado pelo responsável.
-- **Sim, será necessário verificar um domínio no Resend** (registros SPF/DKIM/DMARC no DNS) antes de qualquer envio a terceiros. O sandbox `onboarding@resend.dev` só entrega ao dono da conta.
-- Recomendação: usar um subdomínio dedicado (ex.: `mail.<dominio>` ou `notify.<dominio>`) para isolar reputação, e atenção ao conflito com delegação NS de e-mail já existente no domínio.
-
-## 7. Segurança — confirmações
-
-- `VITE_` **nunca** para chave Resend: qualquer `VITE_*` é inlinada no bundle do browser pelo Vite. Confirmado como regra.
-- Chave nunca no navegador nem no Git: leitura só via `process.env` dentro de handler server-side; `.env.example` guarda apenas nomes.
-- `service_role` **não** deve ser usada para envio de e-mail: ela bypassa RLS e não tem relação com SMTP/Resend. Envio usa `RESEND_API_KEY`; leitura de dados do destinatário deve usar `requireSupabaseAuth` (RLS como o usuário) e só cair no client admin quando estritamente necessário.
-- Endpoints de envio: exigir `requireSupabaseAuth` (ou verificação de API key + `check_api_quota()` no caso de `/api/public/*`), validação Zod da entrada, destinatário **derivado do servidor** (nunca aceito livre do browser), e idempotência por evento.
-- Logs: proibido registrar API key, tokens de confirmação/recuperação, magic links ou corpo do e-mail. Registrar apenas `template`, hash/ID do evento e resultado. O logger atual (`src/lib/observability/logger.ts`) não tem redaction — precisaria de cuidado no call site.
-
-## 8. Lacunas, riscos e plano mínimo
-
-### Lacunas
-1. Nenhum template de e-mail, nenhum helper de envio, nenhum registry.
-2. Recuperação de senha ausente na UI de auth — hoje um usuário que esquece a senha não tem saída.
-3. `platform_invitations` é uma tabela órfã: sem UI, sem envio, sem aceite.
-4. `fireEmail` é stub — alertas P1 marcados como "email" silenciosamente não notificam ninguém.
-5. Sem domínio de envio verificado.
-
-### Riscos de duplicação
-- Baixo hoje. Alto **apenas** se no futuro forem habilitados Custom SMTP **e** Auth Hook simultaneamente, ou se a integração de e-mail gerenciada do Lovable for ativada em paralelo ao Resend no mesmo domínio (conflito de delegação DNS).
-
-### Plano mínimo (após autorização)
-1. **Decidir o domínio de envio** e verificá-lo no Resend (painel Resend + DNS). Nada de código.
-2. **Auth via Custom SMTP**: configurar host/porta/credenciais Resend em Supabase Auth (staging primeiro), ajustar `Site URL` e `Redirect URLs` por ambiente, customizar os 4 templates. Validar cadastro real em staging.
-3. **Fechar a lacuna de recuperação de senha**: adicionar `resetPasswordForEmail` + rota de definição de nova senha (`src/routes/auth.tsx`, nova rota `src/routes/reset-password.tsx`).
-4. **Transacional**: criar `src/lib/email/resend.server.ts` (cliente + guarda de env) e `src/lib/email/send.functions.ts` (server fn autenticada, Zod, destinatário derivado do servidor); ligar `fireEmail` em `src/lib/observability/alerts.ts` a esse helper.
-5. **Opcional**: endpoint de eventos Resend em `src/routes/api/public/webhooks/resend.ts` com verificação de assinatura (`RESEND_WEBHOOK_SECRET`) — só se bounce/complaint forem necessários.
-6. Atualizar `.env.example` e `docs/governance/secrets-inventory.md`; ADR de decisão (SMTP para auth, API para transacional).
-
-### Arquivos que mudariam no futuro
-`package.json`, `.env.example`, `docs/governance/secrets-inventory.md`, `src/lib/observability/alerts.ts`, `src/routes/auth.tsx`, novos: `src/lib/email/*`, `src/routes/reset-password.tsx`, (opcional) `src/routes/api/public/webhooks/resend.ts`, novo ADR.
-
-### Itens manuais nos painéis
-- **Resend**: criar conta/domínio, publicar SPF/DKIM/DMARC no DNS, gerar API keys separadas para staging e produção, (opcional) configurar webhook.
-- **Supabase** (staging e prod, separadamente): Auth → SMTP Settings (host/porta/usuário/senha, sender name/address), Site URL e Redirect URLs, templates de e-mail, rate limit de e-mails de auth.
-- **Vercel**: `RESEND_API_KEY` e `RESEND_FROM_EMAIL` nos escopos Preview e Production (server-only).
-- **GitHub**: secrets equivalentes nos Environments `staging`/`production` se o CI precisar deles.
-
-## Sugestão
-
-Comece pela decisão de domínio e pelo **Custom SMTP em staging** — é o passo de maior valor com zero código e risco praticamente nulo, e desbloqueia a recuperação de senha (a lacuna funcional mais séria hoje). O Resend API para transacional pode esperar até que exista um caso de uso real além do stub de alertas.
+Executar a **Fase 3** — fechar o autocadastro e remover a atribuição automática de `admin`. É a única correção de segurança ativa hoje e não depende do Resend, do domínio nem da decisão A/B/C.
