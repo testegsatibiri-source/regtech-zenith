@@ -1637,38 +1637,62 @@ export type Database = {
       platform_invitations: {
         Row: {
           accepted_at: string | null
+          accepted_by: string | null
           country_code: string | null
           created_at: string
           email: string
           expires_at: string
           id: string
-          invited_by: string
+          idempotency_key: string | null
+          invited_by: string | null
+          last_sent_at: string | null
+          resend_count: number
+          revoked_at: string | null
+          revoked_by: string | null
           role: Database["public"]["Enums"]["app_role"]
-          token: string
+          status: Database["public"]["Enums"]["invitation_status"]
+          token_hash: string
+          token_preview: string | null
           updated_at: string
         }
         Insert: {
           accepted_at?: string | null
+          accepted_by?: string | null
           country_code?: string | null
           created_at?: string
           email: string
           expires_at?: string
           id?: string
-          invited_by: string
+          idempotency_key?: string | null
+          invited_by?: string | null
+          last_sent_at?: string | null
+          resend_count?: number
+          revoked_at?: string | null
+          revoked_by?: string | null
           role: Database["public"]["Enums"]["app_role"]
-          token: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token_hash: string
+          token_preview?: string | null
           updated_at?: string
         }
         Update: {
           accepted_at?: string | null
+          accepted_by?: string | null
           country_code?: string | null
           created_at?: string
           email?: string
           expires_at?: string
           id?: string
-          invited_by?: string
+          idempotency_key?: string | null
+          invited_by?: string | null
+          last_sent_at?: string | null
+          resend_count?: number
+          revoked_at?: string | null
+          revoked_by?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          token?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token_hash?: string
+          token_preview?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -2593,6 +2617,7 @@ export type Database = {
         | "country_cto"
         | "platform_operator"
         | "platform_auditor"
+      invitation_status: "pending" | "accepted" | "expired" | "revoked"
       pack_flag_environment: "preview" | "production" | "all"
       pack_install_source: "manual" | "pipeline" | "rollback" | "marketplace"
       pack_installation_status:
@@ -2756,6 +2781,7 @@ export const Constants = {
         "platform_operator",
         "platform_auditor",
       ],
+      invitation_status: ["pending", "accepted", "expired", "revoked"],
       pack_flag_environment: ["preview", "production", "all"],
       pack_install_source: ["manual", "pipeline", "rollback", "marketplace"],
       pack_installation_status: [
