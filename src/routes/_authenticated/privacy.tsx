@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck, History, FileLock2 } from "lucide-react";
+import { ShieldCheck, History, FileLock2, KeyRound, Siren, UserSearch } from "lucide-react";
 import { useCompany } from "@/lib/companyContext";
 import { listEmployees } from "@/lib/data.functions";
 import {
@@ -15,6 +15,18 @@ import {
   seedDefaultRetentionPolicies,
   upsertRetentionPolicy,
   getPrivacyReadiness,
+  getFieldEncryptionStatus,
+  migrateSensitiveFields,
+  listDataProtectionOfficers,
+  upsertDataProtectionOfficer,
+  listPrivacyIncidents,
+  upsertPrivacyIncident,
+  listDataSubjectRequests,
+  upsertDataSubjectRequest,
+  INCIDENT_SEVERITIES,
+  INCIDENT_STATUSES,
+  DSR_TYPES,
+  DSR_STATUSES,
 } from "@/lib/privacy.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
