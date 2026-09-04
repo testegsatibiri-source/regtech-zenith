@@ -22,7 +22,6 @@ export const listObligations = createServerFn({ method: "GET" })
     return rows ?? [];
   });
 
-
 export const seedObligations = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>

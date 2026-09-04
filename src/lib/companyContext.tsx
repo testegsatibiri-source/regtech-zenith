@@ -54,7 +54,6 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("uboard.company", id);
   };
 
-
   const company = companies.find((c) => c.id === companyId) ?? null;
 
   return (
