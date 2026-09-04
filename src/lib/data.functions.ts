@@ -77,14 +77,6 @@ export const updateCompanyStatutory = createServerFn({ method: "POST" })
 // the database) and never leave the server in the clear. Lists carry a mask;
 // the full value only comes back through `revealEmployeeField`, which writes
 // to the personal-data access trail.
-async function companyCountry(
-  supabase: { from: (t: string) => never } | typeof globalThis.undefinedNever,
-  companyId: string,
-): Promise<string | null> {
-  void supabase;
-  void companyId;
-  return null;
-}
 
 export const listEmployees = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
