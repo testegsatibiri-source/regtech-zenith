@@ -28,7 +28,9 @@ A Fase C é o último bloqueio interno do gate comercial do pacote indonésio (j
 | Base = salário + tunjangan tetap (art. 157) | Aprovado |
 | Trabalhador diarista / por produção | Deve entrar |
 | MK 168/2023 na proveniência normativa | Obrigatório |
-| `commercialReady` | Permanece `false` |
+| Snapshot imutável do ruleset em cada rescisão | Obrigatório |
+| Gate regulatório em 31/10/2026 | Obrigatório |
+| `commercialReady` | Permanece `false`, com blockers estruturados |
 
 ## Etapas
 
