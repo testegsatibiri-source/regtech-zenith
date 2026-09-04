@@ -2,8 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Pencil, CheckCircle2, XCircle } from "lucide-react";
-import { listEmployees, upsertEmployee, deleteEmployee } from "@/lib/data.functions";
+import { Plus, Trash2, Pencil, CheckCircle2, XCircle, Eye } from "lucide-react";
+import {
+  listEmployees,
+  upsertEmployee,
+  deleteEmployee,
+  revealEmployeeField,
+} from "@/lib/data.functions";
+import { sensitiveFieldSpec } from "@/lib/privacy/sensitive-fields";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
 import { MARITAL_STATUS, RELIGIONS } from "@/lib/countryPacks";
@@ -76,6 +82,7 @@ function Employees() {
   const fetchEmployees = useServerFn(listEmployees);
   const saveEmp = useServerFn(upsertEmployee);
   const delEmp = useServerFn(deleteEmployee);
+  const revealFn = useServerFn(revealEmployeeField);
   const queryClient = useQueryClient();
 
   const { data: employees = [] } = useQuery({
@@ -269,14 +276,52 @@ function Employees() {
                   {activePack.name} identifiers (country_metadata)
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {t.identifiers.map((f) => (
-                    <F key={f.key} label={f.label}>
-                      <Input
-                        value={(meta[f.key] as string) ?? ""}
-                        onChange={(e) => setMeta(f.key, e.target.value)}
-                      />
-                    </F>
-                  ))}
+                  {t.identifiers.map((f) => {
+                    const sensitive = Boolean(
+                      sensitiveFieldSpec(activePack.code, f.key) && draft?.id,
+                    );
+                    return (
+                      <F key={f.key} label={f.label}>
+                        <div className="flex gap-2">
+                          <Input
+                            value={(meta[f.key] as string) ?? ""}
+                            onChange={(e) => setMeta(f.key, e.target.value)}
+                          />
+                          {sensitive && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              title="Reveal (logged)"
+                              onClick={async () => {
+                                if (!companyId || !draft?.id) return;
+                                try {
+                                  const res = await revealFn({
+                                    data: {
+                                      companyId,
+                                      employeeId: draft.id,
+                                      field: f.key,
+                                      purpose: "payroll_processing",
+                                    },
+                                  });
+                                  if (res.value) {
+                                    setMeta(f.key, res.value);
+                                    toast.success("Value revealed — access recorded");
+                                  } else {
+                                    toast.info("No value stored for this field");
+                                  }
+                                } catch (err) {
+                                  toast.error(err instanceof Error ? err.message : "Reveal failed");
+                                }
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </F>
+                    );
+                  })}
                   <F label="Weekly overtime (h)">
                     <Input
                       type="number"

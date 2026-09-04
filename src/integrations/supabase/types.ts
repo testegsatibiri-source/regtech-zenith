@@ -527,6 +527,53 @@ export type Database = {
         }
         Relationships: []
       }
+      data_protection_officers: {
+        Row: {
+          appointed_at: string
+          company_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          jurisdiction: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointed_at?: string
+          company_id: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          jurisdiction?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointed_at?: string
+          company_id?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          jurisdiction?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_protection_officers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_retention_policies: {
         Row: {
           active: boolean
@@ -570,6 +617,72 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_subject_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          due_at: string
+          employee_id: string | null
+          id: string
+          notes: string | null
+          received_at: string
+          request_type: string
+          requester_email: string | null
+          requester_name: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          due_at?: string
+          employee_id?: string | null
+          id?: string
+          notes?: string | null
+          received_at?: string
+          request_type: string
+          requester_email?: string | null
+          requester_name?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          due_at?: string
+          employee_id?: string | null
+          id?: string
+          notes?: string | null
+          received_at?: string
+          request_type?: string
+          requester_email?: string | null
+          requester_name?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_subject_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_subject_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -1737,6 +1850,71 @@ export type Database = {
             columns: ["incident_id"]
             isOneToOne: false
             referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      privacy_incidents: {
+        Row: {
+          affected_count: number
+          authority_notified_at: string | null
+          company_id: string
+          containment: string | null
+          created_at: string
+          description: string | null
+          detected_at: string
+          id: string
+          notes: string | null
+          notification_deadline: string
+          root_cause: string | null
+          severity: string
+          status: string
+          subjects_notified_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_count?: number
+          authority_notified_at?: string | null
+          company_id: string
+          containment?: string | null
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          id?: string
+          notes?: string | null
+          notification_deadline?: string
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          subjects_notified_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_count?: number
+          authority_notified_at?: string | null
+          company_id?: string
+          containment?: string | null
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          id?: string
+          notes?: string | null
+          notification_deadline?: string
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          subjects_notified_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privacy_incidents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

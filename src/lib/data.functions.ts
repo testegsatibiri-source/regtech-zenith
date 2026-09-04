@@ -73,17 +73,30 @@ export const updateCompanyStatutory = createServerFn({ method: "POST" })
   });
 
 // ---------- Employees ----------
+// H23 Fase D — NIK/NPWP/bank account are sealed at rest (AES-GCM, key outside
+// the database) and never leave the server in the clear. Lists carry a mask;
+// the full value only comes back through `revealEmployeeField`, which writes
+// to the personal-data access trail.
+
 export const listEmployees = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ companyId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
-      .from("employees")
-      .select("*")
-      .eq("company_id", data.companyId)
-      .order("full_name", { ascending: true });
+    const [{ data: rows, error }, { data: company }] = await Promise.all([
+      context.supabase
+        .from("employees")
+        .select("*")
+        .eq("company_id", data.companyId)
+        .order("full_name", { ascending: true }),
+      context.supabase
+        .from("companies")
+        .select("country_code")
+        .eq("id", data.companyId)
+        .maybeSingle(),
+    ]);
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    const { maskEmployeeRow } = await import("@/lib/privacy/employee-sensitive.server");
+    return (rows ?? []).map((row) => maskEmployeeRow(row, company?.country_code ?? null));
   });
 
 const employeeSchema = z.object({
@@ -105,13 +118,116 @@ export const upsertEmployee = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => employeeSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { data: company } = await context.supabase
+      .from("companies")
+      .select("country_code")
+      .eq("id", data.company_id)
+      .maybeSingle();
+    const countryCode = company?.country_code ?? null;
+
+    const { sensitiveFieldsFor } = await import("@/lib/privacy/sensitive-fields");
+    const specs = sensitiveFieldsFor(countryCode);
+    let metadata = data.country_metadata as Record<string, unknown>;
+
+    if (specs.length) {
+      const { loadKeyRing, sealMetadata, isSealedField } =
+        await import("@/lib/privacy/field-crypto.server");
+      // A mask coming back from the client must never overwrite a stored value.
+      if (data.id) {
+        const { data: current } = await context.supabase
+          .from("employees")
+          .select("country_metadata")
+          .eq("id", data.id)
+          .maybeSingle();
+        const stored = (current?.country_metadata ?? {}) as Record<string, unknown>;
+        const merged: Record<string, unknown> = { ...metadata };
+        for (const spec of specs) {
+          const incoming = merged[spec.key];
+          if (typeof incoming === "string" && incoming.includes("•")) {
+            merged[spec.key] = stored[spec.key] ?? "";
+          } else if (isSealedField(incoming)) {
+            merged[spec.key] = stored[spec.key] ?? "";
+          }
+        }
+        metadata = merged;
+      }
+      const ring = await loadKeyRing();
+      metadata = (await sealMetadata(metadata, specs, ring)).metadata;
+    }
+
     const { data: row, error } = await context.supabase
       .from("employees")
-      .upsert(data)
+      .upsert({ ...data, country_metadata: metadata as never })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    return row;
+
+    const { maskEmployeeRow } = await import("@/lib/privacy/employee-sensitive.server");
+    return maskEmployeeRow(row, countryCode);
+  });
+
+/**
+ * Audited reveal of a single sensitive identifier. Every call appends to
+ * `personal_data_access_log` (UU PDP art. 31 accountability).
+ */
+export const revealEmployeeField = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        companyId: z.string().uuid(),
+        employeeId: z.string().uuid(),
+        field: z.string().min(1).max(64),
+        purpose: z.string().max(120).default("payroll_processing"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const [{ data: employee, error }, { data: company }] = await Promise.all([
+      context.supabase
+        .from("employees")
+        .select("id, country_metadata")
+        .eq("id", data.employeeId)
+        .eq("company_id", data.companyId)
+        .maybeSingle(),
+      context.supabase
+        .from("companies")
+        .select("country_code")
+        .eq("id", data.companyId)
+        .maybeSingle(),
+    ]);
+    if (error) throw new Error(error.message);
+    if (!employee) throw new Error("Employee not found.");
+
+    const { sensitiveFieldSpec } = await import("@/lib/privacy/sensitive-fields");
+    const spec = sensitiveFieldSpec(company?.country_code ?? null, data.field);
+    if (!spec) throw new Error("Field is not a declared sensitive identifier.");
+
+    const { loadKeyRing } = await import("@/lib/privacy/field-crypto.server");
+    const { revealField } = await import("@/lib/privacy/employee-sensitive.server");
+    const ring = await loadKeyRing();
+    const opened = await revealField(
+      (employee.country_metadata ?? {}) as Record<string, unknown>,
+      data.field,
+      ring,
+    );
+
+    await context.supabase.from("personal_data_access_log").insert({
+      company_id: data.companyId,
+      employee_id: data.employeeId,
+      actor_id: context.userId,
+      action: "reveal_sensitive_field",
+      resource: `employees.country_metadata.${data.field}`,
+      purpose: data.purpose,
+      metadata: {
+        legal_basis: spec.legalBasis,
+        sealed: opened?.sealed ?? null,
+        found: Boolean(opened),
+      } as never,
+    });
+
+    if (!opened) return { value: null, sealed: false };
+    return { value: opened.value, sealed: opened.sealed };
   });
 
 export const deleteEmployee = createServerFn({ method: "POST" })
