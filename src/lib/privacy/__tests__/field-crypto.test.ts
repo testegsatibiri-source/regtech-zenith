@@ -90,7 +90,7 @@ describe("key rotation", () => {
 });
 
 describe("metadata sealing", () => {
-  const keys = sensitiveFieldsFor("ID").map((f) => f.key);
+  const keys = sensitiveFieldsFor("ID");
 
   it("seals only the sensitive keys and keeps the rest readable", async () => {
     const { metadata, sealedKeys } = await sealMetadata(
