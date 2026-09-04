@@ -83,19 +83,50 @@ export function buildKeyRing(primarySpec: string, previousSpecs: string[] = []):
 }
 
 /**
- * Reads the key ring from the environment. MUST be called inside a handler.
- * `ID_PDP_FIELD_KEY` = "<kid>:<base64>", `ID_PDP_FIELD_KEY_PREVIOUS` = comma
- * separated list of retired keys kept for decryption during rotation.
+ * Derives a 32-byte key from an opaque secret string (SHA-256), so the
+ * environment secret can be an ordinary generated passphrase. The key id is
+ * the first 8 hex characters of the digest, which makes rotation observable
+ * without ever revealing the secret.
  */
-export function loadKeyRing(): KeyRing {
-  const primary = process.env["ID_PDP_FIELD_KEY"];
-  if (!primary) {
+export async function deriveFieldKey(secret: string): Promise<FieldKey> {
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret) as BufferSource),
+  );
+  const kid = Array.from(digest.slice(0, 4))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return { kid, bytes: digest };
+}
+
+/** `<kid>:<base64 32 bytes>` when explicit, otherwise derived from the secret. */
+async function resolveKey(spec: string): Promise<FieldKey> {
+  try {
+    return parseFieldKey(spec);
+  } catch {
+    return deriveFieldKey(spec.trim());
+  }
+}
+
+/**
+ * Reads the key ring from the environment. MUST be called inside a handler.
+ * `ID_PDP_FIELD_KEY` holds the active secret; `ID_PDP_FIELD_KEY_PREVIOUS` is a
+ * comma-separated list of retired secrets kept for decryption during rotation.
+ */
+export async function loadKeyRing(): Promise<KeyRing> {
+  const primarySpec = process.env["ID_PDP_FIELD_KEY"];
+  if (!primarySpec) {
     throw new FieldCryptoError(
       "ID_PDP_FIELD_KEY is not configured — sensitive fields cannot be sealed.",
     );
   }
-  const previous = (process.env["ID_PDP_FIELD_KEY_PREVIOUS"] ?? "").split(",").filter(Boolean);
-  return buildKeyRing(primary, previous);
+  const primary = await resolveKey(primarySpec);
+  const all = [primary];
+  for (const spec of (process.env["ID_PDP_FIELD_KEY_PREVIOUS"] ?? "").split(",")) {
+    if (!spec.trim()) continue;
+    const key = await resolveKey(spec);
+    if (!all.some((k) => k.kid === key.kid)) all.push(key);
+  }
+  return { primary, all };
 }
 
 export function keyRingAvailable(): boolean {
