@@ -82,6 +82,7 @@ function Employees() {
   const fetchEmployees = useServerFn(listEmployees);
   const saveEmp = useServerFn(upsertEmployee);
   const delEmp = useServerFn(deleteEmployee);
+  const revealFn = useServerFn(revealEmployeeField);
   const queryClient = useQueryClient();
 
   const { data: employees = [] } = useQuery({
