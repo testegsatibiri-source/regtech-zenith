@@ -59,10 +59,11 @@ A Fase C é o último bloqueio interno do gate comercial do pacote indonésio (j
    ruleVersion: "ID-SEPARATION-2026.1"
    effectiveFrom: "2024-10-31"
    regulatoryReviewRequiredBy: "2026-10-31"
-   regulatoryStatus: { status: "time_bounded", blockingAfter: "2026-10-31",
+   regulatoryStatus: { status: "time_bounded", blockingFrom: "2026-10-31",
                        reason: "MK 168/PUU-XXI/2023 legislative transition deadline" }
    ```
-   Em runtime: desligamento antes de 31/10/2026 usa o ruleset normalmente; em ou após a data, se não houver ruleset novo confirmado, o cálculo retorna `BLOCKED_PENDING_REGULATORY_REVALIDATION` em vez de um valor. O pacote não atravessa a fronteira normativa em silêncio.
+   Padronizado em todo o pacote: `blockingFrom` (não `blockingAfter`), com a regra `terminationDate >= blockingFrom → exige ruleset sucessor validado`. Em runtime: desligamento antes de 31/10/2026 usa o ruleset normalmente; em ou após a data, se não houver ruleset novo confirmado, o cálculo retorna `BLOCKED_PENDING_REGULATORY_REVALIDATION` em vez de um valor. O pacote não atravessa a fronteira normativa em silêncio. A consequência jurídica indicada pela Corte (regime da UU 13/2003 somado às decisões constitucionais) **não** vira algoritmo automático: transformá-la em cálculo exige mapear a legislação anterior e os atos publicados até lá, e é matéria do parecer — até lá, bloqueio.
+   - **Gate histórico (mesma filosofia, no sentido oposto):** `terminationDate < ruleset.effectiveFrom` (antes de 31/10/2024) → `HISTORICAL_RULESET_REQUIRED`; sem ruleset histórico certificado, o cálculo retorna `BLOCKED_MISSING_HISTORICAL_RULESET`. Nenhum ruleset calcula fora da sua janela de autoridade normativa.
 9. **Tela, gravação e snapshot imutável** — fluxo de desligamento com escolha do motivo, prévia componente a componente, aviso de "mínimo legal" e de dados faltantes, confirmação que grava o caso. Tabela `separation_cases` inclui, além de company_id/employee_id/motivo/datas/componentes/statutory_minimum/inputs_snapshot/calculation_trace: `ruleset_version`, `ruleset_effective_date`, `legal_basis_snapshot`, `calculation_status`, `completeness_status`, `regulatory_status`, `calculated_at`, `approved_at`, `approved_by`, `calculation_hash`. O hash cobre inputs snapshot + versão do ruleset + configuração de direitos + componentes do resultado, para detectar alteração posterior da memória de cálculo. Uma rescisão calculada em setembro **não** muda quando o pacote for atualizado em novembro — o caso permanece reproduzível.
 10. **`commercialReadiness` estruturado** — o manifesto do pacote troca o booleano opaco por:
     ```text
