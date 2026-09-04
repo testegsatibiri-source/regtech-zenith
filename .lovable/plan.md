@@ -1,37 +1,70 @@
-# Fase C — Rescisão indonésia (PP 35/2021): pesangon, UPMK, UPH e cadeia PKWT→PKWTT
+# Fase C — Rescisão indonésia: pesangon, UPMK, UPH e regime PKWT (PP 35/2021 + UU 6/2023 + MK 168/PUU-XXI/2023)
 
 A Fase C é o último bloqueio interno do gate comercial do pacote indonésio (junto com o parecer jurídico da Fase D, que corre em paralelo, e o dado salarial oficial DEBT-024/025). Hoje o `SeparationProvider` só existe nas Filipinas; na Indonésia não há cálculo de rescisão nenhum — qualquer desligamento em cliente real exigiria conta manual fora do sistema.
 
+**Baseline normativo revisado.** O PP 35/2021 deixa de ser a fonte única: o regime vigente é PP 35/2021 + UU 6/2023 + a Putusan MK 168/PUU-XXI/2023 (31/10/2024), que determina que a tabela de pesangon do art. 156(2) seja lida como *paling sedikit* (piso, não valor fechado). Consequência de arquitetura: o motor devolve `statutoryMinimum`, nunca um "valor final legal".
+
 ## O que você vai ver quando terminar
 
-- Ao desligar um funcionário indonésio, o sistema calcula a rescisão completa por motivo de desligamento: pesangon (indenização), uang penghargaan masa kerja (prêmio de tempo de serviço) e uang penggantian hak (direitos pendentes: férias não gozadas, THR proporcional), com as tabelas oficiais do PP 35/2021.
-- Contratos PKWT (temporário) geram a compensação de fim de contrato (1 mês por ano, art. 15 do PP 35/2021) e o sistema alerta quando um PKWT renovado ultrapassa 5 anos e vira PKWTT (efetivo) por força de lei.
-- Cada desligamento fica registrado com motivo, valores, memória de cálculo e quem aprovou — auditável depois do fato.
+- Ao desligar um funcionário indonésio, o sistema calcula a liquidação por motivo de desligamento, separando cada verba: pesangon, uang penghargaan masa kerja (UPMK), uang penggantian hak (UPH), THR, compensação de PKWT, uang pisah e salário pendente.
+- O resultado vem com memória de cálculo completa: quais leis e qual interpretação foram usadas, quais dados entraram, o que faltou e quem aprovou — auditável rupia por rupia depois do fato.
+- O valor é apresentado como **mínimo legal**, não como valor final: acordos e regulamentos internos podem elevá-lo, e o sistema mostra isso explicitamente.
+- Contratos temporários (PKWT) geram a compensação de fim de contrato, e passar do limite de 5 anos vira uma **violação de conformidade que bloqueia renovação e exige classificação jurídica** — não uma conversão automática para efetivo.
+
+## Correções aceitas antes de codar (gate de implementação)
+
+| Ponto | Decisão |
+| --- | --- |
+| Faixas de pesangon por tempo de serviço | Aprovado — faixa por piso |
+| Faixas de UPMK | Aprovado, vetores conferidos integralmente |
+| `Math.round()` sobre anos | Proibido |
+| 15% moradia/tratamento médico | Removido do baseline legal |
+| THR dentro do UPH | Removido — THR é componente próprio |
+| Compensação PKWT | Aprovada, com vetores oficiais |
+| Limite de 5 anos do PKWT | Aprovado |
+| Conversão automática PKWT→PKWTT | Bloqueada até parecer jurídico |
+| Matriz só de multiplicadores | Reprovada |
+| Entitlement matrix por motivo | Obrigatória |
+| Base = salário + tunjangan tetap (art. 157) | Aprovado |
+| Trabalhador diarista / por produção | Deve entrar |
+| MK 168/2023 na proveniência normativa | Obrigatório |
+| `commercialReady` | Permanece `false` |
 
 ## Etapas
 
-1. **Checkpoint normativo antes de codar (bloqueante)** — dois pontos dos quais o resto do cálculo depende:
-   - **Regra de fração de tempo de serviço — FECHADO (17/09/2026, verificação de fontes).** O PP 35/2021 define faixas por piso, não arredondamento: "masa kerja kurang dari 1 tahun" = 1 mês de pesangon, "1 tahun atau lebih tetapi kurang dari 2 tahun" = 2 meses, e assim por diante (arts. 40(2)–(3)). Codificar faixa exata em `pp35-2021.ts`, sem `Math.round` sobre anos.
-   - **Componente de 15% (perumahan/pengobatan/perawatan) no UPH — AMBIGUIDADE FORMAL REGISTRADA.** Fontes com aparência de credibilidade divergem: BP Lawyers e uma monografia da UNRAM afirmam que o art. 156(4)(c) do UU 13/2003 foi extinto pela Cipta Kerja e não reaparece no art. 40(4) do PP 35/2021 (UPH = férias não gozadas + custo de retorno + itens de PK/PP/PKB); fontes de HRIS/blog jurídico (Gajihub, Catapa, YAPLegal, Kantorku) mantêm o componente de 15%, uma delas com exemplo numérico. Decisão do checkpoint: **o componente entra como configurável, desligado por padrão**, com a ambiguidade e as fontes citadas no código e na memória de cálculo; a leitura literal do texto vigente fica pendente do parecer jurídico da Fase D — novo item específico adicionado ao resumo em `docs/governance/legal-opinions/`, pedindo ao advogado indonésio que resolva formalmente este ponto. Até lá, nenhum cálculo é bloqueado: o motor informa explicitamente quando a empresa optou por incluir ou não os 15%.
-2. **Parâmetros oficiais PP 35/2021** — `src/packs/indonesia/params/pp35-2021.ts`: tabela de pesangon por faixa de tempo de serviço (1–9 meses de salário), tabela UPMK (2–10 meses a partir de 3 anos), componentes do UPH conforme fechado no checkpoint (férias anuais não gozadas, custo de retorno ao local de contratação, componente de 15% como opção configurável desligada por padrão), e a matriz de multiplicadores por motivo (arts. 36–47: eficiência, fusão/aquisição, fechamento, falência, aposentadoria, falecimento, doença prolongada, falta grave, pedido de demissão etc., cada um com seu fator 1.0×/0.75×/0.5× de pesangon e direito ou não a UPMK). Cada valor com base legal e `sourceStatus: "official"`, seguindo o padrão das tabelas TER.
-3. **Motor de rescisão ID** — `src/packs/indonesia/engines/separation.ts`, espelhando a arquitetura filipina: `ID_SEPARATION_GROUNDS` (motivos com multiplicadores), `computeSeparationPay` (pesangon × fator + UPMK + UPH, com a faixa de tempo de serviço vinda dos parâmetros), e avisos legais por motivo (mediação bipartite, PHI em caso de litígio). O `SeparationProvider` do SDK tem campos filipinos (twin notice, DOLE); a Fase C introduz uma extensão por país sem quebrar o contrato atual — campo opcional de notas específicas no provider, sem mexer no que as Filipinas já usam.
-
-4. **Compensação PKWT e cadeia PKWT→PKWTT** — regra de fim de contrato PKWT (1 mês de salário por 12 meses, proporcional, art. 15) e verificação que hoje só mede prazo (≤ 5 anos) passa a também marcar a conversão automática para PKWTT no histórico do contrato, com trilha de auditoria.
-5. **Tela e gravação** — fluxo de desligamento na tela do funcionário/contrato: escolha do motivo, prévia da memória de cálculo, confirmação que grava o caso de desligamento e vincula ao contrato. Nova tabela `separation_cases` (company_id, employee_id, motivo, datas, componentes calculados, total, aprovador) via migração com RLS e GRANTs no padrão das demais.
-6. **Testes e conformidade** — `src/packs/indonesia/__tests__/separation.test.ts` com vetores oficiais por motivo e tempo de serviço, incluindo casos de fração propositais (ex.: 8 anos e 3 meses; 2 anos e 11 meses; 11 meses) para travar a regra de faixa, e um caso que cobre cada componente do UPH fechado no checkpoint; teste da cadeia PKWT→PKWTT; gate local `bunx tsgo --noEmit`, `bun test`, `bunx eslint .` verdes.
-7. **Governança** — registro na ADR-0038/release notes de que a Fase C fechou, com as citações do checkpoint; `commercialReady` continua `false` até o parecer jurídico (Fase D) e o dado salarial oficial (DEBT-024/025) fecharem, e só então bump de versão + reassinatura (D7).
-
+1. **Checkpoint normativo (fechado, entra como fonte no código)**
+   - **Fração de tempo de serviço — FECHADO.** Faixas por piso, não arredondamento: "masa kerja kurang dari 1 tahun" = 1 mês, "1 tahun atau lebih tetapi kurang dari 2 tahun" = 2 meses, e assim por diante. Nenhum `Math.round` sobre anos.
+   - **Componente de 15% (perumahan/pengobatan/perawatan) — FORA DO BASELINE.** A UU 6/2023 removeu a antiga disposição do art. 156(4); o item não é regra regulatória e **não** existe como flag do pacote. Quando uma empresa oferecer benefício equivalente por PK/PP/PKB, ele entra como `contractualEntitlement`. A confirmação formal fica como item `LEGAL-VALIDATION` no resumo em `docs/governance/legal-opinions/`, sem bifurcação de regra no motor.
+   - **Conversão PKWT→PKWTT — PERGUNTA EXPLÍCITA AO PARECER.** O limite de 5 anos (incluídas prorrogações) está bem fundamentado; a consequência automática de conversão vem do regime anterior e não foi confirmada no regime atual. Vai ao advogado indonésio como pergunta específica.
+2. **Proveniência normativa multi-instrumento** — `legalBasis` deixa de ser string e passa a ser lista de instrumentos: `{ instrument: "PP 35/2021", articles: [...] }`, `{ instrument: "UU 6/2023", articles: ["156"] }`, `{ instrument: "MK 168/PUU-XXI/2023", decisionDate: "2024-10-31", effect: "art. 156(2) lido como direito mínimo" }`. `sourceStatus: "official"` só é válido com a lista completa. Aplica-se a cada tabela e a cada regra de motivo.
+3. **Parâmetros oficiais** — `src/packs/indonesia/params/pp35-2021.ts`: tabela de pesangon por faixa (1–9 meses), tabela UPMK (2–10 meses a partir de 3 anos), componentes do UPH baseline (férias anuais não gozadas; custo de retorno ao local de contratação quando aplicável; direitos de PK/PP/PKB) e regras de base salarial do art. 157 (salário-base + tunjangan tetap; regras próprias para diarista e por produção).
+4. **Entitlement matrix por motivo (substitui a matriz de multiplicadores)** — cada motivo (arts. 36–52) é uma composição de direitos, não um fator único:
+   ```text
+   SeparationEntitlement {
+     pesangon?:  { applicable, multiplier? }
+     upmk?:      { applicable, multiplier? }
+     uph:        { applicable }
+     uangPisah?: { applicable, source: employment_agreement | company_regulation | cba }
+     additionalBenefits?
+   }
+   ```
+   Ex.: pedido de demissão = sem pesangon, sem UPMK, com UPH e uang pisah condicional (arts. 50–52). Motivos que geram só UPH + uang pisah são de primeira classe no modelo.
+5. **Base salarial tipada** — o motor não consome `baseSalary` cru; recebe `severanceWageBase { baseSalary, fixedAllowances, wageFrequency, dailyRate?, pieceRate12MonthAverage?, applicableMinimumWage? }`, com estratégia explícita por tipo de remuneração (mensal, diária, por produção). Dado ausente vira `missingInputs`, não uma suposição.
+6. **Motor de rescisão ID** — `src/packs/indonesia/engines/separation.ts`. Retorna objeto de evidência, não um total: `statutoryMinimum`, `components` (pesangon, upmk, uph{unused_leave, repatriation, other_contractual_rights}, thr, pkwtCompensation, uangPisah, unpaidSalary, contractualAdjustments), `legalBasis[]`, `ruleVersion: "ID-SEPARATION-2026.1"`, `inputsSnapshot`, `calculationTrace[]`, `completeness{complete, missingInputs[]}`, `warnings[]`, `approvals[]`. THR fica **fora** do UPH, como componente irmão, para evitar dupla contagem. Extensão do `SeparationProvider` do SDK é opcional e aditiva — as Filipinas não mudam.
+7. **Regime PKWT** — compensação de fim de contrato (proporcional, art. 15) com vetores oficiais; e, ao ultrapassar o máximo legal: `complianceViolation` + `requiresLegalClassification = true` + bloqueio de renovação e alerta ao RH. Nenhuma mudança automática de tipo de contrato.
+8. **Tela e gravação** — fluxo de desligamento com escolha do motivo, prévia da memória de cálculo componente a componente, aviso de "mínimo legal" e de dados faltantes, confirmação que grava o caso. Nova tabela `separation_cases` (company_id, employee_id, motivo, datas, componentes, statutory_minimum, snapshot de entradas, trace, aprovador) por migração com RLS e GRANTs no padrão.
+9. **Testes e conformidade** — `src/packs/indonesia/__tests__/separation.test.ts`: vetores por motivo, casos fracionários propositais (11 meses; 2 anos e 11 meses; 8 anos e 3 meses), caso de pedido de demissão (só UPH + uang pisah), caso de diarista e de trabalhador por produção, caso com `fixedAllowances` ausente devolvendo `complete: false`, e caso de PKWT acima do limite gerando violação sem conversão. Gate local `bunx tsgo --noEmit`, `bun test`, `bunx eslint .` verdes.
+10. **Governança** — ADR/release notes registram o baseline tri-instrumento e as três perguntas enviadas ao parecer (15%, conversão PKWT→PKWTT, leitura literal do art. 40(4)); `commercialReady` continua `false` até parecer jurídico e dado salarial (DEBT-024/025).
 
 ## Fora de escopo
 
-- Acordos coletivos (PKB) e convenções acima do piso legal — o motor calcula o mínimo legal; excedentes entram como ajuste manual.
+- Acordos coletivos acima do piso: o motor entrega `statutoryMinimum`; excedentes entram como `contractualEntitlement`/ajuste manual, nunca embutidos na regra legal.
 - Fluxo de litígio no PHI (registro de mediação basta nesta fase).
-- Bump de versão e reassinatura: ficam para o D7, após parecer jurídico e dado salarial.
+- Bump de versão e reassinatura: ficam para o D7.
 
 ## Detalhes técnicos
 
-- Arquivos novos: `src/packs/indonesia/params/pp35-2021.ts`, `src/packs/indonesia/engines/separation.ts`, `src/packs/indonesia/__tests__/separation.test.ts`, `src/lib/separation-id.functions.ts` (ou extensão de `separation.functions.ts`), migração `separation_cases`.
-- Arquivos tocados: `src/sdk/providers/SeparationProvider.ts` (extensão opcional, sem quebra), `src/lib/engines/id-pack.ts`, `src/routes/_authenticated/employees.tsx` e/ou `contracts.tsx`, `src/packs/indonesia/index.ts` (rulesetVersion sobe, `commercialReady` permanece false).
-- Migração `separation_cases` segue o bloco obrigatório: CREATE TABLE → GRANT authenticated/service_role → ENABLE RLS → policies por dono da empresa (`owns_company`), com updated_at trigger. Aplicação deliberada, forward-only.
-- Base de cálculo do salário rescisório: salário fixo mensal (base + adicional fixo), conforme art. 40/2 — quando só houver `base_salary`, registrar advertência de componente fixo ausente na memória de cálculo.
-- Sem `VITE_` em segredos; sem dependências novas de Node-only; tudo roda no runtime atual.
+- Arquivos novos: `src/packs/indonesia/params/pp35-2021.ts`, `src/packs/indonesia/engines/separation.ts`, `src/packs/indonesia/__tests__/separation.test.ts`, função de servidor de desligamento ID, migração `separation_cases`.
+- Arquivos tocados: `src/sdk/providers/SeparationProvider.ts` (extensão opcional aditiva), `src/lib/engines/id-pack.ts`, `src/lib/engines/contracts.ts` (violação PKWT), telas de funcionários/contratos, `src/packs/indonesia/index.ts` (`rulesetVersion` sobe; `commercialReady` segue `false`).
+- Migração `separation_cases`: CREATE TABLE → GRANT authenticated/service_role → ENABLE RLS → policies por dono da empresa (`owns_company`) → trigger updated_at. Forward-only, aplicação deliberada.
+- Sem `VITE_` em segredos; sem dependências Node-only; tudo roda no runtime atual.
