@@ -18,6 +18,10 @@ export interface SealedField {
   kid: string;
   iv: string;
   ct: string;
+  /** Display hint: last few characters of the plaintext (never the whole value). */
+  hint?: string;
+  /** Plaintext length, so the mask has the right width. */
+  len?: number;
 }
 
 export interface FieldKey {
@@ -203,26 +207,39 @@ export interface SealRecordResult {
   sealedKeys: string[];
 }
 
+export interface SealableField {
+  key: string;
+  /** Trailing characters kept as a display hint. Defaults to 4. */
+  revealTail?: number;
+}
+
 /**
- * Seals the listed keys of a metadata object. Values already sealed are kept
- * as-is; empty values are left untouched.
+ * Seals the listed fields of a metadata object. Values already sealed are kept
+ * as-is; empty values are left untouched. A short tail hint is stored with the
+ * envelope so lists can render a mask without decrypting every row.
  */
 export async function sealMetadata(
   metadata: Record<string, unknown>,
-  keys: string[],
+  fields: SealableField[],
   ring: KeyRing,
 ): Promise<SealRecordResult> {
   const out: Record<string, unknown> = { ...metadata };
   const sealedKeys: string[] = [];
-  for (const key of keys) {
-    const value = out[key];
+  for (const field of fields) {
+    const value = out[field.key];
     if (isSealedField(value)) {
-      sealedKeys.push(key);
+      sealedKeys.push(field.key);
       continue;
     }
     if (typeof value !== "string" || value.trim() === "") continue;
-    out[key] = await sealValue(value.trim(), ring.primary);
-    sealedKeys.push(key);
+    const plain = value.trim();
+    const tail = field.revealTail ?? 4;
+    out[field.key] = {
+      ...(await sealValue(plain, ring.primary)),
+      len: plain.length,
+      hint: plain.length > tail ? plain.slice(-tail) : "",
+    };
+    sealedKeys.push(field.key);
   }
   return { metadata: out, sealedKeys };
 }
