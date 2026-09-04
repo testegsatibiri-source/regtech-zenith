@@ -651,3 +651,33 @@ export const migrateSensitiveFields = createServerFn({ method: "POST" })
 
     return { migrated, employeesTouched };
   });
+
+// ------------------------------------------------- retention purge (D5b)
+// The engine itself lives in `retention-purge.server.ts` (admin client).
+// Here we only verify the caller owns the company and record the intent.
+
+const purgeSchema = z.object({
+  companyId: z.string().uuid(),
+  dryRun: z.boolean().default(true),
+});
+
+export const runRetentionPurgeNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => purgeSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: company, error } = await context.supabase
+      .from("companies")
+      .select("id")
+      .eq("id", data.companyId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!company) throw new Error("Company not found or not accessible.");
+
+    const { runRetentionPurge } = await import("@/lib/privacy/retention-purge.server");
+    return runRetentionPurge({
+      companyId: data.companyId,
+      dryRun: data.dryRun,
+      actorId: context.userId,
+      source: "manual",
+    });
+  });

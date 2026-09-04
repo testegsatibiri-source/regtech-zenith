@@ -9,8 +9,8 @@ Plano aprovado: `.lovable/plan/fase-d-uu-pdp-lei-27-2022-e-criptografia-de-campo
 - [x] D3 — Migração dos valores existentes (`migrateSensitiveFields`) + relatório de pendências (`getFieldEncryptionStatus`)
 - [x] D4 — Tabelas e telas: DPO, incidente 72h, direitos do titular
 - [x] D5a — Catálogo de retenção indonésio (`RETENTION_CATALOG_ID`, `seedRetentionPoliciesForCountry`)
-- [ ] D5b — Rotina de purga agendada conforme o catálogo de retenção
-- [ ] D6 — `docs/governance/legal-opinions/` + atualização do registro de dívidas
+- [x] D5b — Rotina de purga agendada (`retention-purge.server.ts`, `POST /api/public/privacy-purge` com `PRIVACY_PURGE_SECRET`, prévia e execução na tela de Privacidade, trilha append-only)
+- [x] D6 — `docs/governance/legal-opinions/` + DEBT-028/029 no registro de dívidas
 - [ ] D7 — (após Fase C) bump de versão, `commercialReady`, reassinatura
 
 Resíduo herdado: **DEBT-026** — conferência visual humana das faixas TER B/C (revisão, não código).
@@ -38,4 +38,5 @@ Plano aprovado: `.lovable/plan/acesso-por-convite-resend-fase-2-auditoria-de-sch
 ## Pendências externas (fora do editor)
 - Variáveis Supabase no escopo Preview da Vercel + re-run "Release Validation → Staging"
 - Verificar subdomínio de e-mail no Resend (SPF/DKIM/DMARC)
-- Parecer jurídico UU PDP (advogado licenciado na Indonésia) — pré-condição do gate comercial
+- Parecer jurídico UU PDP (advogado licenciado na Indonésia) — pré-condição do gate comercial (DEBT-029)
+- Agendar a rotina de purga (`POST /api/public/privacy-purge`) em staging antes de produção

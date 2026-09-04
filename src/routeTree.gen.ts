@@ -42,6 +42,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedCountryPacksIndexRouteImport } from './routes/_authenticated/country-packs.index'
 import { Route as PacksCountryCalculatorRouteImport } from './routes/packs.$country.calculator'
+import { Route as ApiPublicPrivacyPurgeRouteImport } from './routes/api/public/privacy-purge'
 import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
 import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
 import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
@@ -218,6 +219,11 @@ const PacksCountryCalculatorRoute = PacksCountryCalculatorRouteImport.update({
   path: '/calculator',
   getParentRoute: () => PacksCountryRoute,
 } as any)
+const ApiPublicPrivacyPurgeRoute = ApiPublicPrivacyPurgeRouteImport.update({
+  id: '/api/public/privacy-purge',
+  path: '/api/public/privacy-purge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
   id: '/api/public/openapi.json',
   path: '/api/public/openapi.json',
@@ -302,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/privacy-purge': typeof ApiPublicPrivacyPurgeRoute
   '/packs/$country/calculator': typeof PacksCountryCalculatorRoute
   '/country-packs/': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
@@ -344,6 +351,7 @@ export interface FileRoutesByTo {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/privacy-purge': typeof ApiPublicPrivacyPurgeRoute
   '/packs/$country/calculator': typeof PacksCountryCalculatorRoute
   '/country-packs': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
@@ -389,6 +397,7 @@ export interface FileRoutesById {
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
   '/api/public/calculate-tax': typeof ApiPublicCalculateTaxRoute
   '/api/public/openapi.json': typeof ApiPublicOpenapiDotjsonRoute
+  '/api/public/privacy-purge': typeof ApiPublicPrivacyPurgeRoute
   '/packs/$country/calculator': typeof PacksCountryCalculatorRoute
   '/_authenticated/country-packs/': typeof AuthenticatedCountryPacksIndexRoute
   '/api/public/v1/calculate-bpjs': typeof ApiPublicV1CalculateBpjsRoute
@@ -434,6 +443,7 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/api/public/privacy-purge'
     | '/packs/$country/calculator'
     | '/country-packs/'
     | '/api/public/v1/calculate-bpjs'
@@ -476,6 +486,7 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/api/public/privacy-purge'
     | '/packs/$country/calculator'
     | '/country-packs'
     | '/api/public/v1/calculate-bpjs'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/api/public/calculate-bpjs'
     | '/api/public/calculate-tax'
     | '/api/public/openapi.json'
+    | '/api/public/privacy-purge'
     | '/packs/$country/calculator'
     | '/_authenticated/country-packs/'
     | '/api/public/v1/calculate-bpjs'
@@ -544,6 +556,7 @@ export interface RootRouteChildren {
   ApiPublicCalculateBpjsRoute: typeof ApiPublicCalculateBpjsRoute
   ApiPublicCalculateTaxRoute: typeof ApiPublicCalculateTaxRoute
   ApiPublicOpenapiDotjsonRoute: typeof ApiPublicOpenapiDotjsonRoute
+  ApiPublicPrivacyPurgeRoute: typeof ApiPublicPrivacyPurgeRoute
   ApiPublicV1CalculateBpjsRoute: typeof ApiPublicV1CalculateBpjsRoute
   ApiPublicV1CalculateTaxRoute: typeof ApiPublicV1CalculateTaxRoute
   ApiPublicV1HealthRoute: typeof ApiPublicV1HealthRoute
@@ -784,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PacksCountryCalculatorRouteImport
       parentRoute: typeof PacksCountryRoute
     }
+    '/api/public/privacy-purge': {
+      id: '/api/public/privacy-purge'
+      path: '/api/public/privacy-purge'
+      fullPath: '/api/public/privacy-purge'
+      preLoaderRoute: typeof ApiPublicPrivacyPurgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/openapi.json': {
       id: '/api/public/openapi.json'
       path: '/api/public/openapi.json'
@@ -940,6 +960,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCalculateBpjsRoute: ApiPublicCalculateBpjsRoute,
   ApiPublicCalculateTaxRoute: ApiPublicCalculateTaxRoute,
   ApiPublicOpenapiDotjsonRoute: ApiPublicOpenapiDotjsonRoute,
+  ApiPublicPrivacyPurgeRoute: ApiPublicPrivacyPurgeRoute,
   ApiPublicV1CalculateBpjsRoute: ApiPublicV1CalculateBpjsRoute,
   ApiPublicV1CalculateTaxRoute: ApiPublicV1CalculateTaxRoute,
   ApiPublicV1HealthRoute: ApiPublicV1HealthRoute,

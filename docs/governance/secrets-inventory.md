@@ -27,6 +27,9 @@ long-lived copies.
 | `PACK_SIGNING_KEY_PROD`         | production            | `@sdk-maintainers` | Country Pack signature verification | 180d |
 | `LOVABLE_API_KEY_STAGING`       | staging               | `@cto-global`| Lovable AI Gateway (staging)         | 90d      |
 | `LOVABLE_API_KEY_PROD`          | production            | `@cto-global`| Lovable AI Gateway (prod)            | 90d      |
+| `ID_PDP_FIELD_KEY`              | all                   | `@country-cto-id` | Field-level AES-GCM key for NIK/NPWP/bank account (UU 27/2022) | 180d |
+| `ID_PDP_FIELD_KEY_PREVIOUS`     | all (during rotation) | `@country-cto-id` | Previous field key, kept until re-sealing completes | per rotation |
+| `PRIVACY_PURGE_SECRET`          | all                   | `@cto-global`| Shared secret for `POST /api/public/privacy-purge` | 90d |
 
 Country-pack-specific secrets (per-provider API keys, per-country signing
 keys) follow the same convention: `<PACK>_<PURPOSE>_<ENV>`, e.g.
