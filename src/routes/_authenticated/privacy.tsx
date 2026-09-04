@@ -2,7 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck, History, FileLock2, KeyRound, Siren, UserSearch } from "lucide-react";
+import {
+  ShieldCheck,
+  History,
+  FileLock2,
+  KeyRound,
+  Siren,
+  UserSearch,
+  Trash2,
+} from "lucide-react";
 import { useCompany } from "@/lib/companyContext";
 import { listEmployees } from "@/lib/data.functions";
 import {
@@ -14,6 +22,7 @@ import {
   listRetentionPolicies,
   seedDefaultRetentionPolicies,
   upsertRetentionPolicy,
+  runRetentionPurgeNow,
   getPrivacyReadiness,
   getFieldEncryptionStatus,
   migrateSensitiveFields,
@@ -74,6 +83,31 @@ function PrivacyPage() {
   const policiesFn = useServerFn(listRetentionPolicies);
   const seedFn = useServerFn(seedDefaultRetentionPolicies);
   const savePolicyFn = useServerFn(upsertRetentionPolicy);
+  const purgeFn = useServerFn(runRetentionPurgeNow);
+  const [purging, setPurging] = useState(false);
+  const [purgeReport, setPurgeReport] = useState<Awaited<
+    ReturnType<typeof runRetentionPurgeNow>
+  > | null>(null);
+
+  async function doPurge(dryRun: boolean) {
+    if (!companyId) return;
+    setPurging(true);
+    try {
+      const report = await purgeFn({ data: { companyId, dryRun } });
+      setPurgeReport(report);
+      queryClient.invalidateQueries({ queryKey: ["access-log", companyId] });
+      toast.success(
+        dryRun
+          ? `Preview: ${report.matched} records past retention`
+          : `Purge complete: ${report.affected} records purged`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Purge failed");
+    } finally {
+      setPurging(false);
+    }
+  }
+
   const readinessFn = useServerFn(getPrivacyReadiness);
 
   const [employeeId, setEmployeeId] = useState<string>("");
