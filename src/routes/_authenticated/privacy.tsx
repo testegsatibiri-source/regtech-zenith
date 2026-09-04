@@ -225,6 +225,65 @@ function PrivacyPage() {
       </div>
 
       <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <KeyRound className="h-4 w-4" /> Sensitive field encryption
+          </CardTitle>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!companyId || !enc?.keyConfigured || (enc?.plaintext ?? 0) === 0}
+            onClick={async () => {
+              if (!companyId) return;
+              try {
+                const res = await sealFn({ data: { companyId } });
+                queryClient.invalidateQueries({ queryKey: ["field-encryption", companyId] });
+                queryClient.invalidateQueries({ queryKey: ["employees", companyId] });
+                toast.success(
+                  `${res.migrated} value(s) sealed across ${res.employeesTouched} employee(s)`,
+                );
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Sealing failed");
+              }
+            }}
+          >
+            Seal pending values
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={enc?.keyConfigured ? "default" : "destructive"}>
+              {enc?.keyConfigured ? "Encryption key configured" : "Encryption key missing"}
+            </Badge>
+            <Badge variant="outline">{enc?.sealed ?? 0} sealed</Badge>
+            <Badge variant={(enc?.plaintext ?? 0) > 0 ? "destructive" : "outline"}>
+              {enc?.plaintext ?? 0} plaintext
+            </Badge>
+            {(enc?.trackedFields ?? []).map((f) => (
+              <Badge key={f} variant="secondary">
+                {f.replace(/_/g, " ")}
+              </Badge>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Identifiers such as NIK, NPWP and bank accounts are stored encrypted (AES-GCM) with a key
+            held outside the database, and are only shown in full through an audited reveal — UU
+            27/2022 art. 35 security measures.
+          </p>
+          {(enc?.pendingCount ?? 0) > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {enc!.pending.map((p) => (
+                <Badge key={p.employeeId} variant="outline">
+                  {p.employeeName} · {p.fields.join(", ")}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+      <Card>
         <CardHeader>
           <CardTitle className="text-base">Record consent</CardTitle>
         </CardHeader>
