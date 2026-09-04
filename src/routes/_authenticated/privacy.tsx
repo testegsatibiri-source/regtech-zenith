@@ -111,6 +111,57 @@ function PrivacyPage() {
     enabled: !!companyId,
   });
 
+  const encryptionFn = useServerFn(getFieldEncryptionStatus);
+  const sealFn = useServerFn(migrateSensitiveFields);
+  const dpoListFn = useServerFn(listDataProtectionOfficers);
+  const dpoSaveFn = useServerFn(upsertDataProtectionOfficer);
+  const incidentsFn = useServerFn(listPrivacyIncidents);
+  const incidentSaveFn = useServerFn(upsertPrivacyIncident);
+  const dsrListFn = useServerFn(listDataSubjectRequests);
+  const dsrSaveFn = useServerFn(upsertDataSubjectRequest);
+
+  const encryption = useQuery({
+    queryKey: ["field-encryption", companyId],
+    queryFn: () => encryptionFn({ data: { companyId: companyId! } }),
+    enabled: !!companyId,
+  });
+
+  const officers = useQuery({
+    queryKey: ["dpo", companyId],
+    queryFn: () => dpoListFn({ data: { companyId: companyId! } }),
+    enabled: !!companyId,
+  });
+
+  const incidents = useQuery({
+    queryKey: ["privacy-incidents", companyId],
+    queryFn: () => incidentsFn({ data: { companyId: companyId! } }),
+    enabled: !!companyId,
+  });
+
+  const requests = useQuery({
+    queryKey: ["dsr", companyId],
+    queryFn: () => dsrListFn({ data: { companyId: companyId! } }),
+    enabled: !!companyId,
+  });
+
+  const [dpoName, setDpoName] = useState("");
+  const [dpoEmail, setDpoEmail] = useState("");
+  const [dpoPhone, setDpoPhone] = useState("");
+  const [incidentTitle, setIncidentTitle] = useState("");
+  const [incidentSeverity, setIncidentSeverity] =
+    useState<(typeof INCIDENT_SEVERITIES)[number]>("medium");
+  const [incidentAffected, setIncidentAffected] = useState("0");
+  const [dsrType, setDsrType] = useState<(typeof DSR_TYPES)[number]>("access");
+  const [dsrEmployee, setDsrEmployee] = useState("");
+  const [dsrEmail, setDsrEmail] = useState("");
+
+  const officer = officers.data?.[0];
+  const enc = encryption.data;
+  const overdueIncidents = (incidents.data ?? []).filter(
+    (i) => !i.authority_notified_at && new Date(i.notification_deadline) < new Date(),
+  ).length;
+
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["consents", companyId] });
     queryClient.invalidateQueries({ queryKey: ["privacy-readiness", companyId] });
