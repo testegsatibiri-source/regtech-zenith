@@ -269,14 +269,54 @@ function Employees() {
                   {activePack.name} identifiers (country_metadata)
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {t.identifiers.map((f) => (
-                    <F key={f.key} label={f.label}>
-                      <Input
-                        value={(meta[f.key] as string) ?? ""}
-                        onChange={(e) => setMeta(f.key, e.target.value)}
-                      />
-                    </F>
-                  ))}
+                  {t.identifiers.map((f) => {
+                    const sensitive = Boolean(
+                      sensitiveFieldSpec(activePack.code, f.key) && draft?.id,
+                    );
+                    return (
+                      <F key={f.key} label={f.label}>
+                        <div className="flex gap-2">
+                          <Input
+                            value={(meta[f.key] as string) ?? ""}
+                            onChange={(e) => setMeta(f.key, e.target.value)}
+                          />
+                          {sensitive && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              title="Reveal (logged)"
+                              onClick={async () => {
+                                if (!companyId || !draft?.id) return;
+                                try {
+                                  const res = await revealFn({
+                                    data: {
+                                      companyId,
+                                      employeeId: draft.id,
+                                      field: f.key,
+                                      purpose: "payroll_processing",
+                                    },
+                                  });
+                                  if (res.value) {
+                                    setMeta(f.key, res.value);
+                                    toast.success("Value revealed — access recorded");
+                                  } else {
+                                    toast.info("No value stored for this field");
+                                  }
+                                } catch (err) {
+                                  toast.error(
+                                    err instanceof Error ? err.message : "Reveal failed",
+                                  );
+                                }
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </F>
+                    );
+                  })}
                   <F label="Weekly overtime (h)">
                     <Input
                       type="number"
