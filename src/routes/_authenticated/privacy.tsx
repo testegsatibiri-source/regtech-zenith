@@ -458,6 +458,68 @@ function PrivacyPage() {
       </Card>
 
       <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trash2 className="h-4 w-4" /> Retention purge
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={purging}
+              onClick={() => void doPurge(true)}
+            >
+              Preview
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={purging}
+              onClick={() => void doPurge(false)}
+            >
+              Run purge
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Applies the retention schedule above to payroll, leave and separated-employee records.
+            Statutory filings stay immutable. Every run is written to the access trail (UU 27/2022
+            Pasal 16).
+          </p>
+          {!purgeReport && (
+            <p className="text-sm text-muted-foreground">No purge run in this session.</p>
+          )}
+          {purgeReport && (
+            <>
+              <p className="text-sm">
+                {purgeReport.dryRun ? "Preview" : "Executed"} · {purgeReport.policies} policies ·{" "}
+                {purgeReport.matched} records matched · {purgeReport.affected} changed
+              </p>
+              {purgeReport.outcomes.map((o) => (
+                <div
+                  key={`${o.companyId}-${o.category}`}
+                  className="flex items-center justify-between gap-4 border-b py-2 text-sm last:border-0"
+                >
+                  <div>
+                    <span className="font-medium">{o.category.replace(/_/g, " ")}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {o.error ?? o.reason ?? `cutoff ${o.cutoff.slice(0, 10)} · ${o.action}`}
+                    </span>
+                  </div>
+                  <Badge variant={o.supported ? (o.matched ? "default" : "secondary") : "outline"}>
+                    {o.supported ? `${o.matched} / ${o.affected}` : "not applicable"}
+                  </Badge>
+                </div>
+              ))}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+
+
+      <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <History className="h-4 w-4" /> Personal-data access trail
