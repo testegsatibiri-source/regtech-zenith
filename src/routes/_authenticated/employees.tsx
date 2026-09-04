@@ -2,8 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Pencil, CheckCircle2, XCircle } from "lucide-react";
-import { listEmployees, upsertEmployee, deleteEmployee } from "@/lib/data.functions";
+import { Plus, Trash2, Pencil, CheckCircle2, XCircle, Eye } from "lucide-react";
+import {
+  listEmployees,
+  upsertEmployee,
+  deleteEmployee,
+  revealEmployeeField,
+} from "@/lib/data.functions";
+import { sensitiveFieldSpec } from "@/lib/privacy/sensitive-fields";
 import { useCompany } from "@/lib/companyContext";
 import { useActivePack } from "@/lib/packs/useActivePack";
 import { MARITAL_STATUS, RELIGIONS } from "@/lib/countryPacks";
