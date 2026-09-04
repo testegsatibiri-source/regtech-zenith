@@ -311,9 +311,7 @@ function Employees() {
                                     toast.info("No value stored for this field");
                                   }
                                 } catch (err) {
-                                  toast.error(
-                                    err instanceof Error ? err.message : "Reveal failed",
-                                  );
+                                  toast.error(err instanceof Error ? err.message : "Reveal failed");
                                 }
                               }}
                             >

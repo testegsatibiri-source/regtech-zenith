@@ -79,6 +79,7 @@ export async function revealField(
 ): Promise<{ value: string; sealed: boolean } | null> {
   const value = metadata[key];
   if (isSealedField(value)) return { value: await openValue(value, ring), sealed: true };
-  if (typeof value === "string" && value.trim() !== "") return { value: value.trim(), sealed: false };
+  if (typeof value === "string" && value.trim() !== "")
+    return { value: value.trim(), sealed: false };
   return null;
 }

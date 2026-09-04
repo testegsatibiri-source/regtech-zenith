@@ -130,9 +130,8 @@ export const upsertEmployee = createServerFn({ method: "POST" })
     let metadata = data.country_metadata as Record<string, unknown>;
 
     if (specs.length) {
-      const { loadKeyRing, sealMetadata, isSealedField } = await import(
-        "@/lib/privacy/field-crypto.server"
-      );
+      const { loadKeyRing, sealMetadata, isSealedField } =
+        await import("@/lib/privacy/field-crypto.server");
       // A mask coming back from the client must never overwrite a stored value.
       if (data.id) {
         const { data: current } = await context.supabase

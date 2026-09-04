@@ -161,7 +161,6 @@ function PrivacyPage() {
     (i) => !i.authority_notified_at && new Date(i.notification_deadline) < new Date(),
   ).length;
 
-
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["consents", companyId] });
     queryClient.invalidateQueries({ queryKey: ["privacy-readiness", companyId] });
@@ -266,8 +265,8 @@ function PrivacyPage() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            Identifiers such as NIK, NPWP and bank accounts are stored encrypted (AES-GCM) with a key
-            held outside the database, and are only shown in full through an audited reveal — UU
+            Identifiers such as NIK, NPWP and bank accounts are stored encrypted (AES-GCM) with a
+            key held outside the database, and are only shown in full through an audited reveal — UU
             27/2022 art. 35 security measures.
           </p>
           {(enc?.pendingCount ?? 0) > 0 && (
@@ -281,7 +280,6 @@ function PrivacyPage() {
           )}
         </CardContent>
       </Card>
-
 
       <Card>
         <CardHeader>
@@ -485,331 +483,342 @@ function PrivacyPage() {
                 {new Date(l.created_at).toLocaleString()}
               </span>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4" /> Data protection officer
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-4">
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <Input
-              value={dpoName || (officer?.full_name ?? "")}
-              onChange={(e) => setDpoName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={dpoEmail || (officer?.email ?? "")}
-              onChange={(e) => setDpoEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Phone</Label>
-            <Input
-              value={dpoPhone || (officer?.phone ?? "")}
-              onChange={(e) => setDpoPhone(e.target.value)}
-            />
-          </div>
-          <div className="flex items-end">
-            <Button
-              onClick={async () => {
-                if (!companyId) return;
-                const fullName = dpoName || officer?.full_name || "";
-                const email = dpoEmail || officer?.email || "";
-                if (!fullName || !email) {
-                  toast.error("Name and email are required");
-                  return;
-                }
-                try {
-                  await dpoSaveFn({
-                    data: {
-                      companyId,
-                      fullName,
-                      email,
-                      phone: dpoPhone || officer?.phone || null,
-                      jurisdiction: "ID",
-                    },
-                  });
-                  queryClient.invalidateQueries({ queryKey: ["dpo", companyId] });
-                  toast.success("Data protection officer saved");
-                } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "Failed to save officer");
-                }
-              }}
-            >
-              Save officer
-            </Button>
-          </div>
-          <p className="md:col-span-4 text-xs text-muted-foreground">
-            UU 27/2022 art. 53 requires an appointed officer when processing personal data on a large
-            scale or as a core activity.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Siren className="h-4 w-4" /> Privacy incidents (72-hour notification)
-          </CardTitle>
-          {overdueIncidents > 0 && (
-            <Badge variant="destructive">{overdueIncidents} past deadline</Badge>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="space-y-2 md:col-span-2">
-              <Label>Title</Label>
-              <Input
-                value={incidentTitle}
-                onChange={(e) => setIncidentTitle(e.target.value)}
-                placeholder="Unauthorised export of payroll data"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Severity</Label>
-              <Select
-                value={incidentSeverity}
-                onValueChange={(v) =>
-                  setIncidentSeverity(v as (typeof INCIDENT_SEVERITIES)[number])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {INCIDENT_SEVERITIES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Affected people</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={incidentAffected}
-                  onChange={(e) => setIncidentAffected(e.target.value)}
-                />
-                <Button
-                  onClick={async () => {
-                    if (!companyId || !incidentTitle) {
-                      toast.error("Describe the incident first");
-                      return;
-                    }
-                    try {
-                      await incidentSaveFn({
-                        data: {
-                          companyId,
-                          title: incidentTitle,
-                          severity: incidentSeverity,
-                          status: "open",
-                          affectedCount: Number(incidentAffected) || 0,
-                        },
-                      });
-                      setIncidentTitle("");
-                      setIncidentAffected("0");
-                      queryClient.invalidateQueries({
-                        queryKey: ["privacy-incidents", companyId],
-                      });
-                      toast.success("Incident logged — 72-hour clock started");
-                    } catch (e) {
-                      toast.error(e instanceof Error ? e.message : "Failed to log incident");
-                    }
-                  }}
-                >
-                  Log
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {(incidents.data ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">No incidents recorded.</p>
-          )}
-          {(incidents.data ?? []).map((i) => {
-            const overdue = !i.authority_notified_at && new Date(i.notification_deadline) < new Date();
-            return (
-              <div
-                key={i.id}
-                className="flex flex-wrap items-center justify-between gap-2 border-b py-2 text-sm last:border-0"
-              >
-                <div>
-                  <span className="font-medium">{i.title}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {i.severity} · {i.affected_count} affected · deadline{" "}
-                    {new Date(i.notification_deadline).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={overdue ? "destructive" : "outline"}>
-                    {i.authority_notified_at ? "authority notified" : overdue ? "overdue" : i.status}
-                  </Badge>
-                  {!i.authority_notified_at && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" /> Data protection officer
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-4">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input
+                      value={dpoName || (officer?.full_name ?? "")}
+                      onChange={(e) => setDpoName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={dpoEmail || (officer?.email ?? "")}
+                      onChange={(e) => setDpoEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phone</Label>
+                    <Input
+                      value={dpoPhone || (officer?.phone ?? "")}
+                      onChange={(e) => setDpoPhone(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-end">
                     <Button
-                      size="sm"
-                      variant="outline"
                       onClick={async () => {
                         if (!companyId) return;
-                        await incidentSaveFn({
-                          data: {
-                            companyId,
-                            id: i.id,
-                            title: i.title,
-                            severity: i.severity as (typeof INCIDENT_SEVERITIES)[number],
-                            status: "notified",
-                            affectedCount: i.affected_count,
-                            detectedAt: i.detected_at,
-                            authorityNotifiedAt: new Date().toISOString(),
-                          },
-                        });
-                        queryClient.invalidateQueries({
-                          queryKey: ["privacy-incidents", companyId],
-                        });
-                        toast.success("Notification recorded");
+                        const fullName = dpoName || officer?.full_name || "";
+                        const email = dpoEmail || officer?.email || "";
+                        if (!fullName || !email) {
+                          toast.error("Name and email are required");
+                          return;
+                        }
+                        try {
+                          await dpoSaveFn({
+                            data: {
+                              companyId,
+                              fullName,
+                              email,
+                              phone: dpoPhone || officer?.phone || null,
+                              jurisdiction: "ID",
+                            },
+                          });
+                          queryClient.invalidateQueries({ queryKey: ["dpo", companyId] });
+                          toast.success("Data protection officer saved");
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Failed to save officer");
+                        }
                       }}
                     >
-                      Mark notified
+                      Save officer
                     </Button>
+                  </div>
+                  <p className="md:col-span-4 text-xs text-muted-foreground">
+                    UU 27/2022 art. 53 requires an appointed officer when processing personal data
+                    on a large scale or as a core activity.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Siren className="h-4 w-4" /> Privacy incidents (72-hour notification)
+                  </CardTitle>
+                  {overdueIncidents > 0 && (
+                    <Badge variant="destructive">{overdueIncidents} past deadline</Badge>
                   )}
-                </div>
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Title</Label>
+                      <Input
+                        value={incidentTitle}
+                        onChange={(e) => setIncidentTitle(e.target.value)}
+                        placeholder="Unauthorised export of payroll data"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Severity</Label>
+                      <Select
+                        value={incidentSeverity}
+                        onValueChange={(v) =>
+                          setIncidentSeverity(v as (typeof INCIDENT_SEVERITIES)[number])
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INCIDENT_SEVERITIES.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Affected people</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          value={incidentAffected}
+                          onChange={(e) => setIncidentAffected(e.target.value)}
+                        />
+                        <Button
+                          onClick={async () => {
+                            if (!companyId || !incidentTitle) {
+                              toast.error("Describe the incident first");
+                              return;
+                            }
+                            try {
+                              await incidentSaveFn({
+                                data: {
+                                  companyId,
+                                  title: incidentTitle,
+                                  severity: incidentSeverity,
+                                  status: "open",
+                                  affectedCount: Number(incidentAffected) || 0,
+                                },
+                              });
+                              setIncidentTitle("");
+                              setIncidentAffected("0");
+                              queryClient.invalidateQueries({
+                                queryKey: ["privacy-incidents", companyId],
+                              });
+                              toast.success("Incident logged — 72-hour clock started");
+                            } catch (e) {
+                              toast.error(
+                                e instanceof Error ? e.message : "Failed to log incident",
+                              );
+                            }
+                          }}
+                        >
+                          Log
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <UserSearch className="h-4 w-4" /> Data subject requests
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="space-y-2">
-              <Label>Request type</Label>
-              <Select
-                value={dsrType}
-                onValueChange={(v) => setDsrType(v as (typeof DSR_TYPES)[number])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DSR_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Employee</Label>
-              <Select value={dsrEmployee} onValueChange={setDsrEmployee}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(employees.data ?? []).map((e: { id: string; full_name: string }) => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Contact email</Label>
-              <Input value={dsrEmail} onChange={(e) => setDsrEmail(e.target.value)} />
-            </div>
-            <div className="flex items-end">
-              <Button
-                onClick={async () => {
-                  if (!companyId) return;
-                  try {
-                    await dsrSaveFn({
-                      data: {
-                        companyId,
-                        employeeId: dsrEmployee || null,
-                        requestType: dsrType,
-                        requesterEmail: dsrEmail || null,
-                        status: "received",
-                      },
-                    });
-                    setDsrEmail("");
-                    queryClient.invalidateQueries({ queryKey: ["dsr", companyId] });
-                    toast.success("Request registered");
-                  } catch (e) {
-                    toast.error(e instanceof Error ? e.message : "Failed to register request");
-                  }
-                }}
-              >
-                Register
-              </Button>
-            </div>
-          </div>
+                  {(incidents.data ?? []).length === 0 && (
+                    <p className="text-sm text-muted-foreground">No incidents recorded.</p>
+                  )}
+                  {(incidents.data ?? []).map((i) => {
+                    const overdue =
+                      !i.authority_notified_at && new Date(i.notification_deadline) < new Date();
+                    return (
+                      <div
+                        key={i.id}
+                        className="flex flex-wrap items-center justify-between gap-2 border-b py-2 text-sm last:border-0"
+                      >
+                        <div>
+                          <span className="font-medium">{i.title}</span>
+                          <span className="block text-xs text-muted-foreground">
+                            {i.severity} · {i.affected_count} affected · deadline{" "}
+                            {new Date(i.notification_deadline).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={overdue ? "destructive" : "outline"}>
+                            {i.authority_notified_at
+                              ? "authority notified"
+                              : overdue
+                                ? "overdue"
+                                : i.status}
+                          </Badge>
+                          {!i.authority_notified_at && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                if (!companyId) return;
+                                await incidentSaveFn({
+                                  data: {
+                                    companyId,
+                                    id: i.id,
+                                    title: i.title,
+                                    severity: i.severity as (typeof INCIDENT_SEVERITIES)[number],
+                                    status: "notified",
+                                    affectedCount: i.affected_count,
+                                    detectedAt: i.detected_at,
+                                    authorityNotifiedAt: new Date().toISOString(),
+                                  },
+                                });
+                                queryClient.invalidateQueries({
+                                  queryKey: ["privacy-incidents", companyId],
+                                });
+                                toast.success("Notification recorded");
+                              }}
+                            >
+                              Mark notified
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
 
-          {(requests.data ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">No requests received.</p>
-          )}
-          {(requests.data ?? []).map((q) => (
-            <div
-              key={q.id}
-              className="flex flex-wrap items-center justify-between gap-2 border-b py-2 text-sm last:border-0"
-            >
-              <div>
-                <span className="font-medium">{q.request_type}</span>
-                <span className="text-muted-foreground">
-                  {" "}
-                  · {employeeName(q.employee_id)} · due {new Date(q.due_at).toLocaleDateString()}
-                </span>
-              </div>
-              <Select
-                value={q.status}
-                onValueChange={async (v) => {
-                  if (!companyId) return;
-                  await dsrSaveFn({
-                    data: {
-                      companyId,
-                      id: q.id,
-                      employeeId: q.employee_id,
-                      requestType: q.request_type as (typeof DSR_TYPES)[number],
-                      requesterEmail: q.requester_email,
-                      status: v as (typeof DSR_STATUSES)[number],
-                      resolvedAt:
-                        v === "fulfilled" || v === "rejected" ? new Date().toISOString() : null,
-                    },
-                  });
-                  queryClient.invalidateQueries({ queryKey: ["dsr", companyId] });
-                  toast.success("Request updated");
-                }}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DSR_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s.replace(/_/g, " ")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <UserSearch className="h-4 w-4" /> Data subject requests
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Request type</Label>
+                      <Select
+                        value={dsrType}
+                        onValueChange={(v) => setDsrType(v as (typeof DSR_TYPES)[number])}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DSR_TYPES.map((t) => (
+                            <SelectItem key={t} value={t}>
+                              {t}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Employee</Label>
+                      <Select value={dsrEmployee} onValueChange={setDsrEmployee}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(employees.data ?? []).map((e: { id: string; full_name: string }) => (
+                            <SelectItem key={e.id} value={e.id}>
+                              {e.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Contact email</Label>
+                      <Input value={dsrEmail} onChange={(e) => setDsrEmail(e.target.value)} />
+                    </div>
+                    <div className="flex items-end">
+                      <Button
+                        onClick={async () => {
+                          if (!companyId) return;
+                          try {
+                            await dsrSaveFn({
+                              data: {
+                                companyId,
+                                employeeId: dsrEmployee || null,
+                                requestType: dsrType,
+                                requesterEmail: dsrEmail || null,
+                                status: "received",
+                              },
+                            });
+                            setDsrEmail("");
+                            queryClient.invalidateQueries({ queryKey: ["dsr", companyId] });
+                            toast.success("Request registered");
+                          } catch (e) {
+                            toast.error(
+                              e instanceof Error ? e.message : "Failed to register request",
+                            );
+                          }
+                        }}
+                      >
+                        Register
+                      </Button>
+                    </div>
+                  </div>
 
+                  {(requests.data ?? []).length === 0 && (
+                    <p className="text-sm text-muted-foreground">No requests received.</p>
+                  )}
+                  {(requests.data ?? []).map((q) => (
+                    <div
+                      key={q.id}
+                      className="flex flex-wrap items-center justify-between gap-2 border-b py-2 text-sm last:border-0"
+                    >
+                      <div>
+                        <span className="font-medium">{q.request_type}</span>
+                        <span className="text-muted-foreground">
+                          {" "}
+                          · {employeeName(q.employee_id)} · due{" "}
+                          {new Date(q.due_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <Select
+                        value={q.status}
+                        onValueChange={async (v) => {
+                          if (!companyId) return;
+                          await dsrSaveFn({
+                            data: {
+                              companyId,
+                              id: q.id,
+                              employeeId: q.employee_id,
+                              requestType: q.request_type as (typeof DSR_TYPES)[number],
+                              requesterEmail: q.requester_email,
+                              status: v as (typeof DSR_STATUSES)[number],
+                              resolvedAt:
+                                v === "fulfilled" || v === "rejected"
+                                  ? new Date().toISOString()
+                                  : null,
+                            },
+                          });
+                          queryClient.invalidateQueries({ queryKey: ["dsr", companyId] });
+                          toast.success("Request updated");
+                        }}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DSR_STATUSES.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s.replace(/_/g, " ")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </CardContent>
       </Card>

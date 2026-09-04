@@ -11,7 +11,11 @@ import {
   sealValue,
   FieldCryptoError,
 } from "@/lib/privacy/field-crypto.server";
-import { maskSensitive, sensitiveFieldsFor, ALL_SENSITIVE_KEYS } from "@/lib/privacy/sensitive-fields";
+import {
+  maskSensitive,
+  sensitiveFieldsFor,
+  ALL_SENSITIVE_KEYS,
+} from "@/lib/privacy/sensitive-fields";
 
 function keySpec(kid: string, seed: number): string {
   const bytes = new Uint8Array(32).map((_, i) => (i * 7 + seed) % 251);

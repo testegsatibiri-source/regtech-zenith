@@ -478,7 +478,13 @@ export const upsertPrivacyIncident = createServerFn({ method: "POST" })
 
 // --------------------------------------------------- data subject requests
 
-export const DSR_TYPES = ["access", "rectification", "erasure", "objection", "portability"] as const;
+export const DSR_TYPES = [
+  "access",
+  "rectification",
+  "erasure",
+  "objection",
+  "portability",
+] as const;
 export const DSR_STATUSES = ["received", "in_progress", "fulfilled", "rejected"] as const;
 
 const dsrSchema = z.object({
@@ -542,7 +548,11 @@ export const getFieldEncryptionStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => companyId.parse(d))
   .handler(async ({ data, context }) => {
     const [{ data: company }, { data: rows, error }] = await Promise.all([
-      context.supabase.from("companies").select("country_code").eq("id", data.companyId).maybeSingle(),
+      context.supabase
+        .from("companies")
+        .select("country_code")
+        .eq("id", data.companyId)
+        .maybeSingle(),
       context.supabase
         .from("employees")
         .select("id, full_name, country_metadata")
@@ -590,7 +600,11 @@ export const migrateSensitiveFields = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => companyId.parse(d))
   .handler(async ({ data, context }) => {
     const [{ data: company }, { data: rows, error }] = await Promise.all([
-      context.supabase.from("companies").select("country_code").eq("id", data.companyId).maybeSingle(),
+      context.supabase
+        .from("companies")
+        .select("country_code")
+        .eq("id", data.companyId)
+        .maybeSingle(),
       context.supabase
         .from("employees")
         .select("id, country_metadata")
@@ -599,9 +613,8 @@ export const migrateSensitiveFields = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const { sensitiveFieldsFor } = await import("@/lib/privacy/sensitive-fields");
-    const { loadKeyRing, sealMetadata, isSealedField } = await import(
-      "@/lib/privacy/field-crypto.server"
-    );
+    const { loadKeyRing, sealMetadata, isSealedField } =
+      await import("@/lib/privacy/field-crypto.server");
     const specs = sensitiveFieldsFor(company?.country_code ?? null);
     if (!specs.length) return { migrated: 0, employeesTouched: 0 };
 
