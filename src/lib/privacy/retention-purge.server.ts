@@ -48,12 +48,12 @@ function cutoffDate(retentionMonths: number): Date {
   return d;
 }
 
-function stripSensitive(metadata: unknown): Record<string, unknown> {
+function stripSensitive(metadata: unknown): Record<string, string | number | boolean | null> {
   const src = (metadata ?? {}) as Record<string, unknown>;
-  const out: Record<string, unknown> = {};
+  const out: Record<string, string | number | boolean | null> = {};
   for (const [k, v] of Object.entries(src)) {
     if (ALL_SENSITIVE_KEYS.includes(k)) continue;
-    out[k] = v;
+    out[k] = v as string | number | boolean | null;
   }
   out["_purged_at"] = new Date().toISOString();
   return out;
