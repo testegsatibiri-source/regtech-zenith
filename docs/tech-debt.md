@@ -259,3 +259,28 @@ Not a release blocker.
 (do-not-edit header) but is required at runtime, so it stays versioned. It is listed in
 `eslint.config.js` `ignores` because any formatting fix would be reverted on regeneration and
 break CI again.
+
+## DEBT-028 — Retention purge coverage is partial (H23 Fase D5b, 2026-09-04)
+
+`src/lib/privacy/retention-purge.server.ts` executes `data_retention_policies` for
+`payroll_records`, `leave_records` and `employment_file` (separated employees). Three catalogue
+categories have no handler and are reported as `supported: false` with a reason:
+
+- `statutory_filings` — immutable by ADR-0037; retention is archival only, purge would violate it.
+- `bpjs_records` — no independent table; evidence lives inside payroll rows.
+- `applicant_data` — no applicant records exist in the platform yet.
+
+The scheduled entry point is `POST /api/public/privacy-purge`, authenticated with the
+`PRIVACY_PURGE_SECRET` shared secret (header `x-purge-secret` or `Authorization: Bearer`).
+Every run — preview or execution — appends to `personal_data_access_log`
+(`retention_purge_preview` / `retention_purge`).
+
+**Remaining to close:** register a handler (or an explicit archival path) for the three
+categories above once the corresponding record stores exist, and wire the scheduler in
+staging before production.
+
+## DEBT-029 — Indonesian legal opinion outstanding (H23 Fase D6, 2026-09-04)
+
+`docs/governance/legal-opinions/` now exists with the intake rules and the frozen fact pattern.
+No `ID` opinion has been filed. ADR-0038 keeps the ID pack at `commercialReady: false` until a
+lawyer licensed in Indonesia signs one and it is referenced from that ADR.
