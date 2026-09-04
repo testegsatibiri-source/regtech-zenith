@@ -37,8 +37,10 @@ export interface PurgeReport {
 }
 
 const UNSUPPORTED: Record<string, string> = {
-  statutory_filings: "Statutory filings are immutable by law (ADR-0037); retention is archival only.",
-  bpjs_records: "Contribution evidence is derived from payroll records; purged with payroll_records.",
+  statutory_filings:
+    "Statutory filings are immutable by law (ADR-0037); retention is archival only.",
+  bpjs_records:
+    "Contribution evidence is derived from payroll records; purged with payroll_records.",
   applicant_data: "No applicant records are stored by the platform yet.",
 };
 
