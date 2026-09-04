@@ -64,7 +64,21 @@ A Fase C é o último bloqueio interno do gate comercial do pacote indonésio (j
    ```
    Em runtime: desligamento antes de 31/10/2026 usa o ruleset normalmente; em ou após a data, se não houver ruleset novo confirmado, o cálculo retorna `BLOCKED_PENDING_REGULATORY_REVALIDATION` em vez de um valor. O pacote não atravessa a fronteira normativa em silêncio.
 9. **Tela, gravação e snapshot imutável** — fluxo de desligamento com escolha do motivo, prévia componente a componente, aviso de "mínimo legal" e de dados faltantes, confirmação que grava o caso. Tabela `separation_cases` inclui, além de company_id/employee_id/motivo/datas/componentes/statutory_minimum/inputs_snapshot/calculation_trace: `ruleset_version`, `ruleset_effective_date`, `legal_basis_snapshot`, `calculation_status`, `completeness_status`, `regulatory_status`, `calculated_at`, `approved_at`, `approved_by`, `calculation_hash`. O hash cobre inputs snapshot + versão do ruleset + configuração de direitos + componentes do resultado, para detectar alteração posterior da memória de cálculo. Uma rescisão calculada em setembro **não** muda quando o pacote for atualizado em novembro — o caso permanece reproduzível.
-10. **`commercialReadiness` estruturado** — o manifesto do pacote troca o booleano opaco por `{ ready: false, blockers: ["LEGAL_OPINION_ID", "DEBT_024_OFFICIAL_WAGE_DATA", "DEBT_025_OFFICIAL_WAGE_DATA", "REGULATORY_REVALIDATION_2026_10_31"] }`, mantendo `commercialReady: false` como campo derivado para compatibilidade. Auditoria e vitrine passam a distinguir funcionalidade incompleta, dado oficial faltando, parecer pendente e transição legislativa futura.
+10. **`commercialReadiness` estruturado** — o manifesto do pacote troca o booleano opaco por:
+    ```text
+    commercialReadiness: {
+      ready: false,
+      blockers: [
+        "LEGAL_OPINION_ID",
+        "DEBT_024_OFFICIAL_WAGE_DATA",
+        "DEBT_025_OFFICIAL_WAGE_DATA"
+      ],
+      futureGates: [
+        { id: "REGULATORY_REVALIDATION_2026_10_31", blockingFrom: "2026-10-31", status: "scheduled" }
+      ]
+    }
+    ```
+    Diferença conceitual: `blockers` são impedimentos atuais que podem ser removidos; `futureGates` são eventos normativos futuros que se tornam automaticamente bloqueantes a partir da data. O campo `commercialReady: false` continua existindo como derivado para compatibilidade. Antes de 31/10/2026, se os blockers forem resolvidos, o pacote pode ficar pronto; a partir da data, sem ruleset sucessor aprovado, o gate passa para `status: "blocking"` e o pacote volta a não liberável.
 11. **Testes e conformidade** — `src/packs/indonesia/__tests__/separation.test.ts`: vetores por motivo, casos fracionários propositais (11 meses; 2 anos e 11 meses; 8 anos e 3 meses), pedido de demissão (só UPH + uang pisah), diarista e trabalhador por produção, `fixedAllowances` ausente devolvendo `complete: false`, PKWT acima do limite gerando violação sem conversão, e desligamento em/após 31/10/2026 devolvendo bloqueio regulatório. Gate local `bunx tsgo --noEmit`, `bun test`, `bunx eslint .` verdes.
 12. **Governança** — ADR/release notes registram o baseline tri-instrumento, o gate temporal e as **quatro** perguntas ao parecer indonésio: (1) componente de 15%; (2) conversão PKWT→PKWTT; (3) leitura literal do art. 40(4); (4) efeito operacional sobre cálculos de rescisão e PKWT a partir de 31/10/2026 caso a lei trabalhista autônoma não tenha sido promulgada — esta exige resposta escrita.
 
