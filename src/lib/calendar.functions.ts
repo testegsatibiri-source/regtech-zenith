@@ -8,9 +8,14 @@ export const listObligations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ companyId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    // Perf audit (2026-09-04), finding P1-4: this was the largest response in
+    // the app. `created_at`/`updated_at` are never rendered, so they are no
+    // longer transferred. Row set is unchanged — the screen shows the same list.
     const { data: rows, error } = await context.supabase
       .from("compliance_obligations")
-      .select("*")
+      .select(
+        "id, company_id, country_code, code, name, category, frequency, base_legal, due_date, period_label, status, completed_at, notes",
+      )
       .eq("company_id", data.companyId)
       .order("due_date", { ascending: true });
     if (error) throw new Error(error.message);
