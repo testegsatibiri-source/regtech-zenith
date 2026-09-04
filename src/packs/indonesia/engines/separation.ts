@@ -417,6 +417,5 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
   };
 }
 
-export { ID_SEPARATION_REASONS, ID_SEPARATION_RULES_VERSION };
-
-const ID_SEPARATION_RULES_VERSION = ID_SEPARATION_RULESET.ruleVersion;
+export { ID_SEPARATION_REASONS };
+export const ID_SEPARATION_RULES_VERSION = ID_SEPARATION_RULESET.ruleVersion;
