@@ -1,0 +1,32 @@
+# Fase C — Rescisão indonésia (PP 35/2021): pesangon, UPMK, UPH e cadeia PKWT→PKWTT
+
+A Fase C é o último bloqueio interno do gate comercial do pacote indonésio (junto com o parecer jurídico da Fase D, que corre em paralelo, e o dado salarial oficial DEBT-024/025). Hoje o `SeparationProvider` só existe nas Filipinas; na Indonésia não há cálculo de rescisão nenhum — qualquer desligamento em cliente real exigiria conta manual fora do sistema.
+
+## O que você vai ver quando terminar
+
+- Ao desligar um funcionário indonésio, o sistema calcula a rescisão completa por motivo de desligamento: pesangon (indenização), uang penghargaan masa kerja (prêmio de tempo de serviço) e uang penggantian hak (direitos pendentes: férias não gozadas, THR proporcional), com as tabelas oficiais do PP 35/2021.
+- Contratos PKWT (temporário) geram a compensação de fim de contrato (1 mês por ano, art. 15 do PP 35/2021) e o sistema alerta quando um PKWT renovado ultrapassa 5 anos e vira PKWTT (efetivo) por força de lei.
+- Cada desligamento fica registrado com motivo, valores, memória de cálculo e quem aprovou — auditável depois do fato.
+
+## Etapas
+
+1. **Parâmetros oficiais PP 35/2021** — `src/packs/indonesia/params/pp35-2021.ts`: tabela de pesangon por tempo de serviço (1–9 meses de salário), tabela UPMK (2–10 meses a partir de 3 anos), componentes do UPH (férias anuais não gozadas art. 40/4, THR proporcional), e a matriz de multiplicadores por motivo (arts. 36–47: eficiência, fusão/aquisição, fechamento, falência, aposentadoria, falecimento, doença prolongada, falta grave, pedido de demissão etc., cada um com seu fator 1.0×/0.75×/0.5× de pesangon e direito ou não a UPMK). Cada valor com base legal e `sourceStatus: "official"`, seguindo o padrão das tabelas TER.
+2. **Motor de rescisão ID** — `src/packs/indonesia/engines/separation.ts`, espelhando a arquitetura filipina: `ID_SEPARATION_GROUNDS` (motivos com multiplicadores), `computeSeparationPay` (pesangon × fator + UPMK + UPH, tempo de serviço arredondado por ano conforme art. 40), e avisos legais por motivo (mediação bipartite, PHI em caso de litígio). O `SeparationProvider` do SDK tem campos filipinos (twin notice, DOLE); a Fase C introduz uma extensão por país sem quebrar o contrato atual — campo opcional de notas específicas no provider, sem mexer no que as Filipinas já usam.
+3. **Compensação PKWT e cadeia PKWT→PKWTT** — regra de fim de contrato PKWT (1 mês de salário por 12 meses, proporcional, art. 15) e verificação que hoje só mede prazo (≤ 5 anos) passa a também marcar a conversão automática para PKWTT no histórico do contrato, com trilha de auditoria.
+4. **Tela e gravação** — fluxo de desligamento na tela do funcionário/contrato: escolha do motivo, prévia da memória de cálculo, confirmação que grava o caso de desligamento e vincula ao contrato. Nova tabela `separation_cases` (company_id, employee_id, motivo, datas, componentes calculados, total, aprovador) via migração com RLS e GRANTs no padrão das demais.
+5. **Testes e conformidade** — `src/packs/indonesia/__tests__/separation.test.ts` com vetores oficiais por motivo e tempo de serviço (ex.: 8 anos e 3 meses, eficiência pós-fusão: 9×0,5 pesangon + 3×UPMK); teste da cadeia PKWT→PKWTT; gate local `bunx tsgo --noEmit`, `bun test`, `bunx eslint .` verdes.
+6. **Governança** — registro na ADR-0038/release notes de que a Fase C fechou; `commercialReady` continua `false` até o parecer jurídico (Fase D) e o dado salarial oficial (DEBT-024/025) fecharem, e só então bump de versão + reassinatura (D7).
+
+## Fora de escopo
+
+- Acordos coletivos (PKB) e convenções acima do piso legal — o motor calcula o mínimo legal; excedentes entram como ajuste manual.
+- Fluxo de litígio no PHI (registro de mediação basta nesta fase).
+- Bump de versão e reassinatura: ficam para o D7, após parecer jurídico e dado salarial.
+
+## Detalhes técnicos
+
+- Arquivos novos: `src/packs/indonesia/params/pp35-2021.ts`, `src/packs/indonesia/engines/separation.ts`, `src/packs/indonesia/__tests__/separation.test.ts`, `src/lib/separation-id.functions.ts` (ou extensão de `separation.functions.ts`), migração `separation_cases`.
+- Arquivos tocados: `src/sdk/providers/SeparationProvider.ts` (extensão opcional, sem quebra), `src/lib/engines/id-pack.ts`, `src/routes/_authenticated/employees.tsx` e/ou `contracts.tsx`, `src/packs/indonesia/index.ts` (rulesetVersion sobe, `commercialReady` permanece false).
+- Migração `separation_cases` segue o bloco obrigatório: CREATE TABLE → GRANT authenticated/service_role → ENABLE RLS → policies por dono da empresa (`owns_company`), com updated_at trigger. Aplicação deliberada, forward-only.
+- Base de cálculo do salário rescisório: salário fixo mensal (base + adicional fixo), conforme art. 40/2 — quando só houver `base_salary`, registrar advertência de componente fixo ausente na memória de cálculo.
+- Sem `VITE_` em segredos; sem dependências novas de Node-only; tudo roda no runtime atual.
