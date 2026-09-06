@@ -88,6 +88,16 @@ export interface CountryManifest {
   commercialReady?: boolean;
 
   /**
+   * H23 — Machine-readable declaration of remaining commercial blockers.
+   * Declarative only — never used to auto-flip `commercialReady` (ADR-0038).
+   */
+  commercialReadiness?: {
+    status: "blocked" | "in_review" | "ready";
+    blockers: { code: string; description: string }[];
+    updatedAt: string;
+  };
+
+  /**
    * H11-Freeze — Country Pack Interface contract this pack was built against.
    * Optional today; enforced by the validator when present. Once
    * PACK_INTERFACE_ENFORCE is on, packs without a compatible value are rejected.

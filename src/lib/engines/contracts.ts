@@ -55,7 +55,7 @@ export function evaluateContract(c: ContractLike, employeeName = "Employee"): Fi
       weight: 30,
       message: c.end_date
         ? "End date set."
-        : `${employeeName}: PKWT without end date — converts to PKWTT by law.`,
+        : `${employeeName}: PKWT without end date — compliance violation; requires legal classification review (UU 13/2003 art. 59).`,
     });
 
     // Rule 2: max 5 years
@@ -70,7 +70,7 @@ export function evaluateContract(c: ContractLike, employeeName = "Employee"): Fi
         message:
           years <= PKWT_MAX_YEARS
             ? `Duration ${years.toFixed(1)}y within limit.`
-            : `${employeeName}: PKWT exceeds 5-year cap (${years.toFixed(1)}y) — auto-converts to PKWTT.`,
+            : `${employeeName}: PKWT exceeds 5-year cap (${years.toFixed(1)}y) — compliance violation; requires legal classification review.`,
       });
     }
 

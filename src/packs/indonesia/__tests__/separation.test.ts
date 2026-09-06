@@ -1,5 +1,5 @@
 // H23-C — Indonesia separation engine tests (PP 35/2021 + UU 6/2023 + MK 168).
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import {
   computeIdSeparation,
   monthsOfService,
@@ -121,7 +121,7 @@ describe("THR is a sibling component (never inside UPH)", () => {
       extras: { unusedLeaveDays: 0, thrAlreadyPaid: false },
     });
     const thr = r.components.find((c) => c.code === "THR");
-    expect(thr?.amount).toBe(2_750_000); // 5/12 × 5.5jt
+    expect(thr?.amount).toBe(2_291_667); // 5/12 × 5,5jt (rounded)
     expect(r.components.filter((c) => c.code.startsWith("UPH")).some((c) => c.label.includes("THR"))).toBe(false);
   });
 });

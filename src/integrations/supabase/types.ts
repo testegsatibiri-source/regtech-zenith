@@ -2063,6 +2063,126 @@ export type Database = {
         }
         Relationships: []
       }
+      separation_cases: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          blocked_code: string | null
+          calculated_at: string
+          calculated_by: string | null
+          calculation_hash: string
+          calculation_status: string
+          calculation_trace: Json
+          company_id: string
+          completeness_status: string
+          compliance_violations: Json
+          components: Json
+          contract_type: string
+          created_at: string
+          employee_id: string | null
+          employee_name: string
+          finalized_at: string | null
+          id: string
+          inputs_snapshot: Json
+          join_date: string
+          legal_basis_snapshot: Json
+          missing_inputs: Json
+          reason_code: string
+          regulatory_status: string
+          renewal_blocked: boolean
+          requires_legal_classification: boolean
+          ruleset_effective_date: string
+          ruleset_version: string
+          separation_date: string
+          statutory_minimum: number
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          blocked_code?: string | null
+          calculated_at?: string
+          calculated_by?: string | null
+          calculation_hash: string
+          calculation_status?: string
+          calculation_trace?: Json
+          company_id: string
+          completeness_status?: string
+          compliance_violations?: Json
+          components?: Json
+          contract_type: string
+          created_at?: string
+          employee_id?: string | null
+          employee_name: string
+          finalized_at?: string | null
+          id?: string
+          inputs_snapshot?: Json
+          join_date: string
+          legal_basis_snapshot?: Json
+          missing_inputs?: Json
+          reason_code: string
+          regulatory_status?: string
+          renewal_blocked?: boolean
+          requires_legal_classification?: boolean
+          ruleset_effective_date: string
+          ruleset_version: string
+          separation_date: string
+          statutory_minimum?: number
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          blocked_code?: string | null
+          calculated_at?: string
+          calculated_by?: string | null
+          calculation_hash?: string
+          calculation_status?: string
+          calculation_trace?: Json
+          company_id?: string
+          completeness_status?: string
+          compliance_violations?: Json
+          components?: Json
+          contract_type?: string
+          created_at?: string
+          employee_id?: string | null
+          employee_name?: string
+          finalized_at?: string | null
+          id?: string
+          inputs_snapshot?: Json
+          join_date?: string
+          legal_basis_snapshot?: Json
+          missing_inputs?: Json
+          reason_code?: string
+          regulatory_status?: string
+          renewal_blocked?: boolean
+          requires_legal_classification?: boolean
+          ruleset_effective_date?: string
+          ruleset_version?: string
+          separation_date?: string
+          statutory_minimum?: number
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "separation_cases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "separation_cases_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       statutory_filings: {
         Row: {
           amends_filing_id: string | null
