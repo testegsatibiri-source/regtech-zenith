@@ -3,8 +3,10 @@
 // → cálculo → persistência com snapshot imutável + hash. Nenhuma escrita
 // financeira arbitrária vem do frontend.
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { sha256Hex } from "@/lib/hashing";
 import {
   computeIdSeparation,
