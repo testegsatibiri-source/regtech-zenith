@@ -1,5 +1,5 @@
 // H23-C — Indonesia separation engine tests (PP 35/2021 + UU 6/2023 + MK 168).
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import {
   computeIdSeparation,
   monthsOfService,
