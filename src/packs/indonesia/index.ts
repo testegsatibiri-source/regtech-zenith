@@ -44,6 +44,7 @@ const PROVIDES: Capability[] = [
   "contracts",
   "audit",
   "rules",
+  "separation",
 ];
 
 const RULESET_VERSION = "ID-2026.4";
@@ -75,10 +76,30 @@ const manifest: CountryManifest = {
     "annual-reconciliation",
     "ter-official-bc",
     "pph21-ptkp-deductions",
+    "separation",
   ],
   supportedLanguages: ["id", "en"],
   requiresCore: ">=2.2.0",
   commercialReady: false,
+  // Declarative gate snapshot (ADR-0038): not auto-flipped by code.
+  commercialReadiness: {
+    status: "blocked",
+    blockers: [
+      {
+        code: "LEGAL_OPINION",
+        description: "Indonesian counsel sign-off on TER B/C, PP 35/2021 entitlement matrix and MK 168 transition",
+      },
+      {
+        code: "OFFICIAL_WAGE_DATA",
+        description: "DEBT-024/025 — official UMP/UMK publication ingestion with verified sourceStatus",
+      },
+      {
+        code: "PDP_SIGNOFF",
+        description: "Phase D field-encryption rollout and legal review under UU 27/2022 (PDP)",
+      },
+    ],
+    updatedAt: "2026-07-21",
+  },
   signatureBlock: ID_SIGNATURE_BLOCK as SignatureBlock,
 };
 
