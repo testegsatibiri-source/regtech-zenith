@@ -23,6 +23,15 @@ import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
 import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
 import { calculateOvertime, type WorkWeekPattern } from "./engines/overtime";
+import {
+  computeIdSeparation,
+  ID_SEPARATION_REASONS,
+  monthsOfService,
+} from "./engines/separation";
+import type {
+  SeparationProvider,
+  SeparationGround,
+} from "@/sdk/providers/SeparationProvider";
 
 import { TER_TABLES } from "./params/ter-tables";
 import { thrDueDate } from "./params/eid-al-fitr";
