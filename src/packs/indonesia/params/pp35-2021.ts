@@ -23,7 +23,12 @@
 // (item LEGAL-VALIDATION no parecer).
 
 export interface LegalInstrument {
-  instrument: "PP 35/2021" | "UU 6/2023" | "UU 13/2003" | "MK 168/PUU-XXI/2023" | "Permenaker 6/2016";
+  instrument:
+    | "PP 35/2021"
+    | "UU 6/2023"
+    | "UU 13/2003"
+    | "MK 168/PUU-XXI/2023"
+    | "Permenaker 6/2016";
   articles?: string[];
   decisionDate?: string;
   effect?: string;
@@ -52,7 +57,28 @@ export const ID_SEPARATION_RULESET: SeparationRulesetMeta = {
     reason: "MK 168/PUU-XXI/2023 legislative transition deadline",
   },
   legalBasis: [
-    { instrument: "PP 35/2021", articles: ["15", "16", "17", "36", "40", "41", "42", "43", "44", "45", "46", "48", "50", "51", "52", "55", "56"] },
+    {
+      instrument: "PP 35/2021",
+      articles: [
+        "15",
+        "16",
+        "17",
+        "36",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "48",
+        "50",
+        "51",
+        "52",
+        "55",
+        "56",
+      ],
+    },
     { instrument: "UU 6/2023", articles: ["156", "157"] },
     {
       instrument: "MK 168/PUU-XXI/2023",

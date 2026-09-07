@@ -190,7 +190,9 @@ export const listIdSeparationCases = createServerFn({ method: "GET" })
 
 export const approveIdSeparationCase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ companyId: z.string().uuid(), caseId: z.string().uuid() }).parse(data))
+  .inputValidator((data) =>
+    z.object({ companyId: z.string().uuid(), caseId: z.string().uuid() }).parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertCompanyAccess(supabase, data.companyId, userId, "separation.approve");

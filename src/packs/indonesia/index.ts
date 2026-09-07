@@ -23,15 +23,8 @@ import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
 import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
 import { calculateOvertime, type WorkWeekPattern } from "./engines/overtime";
-import {
-  computeIdSeparation,
-  ID_SEPARATION_REASONS,
-  monthsOfService,
-} from "./engines/separation";
-import type {
-  SeparationProvider,
-  SeparationGround,
-} from "@/sdk/providers/SeparationProvider";
+import { computeIdSeparation, ID_SEPARATION_REASONS, monthsOfService } from "./engines/separation";
+import type { SeparationProvider, SeparationGround } from "@/sdk/providers/SeparationProvider";
 
 import { TER_TABLES } from "./params/ter-tables";
 import { thrDueDate } from "./params/eid-al-fitr";
@@ -96,11 +89,13 @@ const manifest: CountryManifest = {
     blockers: [
       {
         code: "LEGAL_OPINION",
-        description: "Indonesian counsel sign-off on TER B/C, PP 35/2021 entitlement matrix and MK 168 transition",
+        description:
+          "Indonesian counsel sign-off on TER B/C, PP 35/2021 entitlement matrix and MK 168 transition",
       },
       {
         code: "OFFICIAL_WAGE_DATA",
-        description: "DEBT-024/025 — official UMP/UMK publication ingestion with verified sourceStatus",
+        description:
+          "DEBT-024/025 — official UMP/UMK publication ingestion with verified sourceStatus",
       },
       {
         code: "PDP_SIGNOFF",
@@ -278,7 +273,9 @@ function idGrounds(): SeparationGround[] {
       .map((b) => `${b.instrument}${b.articles?.length ? ` art. ${b.articles.join(",")}` : ""}`)
       .join("; "),
     category: ID_CATEGORY[r.category],
-    monthsPerYear: r.entitlement.pesangon?.applicable ? (r.entitlement.pesangon.multiplier ?? 1) : 0,
+    monthsPerYear: r.entitlement.pesangon?.applicable
+      ? (r.entitlement.pesangon.multiplier ?? 1)
+      : 0,
     minimumTenureMonths: 0,
     requiresTwinNotice: false,
     requiresDoleAdvanceNotice: false,
