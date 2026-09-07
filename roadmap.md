@@ -35,6 +35,17 @@ Plano aprovado: `.lovable/plan/acesso-por-convite-resend-fase-2-auditoria-de-sch
 - [ ] Fase 13 — Testes positivos e negativos
 - [ ] Fase 14 — Implantação staging → produção
 
+## Fase C — Rescisão Indonésia (H23)
+- [x] Parâmetros PP 35/2021 (faixas, matriz de direitos, base salarial) + gate MK 168
+- [x] Motor `computeIdSeparation` com evidência completa + 18 testes
+- [x] Tabela `separation_cases` (RLS por capability, imutável após aprovação) + capabilities separation.*
+- [x] Server functions (preview, finalize com hash, listar, aprovar com segregação)
+- [x] Tela `/separations` ramificada para pack ID
+- [x] Remover "auto-converts to PKWTT" do motor de contratos
+- [x] Manifesto: capability `separation`, `commercialReadiness` declarativo
+- [x] ADR-0039 + quatro perguntas ao advogado indonésio
+- [ ] Bump de versão (PACK_VERSION/rulesetVersion) — guardado para o release D7
+
 ## Pendências externas (fora do editor)
 - Variáveis Supabase no escopo Preview da Vercel + re-run "Release Validation → Staging"
 - Verificar subdomínio de e-mail no Resend (SPF/DKIM/DMARC)
