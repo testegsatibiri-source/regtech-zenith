@@ -1,4 +1,4 @@
-// H5/H6/H11.1a — Indonesia CountryPack. v1.9.0 with:
+// placeholder
 //   • paramsVersion 2026.1 (TER B/C tables + UMP 2026)
 //   • interfaceVersion 1.0.0 (frozen)
 //   • signatureBlock (author + platform countersign)
