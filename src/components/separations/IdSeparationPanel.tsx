@@ -212,14 +212,13 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
                   <p className="font-medium text-foreground">Matriks hak (entitlements)</p>
                   <p>
-                    Pesangon {ent.pesangon.kind === "full" ? `${ent.pesangon.multiplier}×` : ent.pesangon.kind}
-                    {ent.upmk.kind !== "none" &&
-                      ` · UPMK ${ent.upmk.kind === "full" ? `${ent.upmk.multiplier}×` : ent.upmk.kind}`}
+                    Pesangon {ent.pesangon?.applicable ? `${ent.pesangon.multiplier ?? 1}×` : "tidak"}
+                    {` · UPMK ${ent.upmk?.applicable ? `${ent.upmk.multiplier ?? 1}×` : "tidak"}`}
                     {` · UPH ${ent.uph.applicable ? "ya" : "tidak"}`}
-                    {ent.uangPisah.applicable && " · Uang pisah"}
+                    {ent.uangPisah?.applicable && " · Uang pisah"}
                   </p>
                   <p className="mt-1">
-                    Dasar: {selected?.articles.map((a) => `${a.instrument} art. ${a.article}`).join(", ")}
+                    Dasar: PP 35/2021 art. {selected?.articles.join(", ")}
                   </p>
                 </div>
               )}
@@ -299,16 +298,16 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 <details className="rounded-md bg-muted p-3 text-xs">
                   <summary className="cursor-pointer font-medium">Jejak kalkulasi & dasar hukum</summary>
                   <ul className="mt-2 space-y-1 text-muted-foreground">
-                    {preview.calculationTrace.map((t) => (
-                      <li key={t.step}>• {t.step}</li>
+                    {preview.calculationTrace.map((t, i) => (
+                      <li key={i}>• {t}</li>
                     ))}
                   </ul>
                   <p className="mt-2 font-medium text-foreground">Dasar hukum</p>
                   <ul className="text-muted-foreground">
                     {preview.legalBasis.map((b) => (
-                      <li key={`${b.instrument}-${b.article}`}>
-                        {b.instrument} art. {b.article}
-                        {b.paragraph ? `(${b.paragraph})` : ""} — {b.topic}
+                      <li key={b.instrument}>
+                        {b.instrument}
+                        {b.articles?.length ? ` art. ${b.articles.join(", ")}` : ""}
                       </li>
                     ))}
                   </ul>
