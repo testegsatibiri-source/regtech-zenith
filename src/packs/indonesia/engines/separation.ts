@@ -114,7 +114,11 @@ export function monthsOfService(fromIso: string, toIso: string): number {
   return Math.max(0, months);
 }
 
-function blocked(code: IdBlockedCode, reason: string, input: IdSeparationInput): IdSeparationResult {
+function blocked(
+  code: IdBlockedCode,
+  reason: string,
+  input: IdSeparationInput,
+): IdSeparationResult {
   return {
     status: "blocked",
     blockedCode: code,
@@ -175,7 +179,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
   }
 
   const serviceMonths = monthsOfService(input.employee.joinDate, terminationDate);
-  trace.push(`service: ${input.employee.joinDate} → ${terminationDate} = ${serviceMonths} completed month(s) (floor bands; no rounding)`);
+  trace.push(
+    `service: ${input.employee.joinDate} → ${terminationDate} = ${serviceMonths} completed month(s) (floor bands; no rounding)`,
+  );
 
   // ---- Wage base (UU 6/2023 art. 157) ----
   const freq: WageFrequency = input.wageBase.wageFrequency ?? "monthly";
@@ -196,7 +202,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
       missingInputs.push("dailyRate required for daily-paid worker");
     }
     monthlyWageBase = (input.wageBase.dailyRate ?? 0) * workdays;
-    trace.push(`wage base (daily): ${input.wageBase.dailyRate ?? 0} × ${workdays} workdays = ${monthlyWageBase}`);
+    trace.push(
+      `wage base (daily): ${input.wageBase.dailyRate ?? 0} × ${workdays} workdays = ${monthlyWageBase}`,
+    );
   } else {
     if (!input.wageBase.pieceRate12MonthAverage || input.wageBase.pieceRate12MonthAverage <= 0) {
       missingInputs.push("pieceRate12MonthAverage required for piece-rate worker");
@@ -218,7 +226,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
       });
       requiresLegalClassification = true;
       renewalBlocked = true;
-      trace.push("PKWT duration cap exceeded → complianceViolation + requiresLegalClassification + renewalBlocked");
+      trace.push(
+        "PKWT duration cap exceeded → complianceViolation + requiresLegalClassification + renewalBlocked",
+      );
     }
   }
 
@@ -235,7 +245,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
         kind: "statutory",
         legalBasis: reason.legalBasis,
       });
-      trace.push(`pesangon: band ${band.label} = ${band.monthsWage}m × ${mult} × ${monthlyWageBase} = ${amount}`);
+      trace.push(
+        `pesangon: band ${band.label} = ${band.monthsWage}m × ${mult} × ${monthlyWageBase} = ${amount}`,
+      );
     }
   } else {
     trace.push("pesangon: not applicable for this reason");
@@ -254,7 +266,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
         kind: "statutory",
         legalBasis: reason.legalBasis,
       });
-      trace.push(`upmk: band ${band.label} = ${band.monthsWage}m × ${mult} × ${monthlyWageBase} = ${amount}`);
+      trace.push(
+        `upmk: band ${band.label} = ${band.monthsWage}m × ${mult} × ${monthlyWageBase} = ${amount}`,
+      );
     } else {
       trace.push(`upmk: service ${serviceMonths}m below 36m floor → 0`);
     }
@@ -265,7 +279,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
     if (input.extras?.unusedLeaveDays === undefined) {
       missingInputs.push("unusedLeaveDays (annual leave not taken) not provided — UPH incomplete");
     } else if (input.extras.unusedLeaveDays > 0) {
-      const amount = round((input.extras.unusedLeaveDays * monthlyWageBase) / WAGE_BASE_RULES.leaveConversionDivisor);
+      const amount = round(
+        (input.extras.unusedLeaveDays * monthlyWageBase) / WAGE_BASE_RULES.leaveConversionDivisor,
+      );
       components.push({
         code: "UPH_UNUSED_LEAVE",
         label: `UPH — ${input.extras.unusedLeaveDays} unused leave day(s) (art. 40(4)(a))`,
@@ -273,7 +289,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
         kind: "statutory",
         legalBasis: reason.legalBasis,
       });
-      trace.push(`uph.leave: ${input.extras.unusedLeaveDays}d × ${monthlyWageBase}/${WAGE_BASE_RULES.leaveConversionDivisor} = ${amount}`);
+      trace.push(
+        `uph.leave: ${input.extras.unusedLeaveDays}d × ${monthlyWageBase}/${WAGE_BASE_RULES.leaveConversionDivisor} = ${amount}`,
+      );
     }
     if ((input.extras?.repatriationCost ?? 0) > 0) {
       components.push({
@@ -323,7 +341,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
   // ---- PKWT compensation (arts. 15–17) ----
   if (ent.pkwtCompensation?.applicable && input.employee.pkwt) {
     const pkwtMonths = monthsOfService(input.employee.pkwt.startDate, terminationDate);
-    const amount = round((pkwtMonths / 12) * PKWT_RULES.compensationMonthsPerYear * monthlyWageBase);
+    const amount = round(
+      (pkwtMonths / 12) * PKWT_RULES.compensationMonthsPerYear * monthlyWageBase,
+    );
     components.push({
       code: "PKWT_COMPENSATION",
       label: `PKWT end-of-contract compensation — ${pkwtMonths}/12 × 1 month wage (art. 15(3))`,
@@ -388,7 +408,9 @@ export function computeIdSeparation(input: IdSeparationInput): IdSeparationResul
       kind: "contractual",
       legalBasis: [],
     });
-    trace.push(`contractual adjustment: ${input.extras!.contractualAdjustments} (excluded from statutory minimum)`);
+    trace.push(
+      `contractual adjustment: ${input.extras!.contractualAdjustments} (excluded from statutory minimum)`,
+    );
   }
 
   const statutoryMinimum = components

@@ -23,6 +23,8 @@ import { indonesiaPack as legacyEnginesPack } from "@/lib/engines/id-pack";
 import { ID_OBLIGATIONS, computeDueDate, registerThrDueResolver } from "@/lib/obligations.catalog";
 import { evaluateContract } from "@/lib/engines/contracts";
 import { calculateOvertime, type WorkWeekPattern } from "./engines/overtime";
+import { computeIdSeparation, ID_SEPARATION_REASONS, monthsOfService } from "./engines/separation";
+import type { SeparationProvider, SeparationGround } from "@/sdk/providers/SeparationProvider";
 
 import { TER_TABLES } from "./params/ter-tables";
 import { thrDueDate } from "./params/eid-al-fitr";
@@ -87,11 +89,13 @@ const manifest: CountryManifest = {
     blockers: [
       {
         code: "LEGAL_OPINION",
-        description: "Indonesian counsel sign-off on TER B/C, PP 35/2021 entitlement matrix and MK 168 transition",
+        description:
+          "Indonesian counsel sign-off on TER B/C, PP 35/2021 entitlement matrix and MK 168 transition",
       },
       {
         code: "OFFICIAL_WAGE_DATA",
-        description: "DEBT-024/025 — official UMP/UMK publication ingestion with verified sourceStatus",
+        description:
+          "DEBT-024/025 — official UMP/UMK publication ingestion with verified sourceStatus",
       },
       {
         code: "PDP_SIGNOFF",
@@ -248,6 +252,86 @@ const rules: RuleProvider = {
   rules: () => legacyEnginesPack.complianceRules,
 };
 
+// H23 Fase C — separation (PP 35/2021; MK 168/PUU-XXI/2023).
+// The generic SeparationProvider interface is PH-shaped (single multiplier);
+// the rich, compositional ID engine lives in engines/separation.ts and is
+// surfaced through the server functions. This adapter keeps the SDK
+// conformance contract satisfied without flattening the ID model.
+const ID_CATEGORY: Record<string, SeparationGround["category"]> = {
+  employer_initiative: "authorized_cause",
+  employee_initiative: "employee_initiative",
+  natural: "natural",
+  contract_end: "contract_end",
+};
+
+function idGrounds(): SeparationGround[] {
+  return ID_SEPARATION_REASONS.map((r) => ({
+    code: r.code,
+    article: r.articles.map((a) => `PP35/${a}`).join(","),
+    title: r.title,
+    legalBasis: r.legalBasis
+      .map((b) => `${b.instrument}${b.articles?.length ? ` art. ${b.articles.join(",")}` : ""}`)
+      .join("; "),
+    category: ID_CATEGORY[r.category],
+    monthsPerYear: r.entitlement.pesangon?.applicable
+      ? (r.entitlement.pesangon.multiplier ?? 1)
+      : 0,
+    minimumTenureMonths: 0,
+    requiresTwinNotice: false,
+    requiresDoleAdvanceNotice: false,
+  }));
+}
+
+function runIdSeparation(reasonCode: string, monthlyWage: number, months: number) {
+  const sep = new Date();
+  const join = new Date(sep);
+  join.setMonth(join.getMonth() - Math.max(0, Math.floor(months)));
+  return computeIdSeparation({
+    employee: {
+      employeeId: "adapter",
+      fullName: "adapter",
+      joinDate: join.toISOString().slice(0, 10),
+      separationDate: sep.toISOString().slice(0, 10),
+      contractType: "PKWTT",
+    },
+    reasonCode,
+    wageBase: { baseSalary: monthlyWage, fixedAllowances: 0 },
+  });
+}
+
+const separation: SeparationProvider = {
+  version: "1.0.0",
+  grounds: () => idGrounds(),
+  computeSeparationPay: ({ monthlySalary, monthsOfService: months, ground }) => {
+    const r = runIdSeparation(ground.code, monthlySalary, months);
+    if (r.status === "blocked") {
+      return { eligible: false, monthsDue: 0, amount: 0, reason: r.blockedReason };
+    }
+    return {
+      eligible: r.statutoryMinimum > 0,
+      monthsDue: monthlySalary > 0 ? Math.round((r.statutoryMinimum / monthlySalary) * 2) / 2 : 0,
+      amount: r.statutoryMinimum,
+      reason: r.completeness.complete
+        ? undefined
+        : `incomplete: ${r.completeness.missingInputs.join(", ")}`,
+    };
+  },
+  computeFinalPay: ({ employee, separation: sep }) => {
+    const months = monthsOfService(employee.joinDate, employee.separationDate);
+    const r = runIdSeparation(sep.ground.code, sep.monthlySalaryForStatutory, months);
+    return {
+      complete: r.status === "computed" && r.completeness.complete,
+      missing: r.completeness.missingInputs,
+      total: r.statutoryMinimum,
+      components: r.components.map((c) => ({ code: c.code, label: c.label, amount: c.amount })),
+      dueDate: employee.separationDate,
+      ground: sep.ground,
+      rulesetVersion: r.ruleVersion,
+    };
+  },
+  processRequirements: () => [],
+};
+
 const audit: AuditProvider = {
   version: "1.0.0",
   heuristics: () => [],
@@ -263,6 +347,7 @@ const providers: Providers = {
   contracts,
   rules,
   audit,
+  separation,
 };
 
 function health(): HealthReport {

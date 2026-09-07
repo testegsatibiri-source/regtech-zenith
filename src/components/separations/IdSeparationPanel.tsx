@@ -4,14 +4,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  Ban,
-  Calculator,
-  CheckCircle2,
-  FileLock2,
-  Scale,
-} from "lucide-react";
+import { AlertTriangle, Ban, Calculator, CheckCircle2, FileLock2, Scale } from "lucide-react";
 import {
   computeIdSeparationPreview,
   finalizeIdSeparationCase,
@@ -82,7 +75,11 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
       contractType,
       pkwt:
         contractType === "PKWT" && pkwtStart && pkwtEnd
-          ? { startDate: pkwtStart, endDate: pkwtEnd, totalDurationMonths: Number(pkwtMonths || 12) }
+          ? {
+              startDate: pkwtStart,
+              endDate: pkwtEnd,
+              totalDurationMonths: Number(pkwtMonths || 12),
+            }
           : undefined,
       reasonCode,
       wageBase: {
@@ -102,8 +99,10 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
     try {
       const res = await previewFn({ data: buildInput() });
       setPreview(res);
-      if (res.status === "blocked") toast.error("Calculation blocked — outside the normative window");
-      else if (!res.completeness.complete) toast.warning("Incomplete inputs — check the evidence panel");
+      if (res.status === "blocked")
+        toast.error("Calculation blocked — outside the normative window");
+      else if (!res.completeness.complete)
+        toast.warning("Incomplete inputs — check the evidence panel");
       else toast.success("Statutory minimum computed");
     } catch (err) {
       toast.error((err as Error).message);
@@ -141,12 +140,21 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nama karyawan</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Budi Santoso" />
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Budi Santoso"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Jenis kontrak</Label>
-                  <Select value={contractType} onValueChange={(v) => setContractType(v as "PKWT" | "PKWTT")}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={contractType}
+                    onValueChange={(v) => setContractType(v as "PKWT" | "PKWTT")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="PKWTT">PKWTT (permanen)</SelectItem>
                       <SelectItem value="PKWT">PKWT (kontrak)</SelectItem>
@@ -155,40 +163,73 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Tanggal masuk</Label>
-                  <Input type="date" value={joinDate} onChange={(e) => setJoinDate(e.target.value)} />
+                  <Input
+                    type="date"
+                    value={joinDate}
+                    onChange={(e) => setJoinDate(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Tanggal pemutusan</Label>
-                  <Input type="date" value={separationDate} onChange={(e) => setSeparationDate(e.target.value)} />
+                  <Input
+                    type="date"
+                    value={separationDate}
+                    onChange={(e) => setSeparationDate(e.target.value)}
+                  />
                 </div>
                 {contractType === "PKWT" && (
                   <>
                     <div className="space-y-2">
                       <Label>PKWT mulai</Label>
-                      <Input type="date" value={pkwtStart} onChange={(e) => setPkwtStart(e.target.value)} />
+                      <Input
+                        type="date"
+                        value={pkwtStart}
+                        onChange={(e) => setPkwtStart(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>PKWT selesai</Label>
-                      <Input type="date" value={pkwtEnd} onChange={(e) => setPkwtEnd(e.target.value)} />
+                      <Input
+                        type="date"
+                        value={pkwtEnd}
+                        onChange={(e) => setPkwtEnd(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Durasi kontrak (bulan)</Label>
-                      <Input type="number" value={pkwtMonths} onChange={(e) => setPkwtMonths(e.target.value)} placeholder="12" />
+                      <Input
+                        type="number"
+                        value={pkwtMonths}
+                        onChange={(e) => setPkwtMonths(e.target.value)}
+                        placeholder="12"
+                      />
                     </div>
                   </>
                 )}
                 <div className="space-y-2">
                   <Label>Gaji pokok (IDR/bulan)</Label>
-                  <Input type="number" value={baseSalary} onChange={(e) => setBaseSalary(e.target.value)} placeholder="5500000" />
+                  <Input
+                    type="number"
+                    value={baseSalary}
+                    onChange={(e) => setBaseSalary(e.target.value)}
+                    placeholder="5500000"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Tunjangan tetap (IDR)</Label>
-                  <Input type="number" value={fixedAllowances} onChange={(e) => setFixedAllowances(e.target.value)} placeholder="0" />
+                  <Input
+                    type="number"
+                    value={fixedAllowances}
+                    onChange={(e) => setFixedAllowances(e.target.value)}
+                    placeholder="0"
+                  />
                 </div>
                 <div className="col-span-2 space-y-2">
                   <Label>Alasan pemutusan</Label>
                   <Select value={reasonCode} onValueChange={setReasonCode}>
-                    <SelectTrigger><SelectValue placeholder="Pilih alasan (PP 35/2021)" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih alasan (PP 35/2021)" />
+                    </SelectTrigger>
                     <SelectContent>
                       {reasons.map((r) => (
                         <SelectItem key={r.code} value={r.code}>
@@ -200,11 +241,21 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Cuti belum diambil (hari)</Label>
-                  <Input type="number" value={unusedLeaveDays} onChange={(e) => setUnusedLeaveDays(e.target.value)} placeholder="0" />
+                  <Input
+                    type="number"
+                    value={unusedLeaveDays}
+                    onChange={(e) => setUnusedLeaveDays(e.target.value)}
+                    placeholder="0"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Uang pisah (jika berlaku, IDR)</Label>
-                  <Input type="number" value={uangPisah} onChange={(e) => setUangPisah(e.target.value)} placeholder="0" />
+                  <Input
+                    type="number"
+                    value={uangPisah}
+                    onChange={(e) => setUangPisah(e.target.value)}
+                    placeholder="0"
+                  />
                 </div>
               </div>
 
@@ -212,19 +263,21 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
                   <p className="font-medium text-foreground">Matriks hak (entitlements)</p>
                   <p>
-                    Pesangon {ent.pesangon.kind === "full" ? `${ent.pesangon.multiplier}×` : ent.pesangon.kind}
-                    {ent.upmk.kind !== "none" &&
-                      ` · UPMK ${ent.upmk.kind === "full" ? `${ent.upmk.multiplier}×` : ent.upmk.kind}`}
+                    Pesangon{" "}
+                    {ent.pesangon?.applicable ? `${ent.pesangon.multiplier ?? 1}×` : "tidak"}
+                    {` · UPMK ${ent.upmk?.applicable ? `${ent.upmk.multiplier ?? 1}×` : "tidak"}`}
                     {` · UPH ${ent.uph.applicable ? "ya" : "tidak"}`}
-                    {ent.uangPisah.applicable && " · Uang pisah"}
+                    {ent.uangPisah?.applicable && " · Uang pisah"}
                   </p>
-                  <p className="mt-1">
-                    Dasar: {selected?.articles.map((a) => `${a.instrument} art. ${a.article}`).join(", ")}
-                  </p>
+                  <p className="mt-1">Dasar: PP 35/2021 art. {selected?.articles.join(", ")}</p>
                 </div>
               )}
 
-              <Button type="submit" disabled={busy || !reasonCode || !joinDate || !separationDate} className="w-full">
+              <Button
+                type="submit"
+                disabled={busy || !reasonCode || !joinDate || !separationDate}
+                className="w-full"
+              >
                 {busy ? "Menghitung…" : "Pratinjau minimum legal"}
               </Button>
             </form>
@@ -260,11 +313,17 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   {preview.completeness.complete ? (
-                    <Badge variant="outline" className="bg-success/15 text-success border-success/40">
+                    <Badge
+                      variant="outline"
+                      className="bg-success/15 text-success border-success/40"
+                    >
                       <CheckCircle2 className="mr-1 h-3 w-3" /> Lengkap
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-warning/15 text-warning border-warning/40">
+                    <Badge
+                      variant="outline"
+                      className="bg-warning/15 text-warning border-warning/40"
+                    >
                       <AlertTriangle className="mr-1 h-3 w-3" /> Input belum lengkap
                     </Badge>
                   )}
@@ -288,27 +347,34 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 </div>
 
                 {preview.warnings.map((w) => (
-                  <p key={w} className="rounded-md bg-warning/10 p-2 text-xs text-warning">{w}</p>
+                  <p key={w} className="rounded-md bg-warning/10 p-2 text-xs text-warning">
+                    {w}
+                  </p>
                 ))}
                 {preview.complianceViolations.map((v) => (
-                  <p key={v.code} className="rounded-md bg-destructive/10 p-2 text-xs text-destructive">
+                  <p
+                    key={v.code}
+                    className="rounded-md bg-destructive/10 p-2 text-xs text-destructive"
+                  >
                     {v.code}: {v.message}
                   </p>
                 ))}
 
                 <details className="rounded-md bg-muted p-3 text-xs">
-                  <summary className="cursor-pointer font-medium">Jejak kalkulasi & dasar hukum</summary>
+                  <summary className="cursor-pointer font-medium">
+                    Jejak kalkulasi & dasar hukum
+                  </summary>
                   <ul className="mt-2 space-y-1 text-muted-foreground">
-                    {preview.calculationTrace.map((t) => (
-                      <li key={t.step}>• {t.step}</li>
+                    {preview.calculationTrace.map((t, i) => (
+                      <li key={i}>• {t}</li>
                     ))}
                   </ul>
                   <p className="mt-2 font-medium text-foreground">Dasar hukum</p>
                   <ul className="text-muted-foreground">
                     {preview.legalBasis.map((b) => (
-                      <li key={`${b.instrument}-${b.article}`}>
-                        {b.instrument} art. {b.article}
-                        {b.paragraph ? `(${b.paragraph})` : ""} — {b.topic}
+                      <li key={b.instrument}>
+                        {b.instrument}
+                        {b.articles?.length ? ` art. ${b.articles.join(", ")}` : ""}
                       </li>
                     ))}
                   </ul>
@@ -316,7 +382,11 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
 
                 <Button
                   onClick={onFinalize}
-                  disabled={busy || preview.complianceViolations.length > 0 || !preview.completeness.complete}
+                  disabled={
+                    busy ||
+                    preview.complianceViolations.length > 0 ||
+                    !preview.completeness.complete
+                  }
                   variant="secondary"
                   className="w-full"
                 >
@@ -344,20 +414,28 @@ export function IdSeparationPanel({ companyId }: { companyId: string }) {
                 >
                   <div>
                     <p className="font-medium">
-                      {c.employee_name} <span className="text-muted-foreground">· {c.reason_code}</span>
+                      {c.employee_name}{" "}
+                      <span className="text-muted-foreground">· {c.reason_code}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {c.separation_date} · ruleset {c.ruleset_version} · hash {c.calculation_hash.slice(0, 12)}…
+                      {c.separation_date} · ruleset {c.ruleset_version} · hash{" "}
+                      {c.calculation_hash.slice(0, 12)}…
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {c.requires_legal_classification && (
-                      <Badge variant="outline" className="bg-warning/15 text-warning border-warning/40">
+                      <Badge
+                        variant="outline"
+                        className="bg-warning/15 text-warning border-warning/40"
+                      >
                         Legal review
                       </Badge>
                     )}
                     {c.approved_at ? (
-                      <Badge variant="outline" className="bg-success/15 text-success border-success/40">
+                      <Badge
+                        variant="outline"
+                        className="bg-success/15 text-success border-success/40"
+                      >
                         Approved
                       </Badge>
                     ) : (

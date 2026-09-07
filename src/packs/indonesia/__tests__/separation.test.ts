@@ -109,7 +109,9 @@ describe("wage base", () => {
       wageBase: { baseSalary: 0, wageFrequency: "piece" },
     });
     expect(r.completeness.complete).toBe(false);
-    expect(r.completeness.missingInputs.some((m) => m.includes("pieceRate12MonthAverage"))).toBe(true);
+    expect(r.completeness.missingInputs.some((m) => m.includes("pieceRate12MonthAverage"))).toBe(
+      true,
+    );
   });
 });
 
@@ -122,7 +124,9 @@ describe("THR is a sibling component (never inside UPH)", () => {
     });
     const thr = r.components.find((c) => c.code === "THR");
     expect(thr?.amount).toBe(2_291_667); // 5/12 × 5,5jt (rounded)
-    expect(r.components.filter((c) => c.code.startsWith("UPH")).some((c) => c.label.includes("THR"))).toBe(false);
+    expect(
+      r.components.filter((c) => c.code.startsWith("UPH")).some((c) => c.label.includes("THR")),
+    ).toBe(false);
   });
 });
 
