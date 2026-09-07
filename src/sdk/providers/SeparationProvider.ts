@@ -5,9 +5,9 @@ export interface SeparationGround {
   article: string;
   title: string;
   legalBasis: string;
-  category: "just_cause" | "authorized_cause";
+  category: "just_cause" | "authorized_cause" | "employee_initiative" | "natural" | "contract_end";
   /** Separation-pay multiplier: 1.0 = one month per year; 0.5 = half month. */
-  monthsPerYear: 0 | 0.5 | 1;
+  monthsPerYear: number;
   /** Minimum tenure (in months) to qualify for separation pay. */
   minimumTenureMonths: number;
   /** Whether the employer must serve the Twin Notice (NTE + decision). */
