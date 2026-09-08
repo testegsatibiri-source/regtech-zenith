@@ -219,7 +219,7 @@ export const ID_SEPARATION_REASONS: SeparationReason[] = [
     titleId: "Efisiensi karena perusahaan mengalami kerugian",
     category: "employer_initiative",
     articles: ["43(1)"],
-    entitlement: full(1, 1),
+    entitlement: full(0.5, 1),
     legalBasis: B(["43"]),
   },
   {
@@ -228,7 +228,7 @@ export const ID_SEPARATION_REASONS: SeparationReason[] = [
     titleId: "Efisiensi untuk mencegah kerugian",
     category: "employer_initiative",
     articles: ["43(2)"],
-    entitlement: full(0.5, 1),
+    entitlement: full(1, 1),
     legalBasis: B(["43"]),
   },
   {
