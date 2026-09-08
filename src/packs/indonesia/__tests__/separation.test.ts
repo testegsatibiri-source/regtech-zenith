@@ -74,13 +74,23 @@ describe("entitlement matrix", () => {
     expect(r.warnings.some((w) => w.includes("uang pisah"))).toBe(true);
   });
 
-  it("efficiency → 0.5× pesangon, 1× UPMK", () => {
+  it("efficiency with losses (43(1)) → 0.5× pesangon, 1× UPMK", () => {
+    const r = computeIdSeparation({
+      ...base,
+      reasonCode: "EFFICIENCY_LOSSES",
+      employee: { ...base.employee, joinDate: "2017-03-01", separationDate: "2025-06-01" },
+    });
+    expect(r.components.find((c) => c.code === "PESANGON")?.amount).toBe(24_750_000); // 9 × 0.5 × 5.5jt
+    expect(r.components.find((c) => c.code === "UPMK")?.amount).toBe(16_500_000);
+  });
+
+  it("efficiency to prevent losses (43(2)) → 1× pesangon, 1× UPMK", () => {
     const r = computeIdSeparation({
       ...base,
       reasonCode: "EFFICIENCY",
       employee: { ...base.employee, joinDate: "2017-03-01", separationDate: "2025-06-01" },
     });
-    expect(r.components.find((c) => c.code === "PESANGON")?.amount).toBe(24_750_000); // 9 × 0.5 × 5.5jt
+    expect(r.components.find((c) => c.code === "PESANGON")?.amount).toBe(49_500_000); // 9 × 1 × 5.5jt
     expect(r.components.find((c) => c.code === "UPMK")?.amount).toBe(16_500_000);
   });
 });
