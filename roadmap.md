@@ -51,3 +51,5 @@ Plano aprovado: `.lovable/plan/acesso-por-convite-resend-fase-2-auditoria-de-sch
 - Verificar subdomínio de e-mail no Resend (SPF/DKIM/DMARC)
 - Parecer jurídico UU PDP (advogado licenciado na Indonésia) — pré-condição do gate comercial (DEBT-029)
 - Agendar a rotina de purga (`POST /api/public/privacy-purge`) em staging antes de produção
+- [x] Adapter `SeparationProvider` no pack ID (conformidade SDK) — 253 testes verdes
+- [x] Correção PP 35/2021 art. 43: efisiência c/ perdas 0,5× (43(1)) / p/ prevenir 1× (43(2)) — vetores atualizados
