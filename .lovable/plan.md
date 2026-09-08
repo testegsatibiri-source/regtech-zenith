@@ -94,6 +94,10 @@ Comportamento:
 - Nenhuma menção a "AI" para descrever validação determinística.
 - Nenhuma menção a criptografia ponta a ponta.
 - Seção de Status Validasi sempre presente enquanto o pack não estiver liberado.
+- Nenhum dado pessoal do visitante aparece no corpo do e-mail de aviso.
+- Envio do formulário é bloqueado sem a caixa de consentimento marcada.
+- Página de política de privacidade existe e está linkada antes do lançamento.
+- Pedidos de piloto entram na rotina de retenção/descarte existente.
 
 ## Pendências fora do código
 
