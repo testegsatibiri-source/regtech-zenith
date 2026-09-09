@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 
 export function IdNavbar() {
@@ -6,9 +5,9 @@ export function IdNavbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to="/id" className="font-semibold tracking-tight">
+        <a href="/id" className="font-semibold tracking-tight">
           UBoard Asia
-        </Link>
+        </a>
         <nav className="hidden items-center gap-6 text-sm md:flex">
           <a href="#platform" className="text-muted-foreground hover:text-foreground">
             {t("id.nav.platform")}
