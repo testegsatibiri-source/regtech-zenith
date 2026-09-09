@@ -1669,6 +1669,57 @@ export type Database = {
           },
         ]
       }
+      pilot_requests: {
+        Row: {
+          company_name: string
+          consent: boolean
+          consent_version: string
+          created_at: string
+          email: string
+          employee_range: string
+          full_name: string
+          id: string
+          ip_hash: string | null
+          notes: string | null
+          role: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          consent: boolean
+          consent_version: string
+          created_at?: string
+          email: string
+          employee_range: string
+          full_name: string
+          id?: string
+          ip_hash?: string | null
+          notes?: string | null
+          role: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          consent?: boolean
+          consent_version?: string
+          created_at?: string
+          email?: string
+          employee_range?: string
+          full_name?: string
+          id?: string
+          ip_hash?: string | null
+          notes?: string | null
+          role?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_audit_log: {
         Row: {
           action: string

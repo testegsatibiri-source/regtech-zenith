@@ -172,7 +172,37 @@ const HANDLERS: Record<string, Handler> = {
   leave_records: purgeLeave,
   employment_file: purgeEmploymentFile,
   employment_201_file: purgeEmploymentFile,
+  pilot_requests: purgePilotRequests,
 };
+
+/** Platform-wide lead records are not scoped to a company. */
+async function purgePilotRequests(
+  _companyId: string,
+  cutoff: string,
+  action: PurgeAction,
+  dryRun: boolean,
+): Promise<{ matched: number; affected: number }> {
+  const { data: rows, error } = await supabaseAdmin
+    .from("pilot_requests")
+    .select("id")
+    .lt("created_at", cutoff);
+  if (error) throw new Error(error.message);
+  const ids = (rows ?? []).map((r) => r.id);
+  if (dryRun || ids.length === 0 || action === "archive") {
+    return { matched: ids.length, affected: 0 };
+  }
+  if (action === "delete") {
+    const { error: delErr } = await supabaseAdmin.from("pilot_requests").delete().in("id", ids);
+    if (delErr) throw new Error(delErr.message);
+  } else {
+    const { error: updErr } = await supabaseAdmin
+      .from("pilot_requests")
+      .update({ full_name: "[redacted]", email: "[redacted]", company_name: "[redacted]" })
+      .in("id", ids);
+    if (updErr) throw new Error(updErr.message);
+  }
+  return { matched: ids.length, affected: ids.length };
+}
 
 export interface RunPurgeOptions {
   /** Restrict to a single company; omit to sweep every company. */
