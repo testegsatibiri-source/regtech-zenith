@@ -5,7 +5,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
 import { sha256Hex } from "@/lib/hashing";
 
 const CONSENT_VERSION = "id-pilot-2026-09-08";
@@ -40,27 +39,6 @@ function extractIp(request: Request): string {
   );
 }
 
-async function checkRateLimits(
-  supabase: Database["public"]["Tables"]["pilot_requests"]["Insert"]["email"] extends string
-    ? { from: (t: "pilot_requests") => { select: (c: string) => { gte: (c: string, v: string) => { eq: (c: string, v: string) => { count: string } } } } }
-    : never,
-  email: string,
-  ipHash: string,
-): Promise<{ ok: true } | { ok: false; reason: string }> {
-  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const [{ count: emailCount }, { count: ipCount }] = await Promise.all([
-    supabase.from("pilot_requests").select("id", { count: "exact", head: true }).gte("created_at", since).eq("email", email),
-    supabase.from("pilot_requests").select("id", { count: "exact", head: true }).gte("created_at", since).eq("ip_hash", ipHash),
-  ]);
-  if ((emailCount ?? 0) >= 3) {
-    return { ok: false, reason: "Too many submissions from this email address." };
-  }
-  if ((ipCount ?? 0) >= 10) {
-    return { ok: false, reason: "Too many submissions from this network." };
-  }
-  return { ok: true };
-}
-
 async function notifyNewPilotRequest(_id: string): Promise<boolean> {
   // No PII is ever included in the notification body. If an e-mail provider
   // is configured in the future, this is where the generic alert is sent.
@@ -80,13 +58,29 @@ export const submitPilotRequest = createServerFn({ method: "POST" })
     const request = getRequest();
     const ip = request ? extractIp(request) : "0.0.0.0";
     const ipHash = await sha256Hex(ip);
+    const email = data.email.toLowerCase();
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const email = data.email.toLowerCase();
-    const limit = await checkRateLimits(supabaseAdmin as never, email, ipHash);
-    if (!limit.ok) {
-      throw new Error(limit.reason);
+    const [{ count: emailCount }, { count: ipCount }] = await Promise.all([
+      supabaseAdmin
+        .from("pilot_requests")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", since)
+        .eq("email", email),
+      supabaseAdmin
+        .from("pilot_requests")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", since)
+        .eq("ip_hash", ipHash),
+    ]);
+
+    if ((emailCount ?? 0) >= 3) {
+      throw new Error("Too many submissions from this email address.");
+    }
+    if ((ipCount ?? 0) >= 10) {
+      throw new Error("Too many submissions from this network.");
     }
 
     const { data: row, error } = await supabaseAdmin
