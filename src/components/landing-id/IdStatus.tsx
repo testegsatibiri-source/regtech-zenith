@@ -27,7 +27,9 @@ export function IdStatus({ pack }: { pack: PackSnapshot }) {
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{t("id.status.operational")}</span>
-                <Badge variant={idStatusVariant(pack.status)}>{idStatusLabel(pack.status)}</Badge>
+                <Badge variant={idStatusVariant(pack.status ?? "")}>
+                  {idStatusLabel(pack.status ?? "")}
+                </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{t("id.status.ruleset")}</span>
