@@ -108,7 +108,12 @@ export const submitPilotRequest = createServerFn({ method: "POST" })
   });
 
 async function hasAnyPlatformRole(
-  supabase: { rpc: (name: "has_role", args: { _user_id: string; _role: AppRole }) => Promise<{ data: boolean | null; error: Error | null }> },
+  supabase: {
+    rpc: (
+      name: "has_role",
+      args: { _user_id: string; _role: AppRole },
+    ) => Promise<{ data: boolean | null; error: Error | null }>;
+  },
   userId: string,
 ): Promise<boolean> {
   const checks = await Promise.all(

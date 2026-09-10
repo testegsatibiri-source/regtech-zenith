@@ -1,7 +1,7 @@
 import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function IdValidation() {
+export function IdAutomatedChecks() {
   const { t } = useI18n();
   return (
     <section className="px-4 py-16">

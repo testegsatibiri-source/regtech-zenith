@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +11,7 @@ export function IdHero() {
         <Badge variant="outline" className="mb-6">
           {t("id.hero.badge")}
         </Badge>
-        <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl">
-          {t("id.hero.title")}
-        </h1>
+        <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl">{t("id.hero.title")}</h1>
         <p className="mx-auto mb-10 max-w-3xl text-lg text-muted-foreground md:text-xl">
           {t("id.hero.sub")}
         </p>
@@ -21,7 +20,9 @@ export function IdHero() {
             <a href="#form">{t("id.hero.ctaPrimary")}</a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href="#dokumentasi">{t("id.hero.ctaSecondary")}</a>
+            <Link to="/packs/$country" params={{ country: "ID" }}>
+              {t("id.hero.ctaSecondary")}
+            </Link>
           </Button>
         </div>
       </div>

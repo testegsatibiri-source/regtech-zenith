@@ -18,7 +18,9 @@ export function idStatusLabel(status: string): string {
   }
 }
 
-export function idStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+export function idStatusVariant(
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "production":
       return "default";

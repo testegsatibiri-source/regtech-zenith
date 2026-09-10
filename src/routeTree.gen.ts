@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as IdRouteImport } from './routes/id'
 import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
@@ -28,6 +29,7 @@ import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
 import { Route as PacksCountryRouteImport } from './routes/packs.$country'
+import { Route as IdKebijakanPrivasiRouteImport } from './routes/id.kebijakan-privasi'
 import { Route as AuthenticatedSeparationsRouteImport } from './routes/_authenticated/separations'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
 import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
@@ -66,6 +68,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IdRoute = IdRouteImport.update({
+  id: '/id',
+  path: '/id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalculatorRoute = CalculatorRouteImport.update({
@@ -146,6 +153,11 @@ const PacksCountryRoute = PacksCountryRouteImport.update({
   id: '/packs/$country',
   path: '/packs/$country',
   getParentRoute: () => rootRouteImport,
+} as any)
+const IdKebijakanPrivasiRoute = IdKebijakanPrivasiRouteImport.update({
+  id: '/kebijakan-privasi',
+  path: '/kebijakan-privasi',
+  getParentRoute: () => IdRoute,
 } as any)
 const AuthenticatedSeparationsRoute =
   AuthenticatedSeparationsRouteImport.update({
@@ -279,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
+  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -294,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
   '/separations': typeof AuthenticatedSeparationsRoute
+  '/id/kebijakan-privasi': typeof IdKebijakanPrivasiRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
@@ -322,6 +336,7 @@ export interface FileRoutesByTo {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
+  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -337,6 +352,7 @@ export interface FileRoutesByTo {
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
   '/separations': typeof AuthenticatedSeparationsRoute
+  '/id/kebijakan-privasi': typeof IdKebijakanPrivasiRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
@@ -368,6 +384,7 @@ export interface FileRoutesById {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
+  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -383,6 +400,7 @@ export interface FileRoutesById {
   '/_authenticated/personnel': typeof AuthenticatedPersonnelRoute
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
   '/_authenticated/separations': typeof AuthenticatedSeparationsRoute
+  '/id/kebijakan-privasi': typeof IdKebijakanPrivasiRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
@@ -414,6 +432,7 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/calculator'
+    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -429,6 +448,7 @@ export interface FileRouteTypes {
     | '/personnel'
     | '/privacy'
     | '/separations'
+    | '/id/kebijakan-privasi'
     | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
@@ -457,6 +477,7 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/calculator'
+    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -472,6 +493,7 @@ export interface FileRouteTypes {
     | '/personnel'
     | '/privacy'
     | '/separations'
+    | '/id/kebijakan-privasi'
     | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
@@ -502,6 +524,7 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/calculator'
+    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -517,6 +540,7 @@ export interface FileRouteTypes {
     | '/_authenticated/personnel'
     | '/_authenticated/privacy'
     | '/_authenticated/separations'
+    | '/id/kebijakan-privasi'
     | '/packs/$country'
     | '/platform/audit'
     | '/platform/flags'
@@ -548,6 +572,7 @@ export interface RootRouteChildren {
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
+  IdRoute: typeof IdRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -585,6 +610,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/id': {
+      id: '/id'
+      path: '/id'
+      fullPath: '/id'
+      preLoaderRoute: typeof IdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calculator': {
@@ -698,6 +730,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/packs/$country'
       preLoaderRoute: typeof PacksCountryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/id/kebijakan-privasi': {
+      id: '/id/kebijakan-privasi'
+      path: '/kebijakan-privasi'
+      fullPath: '/id/kebijakan-privasi'
+      preLoaderRoute: typeof IdKebijakanPrivasiRouteImport
+      parentRoute: typeof IdRoute
     }
     '/_authenticated/separations': {
       id: '/_authenticated/separations'
@@ -933,6 +972,16 @@ const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(
   PlatformRouteRouteChildren,
 )
 
+interface IdRouteChildren {
+  IdKebijakanPrivasiRoute: typeof IdKebijakanPrivasiRoute
+}
+
+const IdRouteChildren: IdRouteChildren = {
+  IdKebijakanPrivasiRoute: IdKebijakanPrivasiRoute,
+}
+
+const IdRouteWithChildren = IdRoute._addFileChildren(IdRouteChildren)
+
 interface PacksCountryRouteChildren {
   PacksCountryCalculatorRoute: typeof PacksCountryCalculatorRoute
 }
@@ -952,6 +1001,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
+  IdRoute: IdRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
