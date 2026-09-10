@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ export function IdHero() {
             <a href="#form">{t("id.hero.ctaPrimary")}</a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href="#dokumentasi">{t("id.hero.ctaSecondary")}</a>
+            <Link to="/packs/ID">{t("id.hero.ctaSecondary")}</Link>
           </Button>
         </div>
       </div>
