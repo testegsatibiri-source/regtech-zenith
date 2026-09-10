@@ -22,7 +22,9 @@ export function IdHero() {
             <a href="#form">{t("id.hero.ctaPrimary")}</a>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link to="/packs/ID">{t("id.hero.ctaSecondary")}</Link>
+            <Link to="/packs/$country" params={{ country: "ID" }}>
+              {t("id.hero.ctaSecondary")}
+            </Link>
           </Button>
         </div>
       </div>
