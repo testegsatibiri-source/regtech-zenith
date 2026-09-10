@@ -53,7 +53,13 @@ function IdLanding() {
         <IdNavbar />
         <main className="flex-1">
           <IdHero />
-          <IdStatus pack={pack} />
+          <IdStatus
+            pack={{
+              tier: pack.tier,
+              version: pack.version,
+              rulesetVersion: pack.rulesetVersion,
+            }}
+          />
           <IdCoverage />
           <IdAutomatedChecks />
           <IdArchitecture />
