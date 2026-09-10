@@ -6,7 +6,7 @@ import { IdNavbar } from "@/components/landing-id/IdNavbar";
 import { IdHero } from "@/components/landing-id/IdHero";
 import { IdStatus } from "@/components/landing-id/IdStatus";
 import { IdCoverage } from "@/components/landing-id/IdCoverage";
-import { IdValidation } from "@/components/landing-id/IdValidation";
+import { IdAutomatedChecks } from "@/components/landing-id/IdAutomatedChecks";
 import { IdArchitecture } from "@/components/landing-id/IdArchitecture";
 import { IdPilotForm } from "@/components/landing-id/IdPilotForm";
 import { IdFooter } from "@/components/landing-id/IdFooter";
