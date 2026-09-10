@@ -60,7 +60,14 @@ export function IdPilotForm() {
         },
       });
       setStatus("success");
-      setForm({ fullName: "", email: "", companyName: "", employeeRange: "", role: "", consent: false });
+      setForm({
+        fullName: "",
+        email: "",
+        companyName: "",
+        employeeRange: "",
+        role: "",
+        consent: false,
+      });
     } catch {
       setStatus("error");
     }
@@ -130,7 +137,10 @@ export function IdPilotForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>{t("id.form.role")}</Label>
-                  <Select value={form.role} onValueChange={(v) => setForm((s) => ({ ...s, role: v }))}>
+                  <Select
+                    value={form.role}
+                    onValueChange={(v) => setForm((s) => ({ ...s, role: v }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih peran" />
                     </SelectTrigger>
@@ -161,7 +171,11 @@ export function IdPilotForm() {
                 {status === "error" && (
                   <p className="text-sm text-destructive">{t("id.form.error")}</p>
                 )}
-                <Button type="submit" className="w-full" disabled={!canSubmit || status === "submitting"}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!canSubmit || status === "submitting"}
+                >
                   {t("id.form.submit")}
                 </Button>
               </form>

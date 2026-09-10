@@ -89,17 +89,26 @@ const D: Dict = {
     en: "Monthly income-tax withholding using TER A/B/C average effective rates, with full annual reconciliation.",
     id: "Otomatisasi pemotongan pajak penghasilan bulanan berdasarkan Tarif Efektif Rata-Rata (TER A/B/C), dengan rekonsiliasi tahunan penuh (bulanan × tahunan, PTKP, biaya jabatan, dan deduksi).",
   },
-  "id.coverage.bpjs.title": { en: "Social security (BPJS)", id: "Jaminan Sosial Ketenagakerjaan (BPJS)" },
+  "id.coverage.bpjs.title": {
+    en: "Social security (BPJS)",
+    id: "Jaminan Sosial Ketenagakerjaan (BPJS)",
+  },
   "id.coverage.bpjs.body": {
     en: "Comprehensive calculation for JKK, JKM, JHT, JP and JKP, splitting employer and employee shares.",
     id: "Perhitungan komprehensif untuk JKK (5 tingkat risiko), JKM, JHT, JP (dengan batas atas), dan JKP — dengan pemisahan porsi iuran perusahaan vs karyawan.",
   },
-  "id.coverage.separation.title": { en: "Severance & PP 35/2021", id: "Kompensasi & Pesangon (PP No. 35/2021)" },
+  "id.coverage.separation.title": {
+    en: "Severance & PP 35/2021",
+    id: "Kompensasi & Pesangon (PP No. 35/2021)",
+  },
   "id.coverage.separation.body": {
     en: "Support for 20 termination scenarios under Articles 36–47, computing UP, UPMK and UPH with multipliers aligned to the reason for separation.",
     id: "Dukungan untuk 20 skenario Pemutusan Hubungan Kerja (PHK) sesuai Pasal 36–47, menghitung Uang Pesangon (UP), Uang Penghargaan Masa Kerja (UPMK), dan Uang Penggantian Hak (UPH) dengan pengali sesuai alasan pemutusan.",
   },
-  "id.coverage.thr.title": { en: "Religious holiday pay (THR)", id: "Tunjangan Hari Raya (THR) Keagamaan" },
+  "id.coverage.thr.title": {
+    en: "Religious holiday pay (THR)",
+    id: "Tunjangan Hari Raya (THR) Keagamaan",
+  },
   "id.coverage.thr.body": {
     en: "Pro-rata calculation based on tenure and recorded religious holiday for permanent and PKWT employees.",
     id: "Kalkulasi pro-rata berdasarkan masa kerja dan hari raya sesuai agama yang tercatat, untuk karyawan tetap maupun PKWT.",
@@ -115,7 +124,10 @@ const D: Dict = {
     id: "Kontrol akses berbasis peran, jejak audit atas setiap akses ke data sensitif (NIK, NPWP, rekening bank), dan mekanisme penguncian data yang belum terlindungi — dirancang sejalan dengan UU PDP (No. 27/2022), dengan tinjauan hukum independen sedang berjalan.",
   },
 
-  "id.validation.title": { en: "Automatic validation, not just calculation", id: "Validasi Automatis, Bukan Hanya Kalkulasi" },
+  "id.validation.title": {
+    en: "Automatic validation, not just calculation",
+    id: "Validasi Automatis, Bukan Hanya Kalkulasi",
+  },
   "id.validation.body": {
     en: "Every transaction passes through a deterministic validation engine that checks mandatory evidence before any record is confirmed — for example, a separation process is only registered when all legally required documentation is complete.",
     id: "Cada transaksi passa por um motor de validação determinístico que verifica evidências obrigatórias antes de qualquer registro ser confirmado — por exemplo, um processo de rescisão só é registrado quando toda a documentação exigida por lei está completa.",
@@ -157,8 +169,14 @@ const D: Dict = {
   },
   "id.form.consentLink": { en: "privacy policy", id: "Kebijakan Privasi" },
   "id.form.submit": { en: "Submit pilot access request", id: "Kirim Permohonan Akses Pilot" },
-  "id.form.success": { en: "Request received. We will contact you soon.", id: "Permohonan diterima. Kami akan menghubungi Anda segera." },
-  "id.form.error": { en: "Could not submit. Please try again.", id: "Gagal mengirim. Silakan coba lagi." },
+  "id.form.success": {
+    en: "Request received. We will contact you soon.",
+    id: "Permohonan diterima. Kami akan menghubungi Anda segera.",
+  },
+  "id.form.error": {
+    en: "Could not submit. Please try again.",
+    id: "Gagal mengirim. Silakan coba lagi.",
+  },
 
   "id.footer.tagline": {
     en: "B2B infrastructure for payroll compliance.",

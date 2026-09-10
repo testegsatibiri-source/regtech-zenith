@@ -19,9 +19,7 @@ export function IdStatus({ pack }: { pack: PackSnapshot }) {
         </h2>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">
-              {t("id.status.operational")}
-            </CardTitle>
+            <CardTitle className="text-lg font-medium">{t("id.status.operational")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center gap-4">
