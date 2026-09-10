@@ -55,7 +55,7 @@ function IdLanding() {
           <IdHero />
           <IdStatus pack={pack} />
           <IdCoverage />
-          <IdValidation />
+          <IdAutomatedChecks />
           <IdArchitecture />
           <IdPilotForm />
         </main>
