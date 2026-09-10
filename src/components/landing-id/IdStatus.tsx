@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { idStatusLabel, idStatusVariant } from "./statusLabels";
 
 interface PackSnapshot {
-  status: string;
+  status?: string;
   manifestVersion?: string;
   rulesetVersion?: string;
 }
