@@ -36,11 +36,15 @@ function IdPrivacyPolicy() {
         <h1 className="mt-6 mb-4 text-3xl font-semibold tracking-tight">
           Kebijakan Privasi Program Validasi Pilot
         </h1>
-        <p className="mb-8 text-sm text-muted-foreground">Versi 1.0 — berlaku per 8 September 2026</p>
+        <p className="mb-8 text-sm text-muted-foreground">
+          Versi 1.0 — berlaku per 8 September 2026
+        </p>
         <Card>
           <CardContent className="space-y-6 pt-6 text-sm leading-relaxed text-muted-foreground">
             <section>
-              <h2 className="mb-2 text-lg font-medium text-foreground">1. Data yang kami kumpulkan</h2>
+              <h2 className="mb-2 text-lg font-medium text-foreground">
+                1. Data yang kami kumpulkan
+              </h2>
               <p>
                 Saat Anda mengajukan permohonan akses pilot, kami mengumpulkan nama lengkap, email
                 perusahaan, nama entitas/perusahaan, rentang jumlah karyawan, peran, serta alamat IP
@@ -49,7 +53,9 @@ function IdPrivacyPolicy() {
               </p>
             </section>
             <section>
-              <h2 className="mb-2 text-lg font-medium text-foreground">2. Tujuan penggunaan data</h2>
+              <h2 className="mb-2 text-lg font-medium text-foreground">
+                2. Tujuan penggunaan data
+              </h2>
               <p>
                 Data digunakan untuk menilai kesesuaian program pilot, menghubungi pemohon, dan
                 memenuhi kewajiban audit internal. Kami tidak menjual atau membagikan data pribadi
@@ -68,7 +74,9 @@ function IdPrivacyPolicy() {
               </p>
             </section>
             <section>
-              <h2 className="mb-2 text-lg font-medium text-foreground">4. Jangka waktu penyimpanan</h2>
+              <h2 className="mb-2 text-lg font-medium text-foreground">
+                4. Jangka waktu penyimpanan
+              </h2>
               <p>
                 Data pilot disimpan selama maksimal 24 bulan sejak pengajuan. Setelah masa tersebut,
                 data akan dihapus atau dianonimkan sesuai kebijakan retensi yang berlaku.
@@ -77,8 +85,8 @@ function IdPrivacyPolicy() {
             <section>
               <h2 className="mb-2 text-lg font-medium text-foreground">5. Hak pemohon</h2>
               <p>
-                Anda berhak mengakses, memperbaiki, atau menghapus data pribadi Anda. Permintaan dapat
-                diajukan melalui email yang tercantum di halaman kontak.
+                Anda berhak mengakses, memperbaiki, atau menghapus data pribadi Anda. Permintaan
+                dapat diajukan melalui email yang tercantum di halaman kontak.
               </p>
             </section>
             <section>
