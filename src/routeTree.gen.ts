@@ -12,15 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as IdRouteImport } from './routes/id'
 import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
+import { Route as IdRouteRouteImport } from './routes/id.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
+import { Route as IdIndexRouteImport } from './routes/id.index'
 import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
 import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
@@ -70,11 +71,6 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IdRoute = IdRouteImport.update({
-  id: '/id',
-  path: '/id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CalculatorRoute = CalculatorRouteImport.update({
   id: '/calculator',
   path: '/calculator',
@@ -95,6 +91,11 @@ const PlatformRouteRoute = PlatformRouteRouteImport.update({
   path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IdRouteRoute = IdRouteRouteImport.update({
+  id: '/id',
+  path: '/id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -113,6 +114,11 @@ const PacksIndexRoute = PacksIndexRouteImport.update({
   id: '/packs/',
   path: '/packs/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const IdIndexRoute = IdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IdRouteRoute,
 } as any)
 const PlatformUadaRoute = PlatformUadaRouteImport.update({
   id: '/uada',
@@ -157,7 +163,7 @@ const PacksCountryRoute = PacksCountryRouteImport.update({
 const IdKebijakanPrivasiRoute = IdKebijakanPrivasiRouteImport.update({
   id: '/kebijakan-privasi',
   path: '/kebijakan-privasi',
-  getParentRoute: () => IdRoute,
+  getParentRoute: () => IdRouteRoute,
 } as any)
 const AuthenticatedSeparationsRoute =
   AuthenticatedSeparationsRouteImport.update({
@@ -287,11 +293,11 @@ const ApiPublicV1CalculateBpjsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/id': typeof IdRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
-  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -316,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/id/': typeof IdIndexRoute
   '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
@@ -336,7 +343,6 @@ export interface FileRoutesByTo {
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
-  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -361,6 +367,7 @@ export interface FileRoutesByTo {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/id': typeof IdIndexRoute
   '/packs': typeof PacksIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
@@ -380,11 +387,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/id': typeof IdRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
-  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -409,6 +416,7 @@ export interface FileRoutesById {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/id/': typeof IdIndexRoute
   '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/_authenticated/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
@@ -428,11 +436,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/id'
     | '/platform'
     | '/api-docs'
     | '/auth'
     | '/calculator'
-    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -457,6 +465,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/id/'
     | '/packs/'
     | '/platform/'
     | '/country-packs/$country'
@@ -477,7 +486,6 @@ export interface FileRouteTypes {
     | '/api-docs'
     | '/auth'
     | '/calculator'
-    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -502,6 +510,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/id'
     | '/packs'
     | '/platform'
     | '/country-packs/$country'
@@ -520,11 +529,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/id'
     | '/platform'
     | '/api-docs'
     | '/auth'
     | '/calculator'
-    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -549,6 +558,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/id/'
     | '/packs/'
     | '/platform/'
     | '/_authenticated/country-packs/$country'
@@ -568,11 +578,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  IdRouteRoute: typeof IdRouteRouteWithChildren
   PlatformRouteRoute: typeof PlatformRouteRouteWithChildren
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
-  IdRoute: typeof IdRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -612,13 +622,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/id': {
-      id: '/id'
-      path: '/id'
-      fullPath: '/id'
-      preLoaderRoute: typeof IdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/calculator': {
       id: '/calculator'
       path: '/calculator'
@@ -645,6 +648,13 @@ declare module '@tanstack/react-router' {
       path: '/platform'
       fullPath: '/platform'
       preLoaderRoute: typeof PlatformRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/id': {
+      id: '/id'
+      path: '/id'
+      fullPath: '/id'
+      preLoaderRoute: typeof IdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -674,6 +684,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/packs/'
       preLoaderRoute: typeof PacksIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/id/': {
+      id: '/id/'
+      path: '/'
+      fullPath: '/id/'
+      preLoaderRoute: typeof IdIndexRouteImport
+      parentRoute: typeof IdRouteRoute
     }
     '/platform/uada': {
       id: '/platform/uada'
@@ -736,7 +753,7 @@ declare module '@tanstack/react-router' {
       path: '/kebijakan-privasi'
       fullPath: '/id/kebijakan-privasi'
       preLoaderRoute: typeof IdKebijakanPrivasiRouteImport
-      parentRoute: typeof IdRoute
+      parentRoute: typeof IdRouteRoute
     }
     '/_authenticated/separations': {
       id: '/_authenticated/separations'
@@ -946,6 +963,19 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface IdRouteRouteChildren {
+  IdKebijakanPrivasiRoute: typeof IdKebijakanPrivasiRoute
+  IdIndexRoute: typeof IdIndexRoute
+}
+
+const IdRouteRouteChildren: IdRouteRouteChildren = {
+  IdKebijakanPrivasiRoute: IdKebijakanPrivasiRoute,
+  IdIndexRoute: IdIndexRoute,
+}
+
+const IdRouteRouteWithChildren =
+  IdRouteRoute._addFileChildren(IdRouteRouteChildren)
+
 interface PlatformRouteRouteChildren {
   PlatformAuditRoute: typeof PlatformAuditRoute
   PlatformFlagsRoute: typeof PlatformFlagsRoute
@@ -972,16 +1002,6 @@ const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(
   PlatformRouteRouteChildren,
 )
 
-interface IdRouteChildren {
-  IdKebijakanPrivasiRoute: typeof IdKebijakanPrivasiRoute
-}
-
-const IdRouteChildren: IdRouteChildren = {
-  IdKebijakanPrivasiRoute: IdKebijakanPrivasiRoute,
-}
-
-const IdRouteWithChildren = IdRoute._addFileChildren(IdRouteChildren)
-
 interface PacksCountryRouteChildren {
   PacksCountryCalculatorRoute: typeof PacksCountryCalculatorRoute
 }
@@ -997,11 +1017,11 @@ const PacksCountryRouteWithChildren = PacksCountryRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  IdRouteRoute: IdRouteRouteWithChildren,
   PlatformRouteRoute: PlatformRouteRouteWithChildren,
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
-  IdRoute: IdRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
