@@ -22,6 +22,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
+import { Route as IdIndexRouteImport } from './routes/id.index'
 import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
 import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
@@ -119,6 +120,11 @@ const PacksIndexRoute = PacksIndexRouteImport.update({
   id: '/packs/',
   path: '/packs/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const IdIndexRoute = IdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IdRoute,
 } as any)
 const PlatformUadaRoute = PlatformUadaRouteImport.update({
   id: '/uada',
@@ -322,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/id/': typeof IdIndexRoute
   '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
@@ -339,7 +346,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/id': typeof IdRouteWithChildren
+  '/id': typeof IdIndexRoute
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
@@ -415,6 +422,7 @@ export interface FileRoutesById {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/id/': typeof IdIndexRoute
   '/packs/': typeof PacksIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/_authenticated/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
@@ -463,6 +471,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/id/'
     | '/packs/'
     | '/platform/'
     | '/country-packs/$country'
@@ -555,6 +564,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/id/'
     | '/packs/'
     | '/platform/'
     | '/_authenticated/country-packs/$country'
@@ -688,6 +698,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/packs/'
       preLoaderRoute: typeof PacksIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/id/': {
+      id: '/id/'
+      path: '/'
+      fullPath: '/id/'
+      preLoaderRoute: typeof IdIndexRouteImport
+      parentRoute: typeof IdRoute
     }
     '/platform/uada': {
       id: '/platform/uada'
@@ -988,10 +1005,12 @@ const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(
 
 interface IdRouteChildren {
   IdKebijakanPrivasiRoute: typeof IdKebijakanPrivasiRoute
+  IdIndexRoute: typeof IdIndexRoute
 }
 
 const IdRouteChildren: IdRouteChildren = {
   IdKebijakanPrivasiRoute: IdKebijakanPrivasiRoute,
+  IdIndexRoute: IdIndexRoute,
 }
 
 const IdRouteWithChildren = IdRoute._addFileChildren(IdRouteChildren)
