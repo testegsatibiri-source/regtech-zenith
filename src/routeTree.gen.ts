@@ -17,6 +17,7 @@ import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
+import { Route as IdRouteRouteImport } from './routes/id.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
@@ -93,6 +94,11 @@ const ApiDocsRoute = ApiDocsRouteImport.update({
 const PlatformRouteRoute = PlatformRouteRouteImport.update({
   id: '/platform',
   path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IdRouteRoute = IdRouteRouteImport.update({
+  id: '/id',
+  path: '/id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -287,11 +293,11 @@ const ApiPublicV1CalculateBpjsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/id': typeof IdRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
-  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -333,10 +339,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/id': typeof IdRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
-  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -380,11 +386,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/id': typeof IdRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
-  '/id': typeof IdRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -428,11 +434,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/id'
     | '/platform'
     | '/api-docs'
     | '/auth'
     | '/calculator'
-    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -474,10 +480,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/id'
     | '/api-docs'
     | '/auth'
     | '/calculator'
-    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -520,11 +526,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/id'
     | '/platform'
     | '/api-docs'
     | '/auth'
     | '/calculator'
-    | '/id'
     | '/onboarding'
     | '/reset-password'
     | '/sitemap.xml'
@@ -568,6 +574,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  IdRouteRoute: typeof IdRouteRoute
   PlatformRouteRoute: typeof PlatformRouteRouteWithChildren
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
@@ -645,6 +652,13 @@ declare module '@tanstack/react-router' {
       path: '/platform'
       fullPath: '/platform'
       preLoaderRoute: typeof PlatformRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/id': {
+      id: '/id'
+      path: '/id'
+      fullPath: '/id'
+      preLoaderRoute: typeof IdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -997,6 +1011,7 @@ const PacksCountryRouteWithChildren = PacksCountryRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  IdRouteRoute: IdRouteRoute,
   PlatformRouteRoute: PlatformRouteRouteWithChildren,
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
