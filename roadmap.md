@@ -46,6 +46,19 @@ Plano aprovado: `.lovable/plan/acesso-por-convite-resend-fase-2-auditoria-de-sch
 - [x] ADR-0039 + quatro perguntas ao advogado indonésio
 - [ ] Bump de versão (PACK_VERSION/rulesetVersion) — guardado para o release D7
 
+## Landing Indonésia (`/id`)
+
+Plano aprovado: `.lovable/plan/uboard-asia-landing-indonésia-rota-id-2026-09-08.md`
+
+- [x] Layout `/id` + landing `/id/` com status e versões vindos do runtime
+- [x] `/id/kebijakan-privasi` (política em indonésio, versão 1.0)
+- [x] Tabela `pilot_requests` (RLS restrita, consentimento versionado, IP com hash, rate limit, auditoria, retenção)
+- [x] Testes: não-prerenderização, status dinâmico, guard-rail de strings proibidas
+- [x] `/id` e `/id/kebijakan-privasi` no sitemap
+- [ ] Aviso por e-mail de novo pedido (hoje só registra em log; depende do Resend — Fase 5/6)
+- [ ] Registro e apontamento de `uboardasia.id`
+- [ ] Revisão do bloco de proteção de dados pelo advogado indonésio
+
 ## Pendências externas (fora do editor)
 - Variáveis Supabase no escopo Preview da Vercel + re-run "Release Validation → Staging"
 - Verificar subdomínio de e-mail no Resend (SPF/DKIM/DMARC)
