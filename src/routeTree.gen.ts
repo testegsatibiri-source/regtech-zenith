@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as IdRouteImport } from './routes/id'
 import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
@@ -72,11 +71,6 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IdRoute = IdRouteImport.update({
-  id: '/id',
-  path: '/id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CalculatorRoute = CalculatorRouteImport.update({
   id: '/calculator',
   path: '/calculator',
@@ -124,7 +118,7 @@ const PacksIndexRoute = PacksIndexRouteImport.update({
 const IdIndexRoute = IdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => IdRoute,
+  getParentRoute: () => IdRouteRoute,
 } as any)
 const PlatformUadaRoute = PlatformUadaRouteImport.update({
   id: '/uada',
@@ -169,7 +163,7 @@ const PacksCountryRoute = PacksCountryRouteImport.update({
 const IdKebijakanPrivasiRoute = IdKebijakanPrivasiRouteImport.update({
   id: '/kebijakan-privasi',
   path: '/kebijakan-privasi',
-  getParentRoute: () => IdRoute,
+  getParentRoute: () => IdRouteRoute,
 } as any)
 const AuthenticatedSeparationsRoute =
   AuthenticatedSeparationsRouteImport.update({
@@ -299,7 +293,7 @@ const ApiPublicV1CalculateBpjsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/id': typeof IdRouteWithChildren
+  '/id': typeof IdRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
@@ -346,7 +340,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/id': typeof IdIndexRoute
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
   '/calculator': typeof CalculatorRoute
@@ -374,6 +367,7 @@ export interface FileRoutesByTo {
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
+  '/id': typeof IdIndexRoute
   '/packs': typeof PacksIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
@@ -393,7 +387,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/id': typeof IdRouteWithChildren
+  '/id': typeof IdRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
@@ -489,7 +483,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/id'
     | '/api-docs'
     | '/auth'
     | '/calculator'
@@ -517,6 +510,7 @@ export interface FileRouteTypes {
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
+    | '/id'
     | '/packs'
     | '/platform'
     | '/country-packs/$country'
@@ -584,12 +578,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  IdRouteRoute: typeof IdRouteRoute
+  IdRouteRoute: typeof IdRouteRouteWithChildren
   PlatformRouteRoute: typeof PlatformRouteRouteWithChildren
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
   CalculatorRoute: typeof CalculatorRoute
-  IdRoute: typeof IdRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -627,13 +620,6 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/id': {
-      id: '/id'
-      path: '/id'
-      fullPath: '/id'
-      preLoaderRoute: typeof IdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calculator': {
@@ -704,7 +690,7 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/id/'
       preLoaderRoute: typeof IdIndexRouteImport
-      parentRoute: typeof IdRoute
+      parentRoute: typeof IdRouteRoute
     }
     '/platform/uada': {
       id: '/platform/uada'
@@ -767,7 +753,7 @@ declare module '@tanstack/react-router' {
       path: '/kebijakan-privasi'
       fullPath: '/id/kebijakan-privasi'
       preLoaderRoute: typeof IdKebijakanPrivasiRouteImport
-      parentRoute: typeof IdRoute
+      parentRoute: typeof IdRouteRoute
     }
     '/_authenticated/separations': {
       id: '/_authenticated/separations'
@@ -977,6 +963,19 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface IdRouteRouteChildren {
+  IdKebijakanPrivasiRoute: typeof IdKebijakanPrivasiRoute
+  IdIndexRoute: typeof IdIndexRoute
+}
+
+const IdRouteRouteChildren: IdRouteRouteChildren = {
+  IdKebijakanPrivasiRoute: IdKebijakanPrivasiRoute,
+  IdIndexRoute: IdIndexRoute,
+}
+
+const IdRouteRouteWithChildren =
+  IdRouteRoute._addFileChildren(IdRouteRouteChildren)
+
 interface PlatformRouteRouteChildren {
   PlatformAuditRoute: typeof PlatformAuditRoute
   PlatformFlagsRoute: typeof PlatformFlagsRoute
@@ -1003,18 +1002,6 @@ const PlatformRouteRouteWithChildren = PlatformRouteRoute._addFileChildren(
   PlatformRouteRouteChildren,
 )
 
-interface IdRouteChildren {
-  IdKebijakanPrivasiRoute: typeof IdKebijakanPrivasiRoute
-  IdIndexRoute: typeof IdIndexRoute
-}
-
-const IdRouteChildren: IdRouteChildren = {
-  IdKebijakanPrivasiRoute: IdKebijakanPrivasiRoute,
-  IdIndexRoute: IdIndexRoute,
-}
-
-const IdRouteWithChildren = IdRoute._addFileChildren(IdRouteChildren)
-
 interface PacksCountryRouteChildren {
   PacksCountryCalculatorRoute: typeof PacksCountryCalculatorRoute
 }
@@ -1030,12 +1017,11 @@ const PacksCountryRouteWithChildren = PacksCountryRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  IdRouteRoute: IdRouteRoute,
+  IdRouteRoute: IdRouteRouteWithChildren,
   PlatformRouteRoute: PlatformRouteRouteWithChildren,
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
   CalculatorRoute: CalculatorRoute,
-  IdRoute: IdRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
