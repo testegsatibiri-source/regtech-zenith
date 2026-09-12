@@ -117,6 +117,14 @@ const DOMAINS: Record<string, string> = {
   VN: "uboardhr.vn",
 };
 
+/**
+ * Published local landing routes per jurisdiction. Presentation only —
+ * adding a market here never changes routing or classification.
+ */
+const LANDING_ROUTES: Record<string, string> = {
+  ID: "/id",
+};
+
 /** Countries on the roadmap that have no installed pack yet. */
 const ROADMAP: Array<{
   code: string;
