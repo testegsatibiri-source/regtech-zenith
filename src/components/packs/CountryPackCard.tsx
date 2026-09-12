@@ -220,6 +220,8 @@ export function RoadmapPackCard({ pack }: { pack: CatalogEntry }) {
             </ul>
           </>
         )}
+        {/* No pack yet: the card stays informational and is not clickable. */}
+        <p className="mt-5 text-sm text-muted-foreground">Under construction</p>
       </CardContent>
     </Card>
   );
