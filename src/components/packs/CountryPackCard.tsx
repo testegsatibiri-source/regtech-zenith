@@ -34,7 +34,7 @@ export function CountryPackCard({
 
 function ProductionCard({ pack }: { pack: CatalogEntry }) {
   return (
-    <Card className="group flex h-full flex-col transition-shadow hover:shadow-md">
+    <Card className="group relative flex h-full flex-col transition-shadow hover:shadow-md">
       <CardContent className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -85,21 +85,14 @@ function ProductionCard({ pack }: { pack: CatalogEntry }) {
               href={`https://${pack.domain}`}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-primary underline-offset-4 hover:underline"
+              className="relative z-10 text-sm text-primary underline-offset-4 hover:underline"
             >
               {pack.domain}
             </a>
           </div>
         )}
 
-        <Link
-          to="/packs/$country"
-          params={{ country: pack.code.toLowerCase() }}
-          className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary"
-        >
-          Explore {pack.name}
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-        </Link>
+        <PackCta pack={pack} />
       </CardContent>
     </Card>
   );
