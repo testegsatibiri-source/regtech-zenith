@@ -213,6 +213,7 @@ function toEntry(
     provides: [...(m.provides ?? m.engines ?? [])],
     complianceAreas: COMPLIANCE_AREAS[m.country] ?? [],
     plannedCapabilities: PLANNED_CAPABILITIES[m.country] ?? [],
+    landingPath: LANDING_ROUTES[m.country],
     languages: [...(m.supportedLanguages ?? [])],
     blockers: c.blockers,
     health: c.health,
@@ -235,6 +236,7 @@ function roadmapEntries(installedCodes: Set<string>): CatalogEntry[] {
     provides: [],
     complianceAreas: COMPLIANCE_AREAS[r.code] ?? [],
     plannedCapabilities: PLANNED_CAPABILITIES[r.code] ?? [],
+    landingPath: LANDING_ROUTES[r.code],
     languages: LOCALES[r.code] ?? [],
     blockers: ["pack not implemented yet"],
   }));
