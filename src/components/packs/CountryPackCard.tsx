@@ -106,10 +106,17 @@ function ProductionCard({ pack }: { pack: CatalogEntry }) {
 }
 
 function ValidationCard({ pack }: { pack: CatalogEntry }) {
-  const planned = pack.plannedCapabilities;
+  // Installed packs advertise what the runtime actually declares; the
+  // announced list is only a fallback for markets with no pack yet.
+  const capabilities =
+    pack.installed && pack.provides.length > 0
+      ? pack.provides.map(capabilityLabel)
+      : pack.plannedCapabilities;
+  const heading = pack.installed && pack.provides.length > 0 ? "Capabilities" : "Planned capabilities";
+
   return (
-    <Card className="h-full">
-      <CardContent className="p-6">
+    <Card className="group relative flex h-full flex-col transition-shadow hover:shadow-md">
+      <CardContent className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <CountryFlag code={pack.code} name={pack.name} className="h-6 w-9" />
@@ -121,13 +128,19 @@ function ValidationCard({ pack }: { pack: CatalogEntry }) {
           </Badge>
         </div>
 
-        {planned.length > 0 && (
+        {pack.installed && pack.version && (
+          <p className="mt-3 font-mono text-xs text-muted-foreground">
+            {pack.code} Pack v{pack.version}
+          </p>
+        )}
+
+        {capabilities.length > 0 && (
           <>
             <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Planned capabilities
+              {heading}
             </p>
             <ul className="mt-2 space-y-1 text-sm">
-              {planned.map((c) => (
+              {capabilities.map((c) => (
                 <li key={c} className="flex items-center gap-1.5">
                   <Check className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span>{c}</span>
@@ -137,10 +150,45 @@ function ValidationCard({ pack }: { pack: CatalogEntry }) {
           </>
         )}
 
-        <p className="mt-5 text-sm text-muted-foreground">Coming soon</p>
+        <PackCta pack={pack} fallback="Coming soon" />
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Single navigation rule for every card: local landing first, pack page for
+ * production packs, nothing when the jurisdiction is only planned.
+ * The link stretches over the whole card so the card itself is clickable
+ * without nesting anchors.
+ */
+function PackCta({ pack, fallback }: { pack: CatalogEntry; fallback?: string }) {
+  const stretch =
+    "mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm";
+
+  if (pack.landingPath) {
+    return (
+      <a href={pack.landingPath} className={stretch}>
+        Visit local site
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+      </a>
+    );
+  }
+
+  if (pack.tier === "production") {
+    return (
+      <Link
+        to="/packs/$country"
+        params={{ country: pack.code.toLowerCase() }}
+        className={stretch}
+      >
+        Explore {pack.name}
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+      </Link>
+    );
+  }
+
+  return fallback ? <p className="mt-5 text-sm text-muted-foreground">{fallback}</p> : null;
 }
 
 function RoadmapCard({ pack }: { pack: CatalogEntry }) {
