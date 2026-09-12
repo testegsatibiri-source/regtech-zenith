@@ -33,6 +33,8 @@ export interface CatalogEntry {
   complianceAreas: string[];
   /** Announced capabilities for markets without a runtime engine. */
   plannedCapabilities: string[];
+  /** Local landing route for this jurisdiction, when one is published. */
+  landingPath?: string;
   languages: string[];
   /** Why the pack is not classified as production (empty when it is). */
   blockers: string[];
