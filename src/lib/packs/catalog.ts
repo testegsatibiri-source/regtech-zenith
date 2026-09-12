@@ -33,6 +33,8 @@ export interface CatalogEntry {
   complianceAreas: string[];
   /** Announced capabilities for markets without a runtime engine. */
   plannedCapabilities: string[];
+  /** Local landing route for this jurisdiction, when one is published. */
+  landingPath?: string;
   languages: string[];
   /** Why the pack is not classified as production (empty when it is). */
   blockers: string[];
@@ -113,6 +115,14 @@ const DOMAINS: Record<string, string> = {
   MY: "uboardhr.my",
   TH: "uboardhr.co.th",
   VN: "uboardhr.vn",
+};
+
+/**
+ * Published local landing routes per jurisdiction. Presentation only —
+ * adding a market here never changes routing or classification.
+ */
+const LANDING_ROUTES: Record<string, string> = {
+  ID: "/id",
 };
 
 /** Countries on the roadmap that have no installed pack yet. */
@@ -203,6 +213,7 @@ function toEntry(
     provides: [...(m.provides ?? m.engines ?? [])],
     complianceAreas: COMPLIANCE_AREAS[m.country] ?? [],
     plannedCapabilities: PLANNED_CAPABILITIES[m.country] ?? [],
+    landingPath: LANDING_ROUTES[m.country],
     languages: [...(m.supportedLanguages ?? [])],
     blockers: c.blockers,
     health: c.health,
@@ -225,6 +236,7 @@ function roadmapEntries(installedCodes: Set<string>): CatalogEntry[] {
     provides: [],
     complianceAreas: COMPLIANCE_AREAS[r.code] ?? [],
     plannedCapabilities: PLANNED_CAPABILITIES[r.code] ?? [],
+    landingPath: LANDING_ROUTES[r.code],
     languages: LOCALES[r.code] ?? [],
     blockers: ["pack not implemented yet"],
   }));
