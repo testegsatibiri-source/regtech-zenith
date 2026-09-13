@@ -59,6 +59,8 @@ const D: Dict = {
   "id.nav.kepatuhan": { en: "Compliance", id: "Kepatuhan" },
   "id.nav.api": { en: "API", id: "API" },
   "id.nav.kontak": { en: "Contact", id: "Kontak" },
+  "id.nav.masuk": { en: "Sign in", id: "Masuk" },
+  "id.nav.dashboard": { en: "Dashboard", id: "Dashboard" },
   "id.hero.badge": {
     en: "Indonesia Country Pack",
     id: "Infrastruktur Kepatuhan & Penggajian · Indonesia Country Pack",
