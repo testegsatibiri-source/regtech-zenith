@@ -32,6 +32,20 @@ describe("country pack card navigation", () => {
     expect(html).toContain("Visit local site");
   });
 
+  it("renders installed validation packs with runtime version and no roadmap placeholder", async () => {
+    const catalog = await listCatalogWithHealth();
+    const beta = catalog.filter((p) => p.tier === "beta" && p.installed);
+
+    expect(beta.length).toBeGreaterThan(0);
+
+    for (const pack of beta) {
+      const html = renderToStaticMarkup(<CountryPackCard pack={pack} />);
+      expect(html).toContain(`${pack.code} Pack v${pack.version}`);
+      expect(html).not.toContain("Under construction");
+      if (!pack.landingPath) expect(html).toContain("Coming soon");
+    }
+  });
+
   it("keeps roadmap markets non-clickable", async () => {
     const catalog = await listCatalogWithHealth();
     const roadmap = catalog.find((p) => p.tier === "roadmap") as CatalogEntry;
