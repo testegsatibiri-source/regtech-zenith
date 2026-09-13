@@ -35,11 +35,12 @@ Diagnóstico ainda não confirmado. Há duas hipóteses distintas, a serem testa
 4. **Página inicial**
    Confirmar que os cartões voltam a mostrar Indonésia, Malásia e Filipinas em validação, com versão e capacidades reais, e que a contagem ("X em produção · Y em validação · Z no roadmap") fica correta.
 
-5. **Teste de regressão**
-   Teste que falha se o runtime não enxergar os packs instalados — a proteção que hoje não existe e deixou a falha passar para o ar.
+5. **Teste de regressão em dois níveis**
+   - Teste na suíte comum: falha se o runtime não enxergar os três packs instalados. Barato, mas não reproduz remoção de código morto.
+   - Verificação contra o artefato real: após a build de produção, conferir que os packs aparecem no catálogo servido (inspeção do artefato e/ou requisição a `/` e `/id` na build). É essa checagem que pega a classe de falha atual — a suíte em modo de teste passaria mesmo com o bug de volta.
 
 6. **Verificação**
-   Typecheck, suíte completa e conferência visual de `/` e `/id` na build de produção. Publicação só mediante ordem sua.
+   Typecheck, suíte completa, build de produção servida e conferência visual de `/` e `/id` nessa build. Publicação só mediante ordem sua.
 
 ## Detalhes técnicos
 
