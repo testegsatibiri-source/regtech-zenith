@@ -7,7 +7,9 @@ import type { CatalogEntry } from "@/lib/packs/catalog";
  * jurisdiction never requires editing this file.
  */
 export function SiteFooter({ packs = [] }: { packs?: CatalogEntry[] }) {
-  const production = packs.filter((p) => p.tier === "production");
+  // Every installed jurisdiction is listed; the destination follows the same
+  // rule as the cards: local landing first, pack page for production, else none.
+  const installed = packs.filter((p) => p.installed);
 
   return (
     <footer className="border-t border-border bg-muted/20 py-14">
@@ -51,15 +53,23 @@ export function SiteFooter({ packs = [] }: { packs?: CatalogEntry[] }) {
         <div>
           <h3 className="text-sm font-semibold">Jurisdictions</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            {production.map((p) => (
+            {installed.map((p) => (
               <li key={p.code}>
-                <Link
-                  to="/packs/$country"
-                  params={{ country: p.code.toLowerCase() }}
-                  className="hover:text-foreground"
-                >
-                  {p.name}
-                </Link>
+                {p.landingPath ? (
+                  <a href={p.landingPath} className="hover:text-foreground">
+                    {p.name}
+                  </a>
+                ) : p.tier === "production" ? (
+                  <Link
+                    to="/packs/$country"
+                    params={{ country: p.code.toLowerCase() }}
+                    className="hover:text-foreground"
+                  >
+                    {p.name}
+                  </Link>
+                ) : (
+                  <span>{p.name}</span>
+                )}
               </li>
             ))}
             <li>

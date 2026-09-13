@@ -57,15 +57,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const { catalog, available } = Route.useLoaderData() as {
+  const { catalog } = Route.useLoaderData() as {
     catalog: CatalogEntry[];
     available: AvailablePack[];
   };
-  const availableCodes = new Set(available.map((p) => p.countryCode));
-  const production = catalog.filter((p) => availableCodes.has(p.code.toUpperCase()));
-  const upcoming = catalog.filter((p) => !availableCodes.has(p.code.toUpperCase()));
-  const validation = upcoming.filter((p) => p.installed);
-  const roadmap = upcoming.filter((p) => !p.installed);
+  // Grouping mirrors /packs: the runtime classification is the only source.
+  const production = catalog.filter((p) => p.tier === "production");
+  const validation = catalog.filter((p) => p.tier === "beta");
+  const roadmap = catalog.filter((p) => p.tier === "roadmap");
 
   return (
     <div className="min-h-screen">
@@ -207,8 +206,8 @@ function Landing() {
                 workflows of one market — connected to the same global core.
               </p>
               <p className="mt-3 text-sm font-medium">
-                {production.length} {production.length === 1 ? "pack" : "packs"} in production ·{" "}
-                {upcoming.length} in validation or roadmap
+                {production.length} in production · {validation.length} in validation ·{" "}
+                {roadmap.length} on the roadmap
               </p>
             </div>
             <Badge variant="outline" className="font-mono">
@@ -231,7 +230,7 @@ function Landing() {
               </h3>
               <div className="mt-3 grid gap-4 md:grid-cols-3">
                 {validation.map((p) => (
-                  <RoadmapPackCard key={p.code} pack={p} />
+                  <CountryPackCard key={p.code} pack={p} />
                 ))}
               </div>
             </>
