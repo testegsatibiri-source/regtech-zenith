@@ -53,15 +53,23 @@ export function SiteFooter({ packs = [] }: { packs?: CatalogEntry[] }) {
         <div>
           <h3 className="text-sm font-semibold">Jurisdictions</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            {production.map((p) => (
+            {installed.map((p) => (
               <li key={p.code}>
-                <Link
-                  to="/packs/$country"
-                  params={{ country: p.code.toLowerCase() }}
-                  className="hover:text-foreground"
-                >
-                  {p.name}
-                </Link>
+                {p.landingPath ? (
+                  <a href={p.landingPath} className="hover:text-foreground">
+                    {p.name}
+                  </a>
+                ) : p.tier === "production" ? (
+                  <Link
+                    to="/packs/$country"
+                    params={{ country: p.code.toLowerCase() }}
+                    className="hover:text-foreground"
+                  >
+                    {p.name}
+                  </Link>
+                ) : (
+                  <span>{p.name}</span>
+                )}
               </li>
             ))}
             <li>
