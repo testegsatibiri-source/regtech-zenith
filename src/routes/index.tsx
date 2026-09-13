@@ -206,8 +206,8 @@ function Landing() {
                 workflows of one market — connected to the same global core.
               </p>
               <p className="mt-3 text-sm font-medium">
-                {production.length} {production.length === 1 ? "pack" : "packs"} in production ·{" "}
-                {upcoming.length} in validation or roadmap
+                {production.length} in production · {validation.length} in validation ·{" "}
+                {roadmap.length} on the roadmap
               </p>
             </div>
             <Badge variant="outline" className="font-mono">
@@ -230,7 +230,7 @@ function Landing() {
               </h3>
               <div className="mt-3 grid gap-4 md:grid-cols-3">
                 {validation.map((p) => (
-                  <RoadmapPackCard key={p.code} pack={p} />
+                  <CountryPackCard key={p.code} pack={p} />
                 ))}
               </div>
             </>
