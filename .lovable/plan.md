@@ -49,10 +49,11 @@ Diagnóstico ainda não confirmado. Há duas hipóteses distintas, a serem testa
 
 ## Critérios de aceite
 
-- [ ] Causa da falha confirmada por reprodução em build de produção, não por suposição
+- [ ] Causa confirmada na build de produção servida, com as hipóteses A e B distinguidas por evidência
 - [ ] `/id` responde sem erro de servidor na build de produção
 - [ ] Página inicial mostra Indonésia, Malásia e Filipinas em validação, com versão real
 - [ ] Status, versão e ruleset continuam vindo do runtime, nunca fixos no texto
 - [ ] Nenhuma alteração em classificação, manifesto, assinatura ou liberação comercial
-- [ ] Teste de regressão cobrindo "packs instalados aparecem no catálogo"
+- [ ] Teste na suíte cobrindo "packs instalados aparecem no catálogo"
+- [ ] Checagem equivalente feita contra o artefato de build de produção, não só no modo de teste
 - [ ] Typecheck e suíte completa verdes
