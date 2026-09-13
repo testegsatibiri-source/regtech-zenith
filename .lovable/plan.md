@@ -9,12 +9,17 @@ No site publicado (uboardasia.com):
 
 No ambiente de desenvolvimento as mesmas telas funcionam, e a instalação dos packs também funciona quando forçada com a configuração de produção. Ou seja: **os packs em si estão corretos; o que falha é o site empacotado para publicação.**
 
-Diagnóstico ainda não confirmado. A hipótese principal é que o registro dos packs (`src/sdk/bootstrap.ts`, importado só por efeito colateral em `src/lib/packs/catalog.ts`) não sobrevive ao empacotamento de produção, ou passa a existir em duas cópias isoladas por causa do carregamento dinâmico em `src/lib/packs/loader.server.ts`. Confirmar é o primeiro passo do plano, não uma premissa.
+Diagnóstico ainda não confirmado. Há duas hipóteses distintas, a serem testadas separadamente:
+
+- **A — eliminação do módulo de registro.** `src/sdk/bootstrap.ts` é importado apenas por efeito colateral em `src/lib/packs/catalog.ts` e nada do que ele exporta é consumido. Empacotadores podem descartá-lo quando o projeto ou uma dependência declara `sideEffects: false`, ou quando a otimização remove o módulo por parecer inútil.
+- **B — duas cópias isoladas do runtime.** `src/lib/packs/loader.server.ts` é carregado dinamicamente; se o empacotamento gerar duas instâncias do registro, uma recebe os packs e a outra é consultada vazia.
 
 ## Passos
 
 1. **Reproduzir e confirmar a causa**
-   Gerar uma build de produção local e executá-la, chamando as mesmas telas (`/` e `/id`). Registrar quantos packs o runtime enxerga. Só avançar com a causa confirmada por evidência.
+   Gerar a **build de produção real** (`vite build` no mesmo formato usado na publicação) e servir esse artefato — não basta rodar o código-fonte com variável de ambiente de produção, porque isso não reproduz minificação nem remoção de código morto. Abrir `/` e `/id` contra a build servida e registrar quantos packs o runtime enxerga.
+   Distinguir as hipóteses: inspecionar o artefato gerado para ver se o código de registro dos três packs está presente (hipótese A descartada) e, em caso afirmativo, instrumentar/verificar se o registro consultado é o mesmo que recebeu os packs (hipótese B). Só avançar com a causa confirmada por evidência.
+
 
 2. **Corrigir o registro dos packs**
    Conforme o resultado do passo 1, uma destas correções (a menor que resolva):
