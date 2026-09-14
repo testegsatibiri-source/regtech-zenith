@@ -3,7 +3,9 @@
 // Pure presentation layer: reads CountryRuntime only, performs no I/O and is
 // never imported by Core or by a pack (ADR-0032).
 import { CountryRuntime, type InstalledPack, type HealthReport } from "@/sdk";
-import "@/sdk/bootstrap";
+// Explicit call (not a bare side-effect import): production bundling drops
+// side-effect-only modules, which silently emptied the catalog once already.
+import { bootstrapPacks } from "@/sdk/bootstrap";
 
 export type PackTier = "production" | "beta" | "roadmap";
 

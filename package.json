@@ -1,7 +1,10 @@
 {
   "name": "tanstack_start_ts",
   "private": true,
-  "sideEffects": false,
+  "sideEffects": [
+    "src/sdk/bootstrap.ts",
+    "**/*.css"
+  ],
   "type": "module",
   "packageManager": "bun@1.3.3",
   "engines": {
