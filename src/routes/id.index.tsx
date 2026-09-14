@@ -41,9 +41,9 @@ function IdLanding() {
       <IdHero />
       <IdStatus
         pack={{
-          tier: pack.tier,
-          version: pack.version,
-          rulesetVersion: pack.rulesetVersion,
+          tier: pack?.tier ?? "unavailable",
+          version: pack?.version,
+          rulesetVersion: pack?.rulesetVersion,
         }}
       />
       <IdCoverage />

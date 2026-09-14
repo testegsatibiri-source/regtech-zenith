@@ -11,6 +11,8 @@ export function idStatusLabel(status: string): string {
       return "Dalam Validasi";
     case "experimental":
       return "Eksperimental";
+    case "unavailable":
+      return "Status tidak tersedia";
     case "deprecated":
       return "Usang";
     default:
@@ -29,6 +31,8 @@ export function idStatusVariant(
     case "preview":
       return "secondary";
     case "experimental":
+      return "outline";
+    case "unavailable":
       return "outline";
     case "deprecated":
       return "destructive";

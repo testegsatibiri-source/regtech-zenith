@@ -26,7 +26,8 @@ export const getPacksPageData = createServerFn({ method: "GET" }).handler(async 
 export const getIdLandingData = createServerFn({ method: "GET" }).handler(async () => {
   const { loadCatalogForRequest } = await import("@/lib/packs/loader.server");
   const catalog = await loadCatalogForRequest();
-  const pack = catalog.find((e) => e.code === "ID");
-  if (!pack) throw new Error("Indonesia Country Pack is not installed");
+  // Defensive: if the pack is unavailable the page still renders with an
+  // explicit "status unavailable" badge instead of a 500 (H17-ID fix).
+  const pack = catalog.find((e) => e.code === "ID") ?? null;
   return { pack };
 });
