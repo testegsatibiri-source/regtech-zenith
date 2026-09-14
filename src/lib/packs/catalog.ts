@@ -246,6 +246,7 @@ function roadmapEntries(installedCodes: Set<string>): CatalogEntry[] {
 
 /** Synchronous catalog — no health gate. Safe for instant renders. */
 export function listCatalog(): CatalogEntry[] {
+  bootstrapPacks();
   const installed = CountryRuntime.list();
   const entries = installed.map((rec) => toEntry(rec, classify(rec)));
   return [...entries, ...roadmapEntries(new Set(entries.map((e) => e.code)))];
@@ -257,6 +258,7 @@ export function listCatalog(): CatalogEntry[] {
  * drops out of the production showcase on the very next request.
  */
 export async function listCatalogWithHealth(): Promise<CatalogEntry[]> {
+  bootstrapPacks();
   const installed = CountryRuntime.list();
   const entries = await Promise.all(
     installed.map(async (rec) => toEntry(rec, await classifyWithHealth(rec))),
