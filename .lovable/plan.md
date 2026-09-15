@@ -68,4 +68,5 @@ B5 (regras que nunca falham), B4 (salários regionais), B1 (piloto em portal rea
 - Toda tabela `official` tem arquivo de evidência com `effectiveFrom` idêntico ao do código e `author` ≠ `reviewer`, verificado por teste.
 - DEBT-022 atualizado com B3/B2a fechados e B2b/B1 abertos; `commercialReady` intocado.
 - **Zero mudança de valor calculado** (não "zero mudança em motor"): o shape do salário mínimo muda e o código que o lê é ajustado, com golden test do caso NCR provando resultado idêntico.
-- Zero alteração em `classify()`, manifesto ou bloco de assinatura; typecheck e suíte completa verdes.
+- Zero alteração em `classify()`, manifesto ou bloco de assinatura; zero arquivo de Core/SDK/Runtime tocado.
+- Typecheck verde, suíte do PH verde **e** suíte de coexistência entre packs (ID/MY/PH) verde.
