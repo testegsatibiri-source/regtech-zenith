@@ -20,13 +20,18 @@ Os seis pontos da revisão de auditoria foram acatados e estão refletidos abaix
 
 **"official" é consequência da evidência, não rótulo antecipado.** Toda tabela nasce `sourceStatus: "needs-review"` e só pode virar `"official"` quando existir o arquivo correspondente em `docs/governance/legal-opinions/` citando a fonte publicada. Confirmação feita só por consulta de engenharia não basta e não promove nada.
 
-**Schema já preparado para o B4.** O salário mínimo é declarado como um array de entradas regionais desde já (uma entrada, NCR), cada uma com seus próprios `source`/`effectiveFrom`/`sourceStatus`, para que o B4 adicione regiões sem refatorar o metadado de vigência.
+**Identificadores de tabela em um enum compartilhado.** Os IDs (`PH_SSS_MSC`, `PH_PHILHEALTH`, `PH_BIR_MONTHLY`, `PH_WAGE_REGIONS`, `PH_PAGIBIG`) vivem numa const única importada por `params.ts` e pelo teste, e são o que o cabeçalho do arquivo de evidência declara — nada de string livre.
 
-**Testes de invariante** (`src/packs/philippines/__tests__/params-validity.test.ts`), dois níveis:
+**Comentário antigo é removido.** As citações de fonte que hoje existem só como comentário em `params.ts` saem; o metadado estruturado passa a ser a única fonte de verdade, para não restarem duas versões divergindo com o tempo.
+
+**Schema já preparado para o B4, com golden test.** O salário mínimo vira um array de entradas regionais (uma entrada, NCR), cada uma com seus próprios `source`/`effectiveFrom`/`sourceStatus`. Isso **é** mudança de shape consumida por `PH-DOLE-MINWAGE` e `PH-WO-NCR-MINWAGE`: o código que lê a estrutura muda. Por isso o sprint inclui um golden test do caso NCR atual, capturado antes do refactor e comparado depois, provando comportamento observável idêntico.
+
+**Testes de invariante** (`src/packs/philippines/__tests__/params-validity.test.ts`), três níveis:
 1. Presença: toda tabela estatutária tem `source`, `effectiveFrom` e `sourceStatus`.
-2. Vínculo: toda tabela com `sourceStatus: "official"` tem um arquivo de evidência correspondente em `docs/governance/legal-opinions/` (resolvido por um identificador estável da tabela presente no cabeçalho do arquivo). Sem o arquivo, a suíte quebra — os dois artefatos não podem divergir em silêncio.
+2. Vínculo: toda tabela `official` tem arquivo de evidência correspondente, resolvido pelo ID do enum.
+3. Coerência: o `effectiveFrom` do arquivo de evidência é idêntico ao de `params.ts`, e `author` ≠ `reviewer` no cabeçalho — auto-aprovação óbvia é barrada por comparação de string (não substitui revisão humana, só impede o caso trivial).
 
-Sem bump de `PH_PARAMS.version` nem de `rulesetVersion`: nenhum valor de cálculo muda. Um valor desatualizado descoberto na reconciliação vira achado com dono, nunca correção dentro deste sprint (correção de valor exige bump + re-assinatura, em sprint próprio).
+Sem bump de `PH_PARAMS.version` nem de `rulesetVersion`: nenhum valor calculado muda. Um valor desatualizado descoberto na reconciliação vira achado com dono, nunca correção dentro deste sprint (correção de valor exige bump + re-assinatura, em sprint próprio).
 
 ## B2a — Dossiê interno de evidência (fechável neste sprint)
 
