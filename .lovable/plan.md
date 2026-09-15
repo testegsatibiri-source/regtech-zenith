@@ -50,6 +50,13 @@ O que este sprint entrega é transcrição de fontes com revisão interna, **nã
 
 `commercialReady` permanece `false`. O tech-debt precisa deixar impossível que, três sprints adiante, alguém leia "B2 concluído" e assuma que o parecer externo já existe.
 
+## Isolamento entre packs (condição de abertura da branch)
+
+1. **Enum de identificadores mora dentro do pack**: `src/packs/philippines/constants.ts`. Nada em `src/sdk/` nem em módulo compartilhado — colocá-lo lá seria mudança de Core/SDK disfarçada de tarefa documental e quebraria o Core-freeze.
+2. **"Padrão do pack Indonésia" significa imitar a forma, nunca importar o módulo.** PH declara seu próprio tipo de metadado; é proibido importar `UmpEntry` ou qualquer coisa de `src/packs/indonesia/*`. Um teste estático barra qualquer `import ... from ".../indonesia/"` dentro de `src/packs/philippines/`.
+3. **Diff aditivo nos ledgers cross-pack.** `docs/governance/legal-opinions/README.md` e `docs/tech-debt.md` são compartilhados: editar apenas a linha/seção do PH, nunca regenerar o arquivo. Diff mínimo nesses dois arquivos é critério de review.
+4. **Suíte de coexistência entre packs roda obrigatoriamente**, não só `src/packs/philippines/__tests__/`. A mudança de shape do salário mínimo toca código de motor, então precisa provar que ID e MY continuam intactos coexistindo com PH.
+
 ## Fora de escopo
 
 B5 (regras que nunca falham), B4 (salários regionais), B1 (piloto em portal real), B6 (jornada/horas extras), painel de rescisão PH e landing pública.
