@@ -53,9 +53,13 @@ O que este sprint entrega é transcrição de fontes com revisão interna, **nã
 ## Isolamento entre packs (condição de abertura da branch)
 
 1. **Enum de identificadores mora dentro do pack**: `src/packs/philippines/constants.ts`. Nada em `src/sdk/` nem em módulo compartilhado — colocá-lo lá seria mudança de Core/SDK disfarçada de tarefa documental e quebraria o Core-freeze.
-2. **"Padrão do pack Indonésia" significa imitar a forma, nunca importar o módulo.** PH declara seu próprio tipo de metadado; é proibido importar `UmpEntry` ou qualquer coisa de `src/packs/indonesia/*`. Um teste estático barra qualquer `import ... from ".../indonesia/"` dentro de `src/packs/philippines/`.
+2. **"Padrão do pack Indonésia" significa imitar a forma, nunca importar o módulo — e o bloqueio é genérico, não só contra a Indonésia.** PH declara seu próprio tipo de metadado; é proibido importar de `src/packs/<qualquer-outro-país>/*`. O teste estático barra qualquer import cruzado entre packs dentro de `src/packs/philippines/`, e a mesma regra se aplica simetricamente aos demais packs, para não nascer com uma allowlist negativa já incompleta para o próximo pack.
 3. **Diff aditivo nos ledgers cross-pack.** `docs/governance/legal-opinions/README.md` e `docs/tech-debt.md` são compartilhados: editar apenas a linha/seção do PH, nunca regenerar o arquivo. Diff mínimo nesses dois arquivos é critério de review.
-4. **Suíte de coexistência entre packs roda obrigatoriamente**, não só `src/packs/philippines/__tests__/`. A mudança de shape do salário mínimo toca código de motor, então precisa provar que ID e MY continuam intactos coexistindo com PH.
+4. **Suíte de coexistência entre packs roda obrigatoriamente** (`src/packs/philippines/__tests__/coexistence.test.ts` e irmãs), não só a suíte local do PH. A mudança de shape do salário mínimo toca código de motor, então precisa provar que ID e MY continuam intactos coexistindo com PH.
+
+## Primeira tarefa do sprint (confirmação pré-golden-test)
+
+Verificar se o shape de salário regional atravessa uma interface do SDK (como as capabilities de H6) ou é interno ao PH. **Pré-verificado nesta revisão**: `PH-DOLE-MINWAGE` e `PH-WO-NCR-MINWAGE` leem `PH_PARAMS.minWageNCRDaily` diretamente dentro de `src/packs/philippines/index.ts`, e `RuleProvider` recebe params como opaco — o shape nunca cruza a fronteira do provider, logo não é mudança de contrato de capability. A tarefa de abertura confirma isso no diff (nenhum tipo exportado do SDK afetado) antes de escrever o golden test; se a confirmação falhar, o item vira mudança de capability e sai do escopo deste sprint.
 
 ## Fora de escopo
 
