@@ -1,12 +1,19 @@
 // Philippines pack parameters (PH-2024.1). Opaque to Core; consumed only by
 // this pack's engines. No external imports.
+//
+// H24 — Statutory provenance is structured data, not comments. Every table
+// carries a PhStatutorySource entry in `statutorySources`; the only source of
+// truth for source/effectiveFrom/status is that array (see constants.ts).
+import { PH_TABLES, type PhStatutorySource } from "./constants";
 
-// SSS MSC 2024 — RA 11199 (Social Security Act of 2018) stepped table.
+// SSS MSC 2024 — RA 11199 stepped table.
 // Each row: salary floor (inclusive), salary ceiling (inclusive), MSC, employee
 // share, employer share, EC (Employer Compensation). The combined rate is 14%
 // (4.5% employee + 9.5% employer), and EC is a flat employer contribution that
-// varies only with the MSC range. Source: SSS Circular 2024-004 (Contribution
-// Schedule, effective 2024).
+// varies only with the MSC range.
+// NOTE (H24): superseded effective 2025-01-01 by SSS Circular 2024-006
+// (15%: 5% EE + 10% ER, MSC ₱5,000–₱35,000 with MPF). Values intentionally
+// unchanged in H24 — see DEBT-030. Provenance in `statutorySources`.
 const SSS_2024_TABLE = [
   { salaryMin: 0, salaryMax: 4_249.99, msc: 4_000, employee: 180.0, employer: 380.0, ec: 10 },
   { salaryMin: 4_250, salaryMax: 4_749.99, msc: 4_500, employee: 202.5, employer: 427.5, ec: 10 },
@@ -347,9 +354,9 @@ export const PH_PARAMS = {
   version: "2024.6", // bumped from 2024.5 after H22 Fase C Solo Parent ID validation
   currency: "PHP",
 
-  // BIR Withholding Tax on Compensation — Monthly (TRAIN Law, effective 2023+).
+  // BIR Withholding Tax on Compensation — Monthly (TRAIN Law).
   // Each row: [upperBoundInclusive, fixedTax, rateOnExcess, floorOfBracket].
-  // Source: Republic Act No. 10963 (TRAIN Law) / RR 11-2018.
+  // Provenance: PH_BIR_MONTHLY in `statutorySources`.
   birMonthly: [
     { upTo: 20_833, fixed: 0, rate: 0, floor: 0 },
     { upTo: 33_332, fixed: 0, rate: 0.15, floor: 20_833 },
@@ -359,13 +366,13 @@ export const PH_PARAMS = {
     { upTo: Infinity, fixed: 183_541.8, rate: 0.35, floor: 666_667 },
   ],
 
-  // BIR 13th-month / benefit exemption ceiling (annual).
-  // Source: RR 11-2018, Sec. 2.79.1(B)(a): first ₱90,000 of 13th month pay,
-  // Christmas bonuses, productivity incentives, loyalty awards, gifts and other
-  // benefits of a similar nature are exempt.
+  // BIR 13th-month / benefit exemption ceiling (annual). The first ₱90,000 of
+  // 13th month pay, Christmas bonuses, productivity incentives, loyalty
+  // awards, gifts and similar benefits are exempt. Same provenance as
+  // PH_BIR_MONTHLY (RR 11-2018, Sec. 2.79.1(B)(a)).
   birExemptBenefitsCeiling: 90_000,
 
-  // SSS 2024 — RA 11199 stepped table.
+  // SSS stepped table (provenance: PH_SSS_MSC).
   sss: {
     table: SSS_2024_TABLE,
     // Legacy bounds retained for quick validation and for engines that still
@@ -374,27 +381,31 @@ export const PH_PARAMS = {
     mscMax: 30_000,
   },
 
-  // PhilHealth 2024 — 5% split 50/50, floor 10k, cap 100k.
-  // Source: PhilHealth Circular 2023-0027.
+  // PhilHealth premium (provenance: PH_PHILHEALTH).
   philhealth: {
     rate: 0.05,
     floor: 10_000,
     cap: 100_000,
   },
 
-  // Pag-IBIG (HDMF) — 2% each side, capped at ₱200.
-  // Source: HDMF Contribution Schedule 2024.
+  // Pag-IBIG / HDMF (provenance: PH_PAGIBIG).
   pagibig: {
     rate: 0.02,
     cap: 200,
   },
 
-  // Labor — NCR only today. Region-aware lookup planned (P1d).
-  // Source: DOLE Wage Order NCR-24.
-  regions: {
-    NCR: { dailyMinWage: 610, workingDaysPerMonth: 22 },
-  },
-  minWageNCRDaily: 610, // deprecated: use regions.NCR.dailyMinWage
+  // Regional minimum wages — array-shaped from the start (H24) so B4 can add
+  // regions without refactoring provenance. NCR only today. Value ₱610 is
+  // the Wage Order NCR-23 rate and is STALE (see DEBT-031); provenance per
+  // entry. `workingDaysPerMonth` stays top-level: payroll convention shared
+  // by leave/separation daily-rate math, not a regional statutory value.
+  wageRegions: [
+    {
+      region: "NCR",
+      dailyMinWage: 610,
+      workingDaysPerMonth: 22,
+    },
+  ] as const,
   workingDaysPerMonth: 22,
 
   // Probation / regularization (Labor Code Art. 296)
@@ -435,6 +446,68 @@ export const PH_PARAMS = {
   // the annual earned amount, the engine may fall back to current monthly salary
   // with a warning flag.
   thirteenthEarnedBaseEnabled: true,
+
+  // H24 — single source of truth for statutory provenance.
+  // Rule: "official" is a CONSEQUENCE of an evidence file existing in
+  // docs/governance/legal-opinions/ (enforced by params-validity.test.ts).
+  statutorySources: [
+    {
+      table: PH_TABLES.SSS_MSC,
+      source: "SSS Circular 2024-004 / RA 11199 (Social Security Act of 2018)",
+      effectiveFrom: "2024-01-01",
+      sourceStatus: "stale",
+      notes:
+        "Superseded effective 2025-01-01 by SSS Circular 2024-006 (SSC Res. 560-s.2024): " +
+        "15% total (5% EE / 10% ER), MSC ₱5,000–₱35,000 with Mandatory Provident Fund. " +
+        "Value correction requires params/rulesetVersion bump + re-signature — DEBT-030.",
+    },
+    {
+      table: PH_TABLES.PHILHEALTH,
+      source: "PhilHealth Circular 2023-0027 / RA 11223 (Universal Health Care Act)",
+      effectiveFrom: "2024-01-01",
+      sourceStatus: "official",
+      notes:
+        "5% is the final scheduled UHC rate; floor ₱10,000 / ceiling ₱100,000, 50/50 split. " +
+        "Confirmed unchanged for 2026 — evidence: legal-opinions/PH-philhealth-2026-09-16.md.",
+    },
+    {
+      table: PH_TABLES.BIR_MONTHLY,
+      source: "RA 10963 (TRAIN Law) / RR 11-2018, Annex E",
+      effectiveFrom: "2023-01-01",
+      sourceStatus: "official",
+      notes:
+        "Monthly withholding table + ₱90,000 annual exemption (RR 11-2018 Sec. 2.79.1(B)(a)). " +
+        "Current schedule since 2023-01-01, unchanged in 2026 — evidence: legal-opinions/PH-bir-withholding-2026-09-16.md.",
+    },
+    {
+      table: PH_TABLES.WAGE_REGIONS,
+      source: "DOLE Wage Order NCR-23 (RTWPB-NCR)",
+      effectiveFrom: "2023-07-16",
+      sourceStatus: "stale",
+      notes:
+        "₱610/day is the NCR-23 rate. NCR-24 (₱645, 2024-07-17), NCR-26 (₱695, 2025-07-18) and " +
+        "NCR-27 (₱755, 2026-07-25; NCR-28 pending publication effectivity) have since superseded it. " +
+        "The pre-H24 comment cited 'NCR-24' for a value that is in fact the NCR-23 rate. " +
+        "Value correction requires params/rulesetVersion bump + re-signature — DEBT-031.",
+    },
+    {
+      table: PH_TABLES.PAGIBIG,
+      source: "HDMF Circular No. 460 / RA 9679",
+      effectiveFrom: "2024-02-01",
+      sourceStatus: "official",
+      notes:
+        "2%/2% on a Maximum Fund Salary of ₱10,000 (₱200 cap per side); 1% EE tier at or below " +
+        "₱1,500 (outside formal payroll scope). Unchanged in 2026 — evidence: legal-opinions/PH-pagibig-2026-09-16.md.",
+    },
+  ] satisfies readonly PhStatutorySource[],
 } as const;
+
+/** Monthly minimum-wage floor for a region (default NCR). Single reader for
+ *  PH-DOLE-MINWAGE / PH-WO-NCR-MINWAGE — H24 array-shaped wage regions. */
+export function phMinWageMonthlyFloor(region = "NCR"): number {
+  const entry =
+    PH_PARAMS.wageRegions.find((r) => r.region === region) ?? PH_PARAMS.wageRegions[0];
+  return entry.dailyMinWage * entry.workingDaysPerMonth;
+}
 
 export type PhParams = typeof PH_PARAMS;
