@@ -18,7 +18,7 @@ Signed legal opinions that gate or unblock the `commercialReady` flag of a Count
 | Country | Opinion | State | Notes |
 | --- | --- | --- | --- |
 | `ID` — Indonesia | _none_ | **Pending** | Required by ADR-0038. Blocks the ID commercial gate together with Fase C (separations). Facts to review are frozen as of D5b: field-level AES-GCM sealing of NIK/NPWP/bank account, audited reveal trail, 72h incident register, data-subject requests, Indonesian retention catalogue and the scheduled purge routine. |
-| `PH` — Philippines | _none_ | Not required yet | Pack is not commercially released. |
+| `PH` — Philippines | _none_ | **Pending (B2b)** | H24 (B2a) filed internal evidence per statutory table: `PH-sss-msc-2026-09-16.md` (stale → DEBT-030), `PH-philhealth-2026-09-16.md` (official), `PH-bir-withholding-2026-09-16.md` (official), `PH-wage-ncr-2026-09-16.md` (stale → DEBT-031), `PH-pagibig-2026-09-16.md` (official). External opinion must be signed by a lawyer licensed in the Philippines with labor/tax practice, stating IBP registration number and temporal validity scope. Blocks the PH commercial gate together with B1 (pilot validation, ADR-0035). |
 
 ## What the reviewer receives
 
