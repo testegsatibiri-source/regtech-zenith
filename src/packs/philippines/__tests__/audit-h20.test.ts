@@ -66,7 +66,7 @@ describe("PH audit heuristics are data-driven", () => {
   const heuristics = philippinesPack.providers.audit!.heuristics();
 
   it("has no always-passing placeholder control", () => {
-    const floor = PH_PARAMS.minWageNCRDaily * PH_PARAMS.workingDaysPerMonth;
+    const floor = phMinWageMonthlyFloor("NCR");
     const h = heuristics.find((x) => x.code === "PH-WO-NCR-MINWAGE")!;
     expect(h).toBeDefined();
     const failing = h.evaluate({
