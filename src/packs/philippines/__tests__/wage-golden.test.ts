@@ -3,7 +3,7 @@
 // pre-refactor behavior so a regression in the refactor fails here.
 import { describe, expect, it } from "vitest";
 import { philippinesPack } from "../index";
-import { phMinWageMonthlyFloor } from "../params";
+import { PH_PARAMS, phMinWageMonthlyFloor } from "../params";
 
 describe("PH NCR minimum wage golden values (unchanged by H24)", () => {
   it("monthly floor is ₱610/day × 22 days = ₱13,420", () => {
@@ -15,9 +15,11 @@ describe("PH NCR minimum wage golden values (unchanged by H24)", () => {
     const rule = philippinesPack.providers
       .rules!.rules()
       .find((r) => r.code === "PH-DOLE-MINWAGE")!;
-    expect(rule.evaluate({ base_salary: 13_419 } as never).passed).toBe(false);
-    expect(rule.evaluate({ base_salary: 13_420 } as never).passed).toBe(true);
-    expect(rule.evaluate({ base_salary: 30_000 } as never).passed).toBe(true);
+    const evaluate = (salary: number) =>
+      rule.evaluate({ base_salary: salary } as never, PH_PARAMS as never);
+    expect(evaluate(13_419).passed).toBe(false);
+    expect(evaluate(13_420).passed).toBe(true);
+    expect(evaluate(30_000).passed).toBe(true);
   });
 
   it("PH-WO-NCR-MINWAGE boundary is unchanged", () => {
