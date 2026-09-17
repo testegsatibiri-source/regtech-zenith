@@ -1,5 +1,15 @@
 # Roadmap
 
+## H24 — PH Statutory Evidence & Table Validity
+
+Plano aprovado: `.lovable/plan/h24-ph-statutory-evidence-table-validity-2026-09-16.md`
+
+- [x] B3 — proveniência estruturada por tabela (`PH_PARAMS.statutorySources`, enum em `constants.ts`, invariantes em `params-validity.test.ts`, golden `wage-golden.test.ts`)
+- [x] B2a — dossiê interno: 5 evidências em `docs/governance/legal-opinions/` (3 official, 2 stale → DEBT-030/031)
+- [ ] B2b — parecer jurídico externo (advogado PH, IBP, escopo temporal) — bloqueia `commercialReady`
+- [ ] B1 — validação de filings em portal real com empregador piloto — bloqueia `commercialReady`
+- Fora de escopo: B4 (multi-região — shape já preparado), B5, B6, painel de rescisão PH, landing pública PH
+
 ## H23 Fase D — UU PDP (Lei 27/2022) + criptografia de campo (pack Indonésia)
 
 Plano aprovado: `.lovable/plan/fase-d-uu-pdp-lei-27-2022-e-criptografia-de-campo-no-pacote-2026-09-04.md`
