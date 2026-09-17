@@ -1,7 +1,7 @@
 // H20 — Philippines pack audit remediation invariants.
 import { describe, expect, it } from "vitest";
 import { philippinesPack } from "../index";
-import { PH_PARAMS } from "../params";
+import { PH_PARAMS, phMinWageMonthlyFloor } from "../params";
 import { calculatePhTax } from "../engines/tax";
 
 describe("PH tax bracket continuity", () => {
@@ -66,7 +66,7 @@ describe("PH audit heuristics are data-driven", () => {
   const heuristics = philippinesPack.providers.audit!.heuristics();
 
   it("has no always-passing placeholder control", () => {
-    const floor = PH_PARAMS.minWageNCRDaily * PH_PARAMS.workingDaysPerMonth;
+    const floor = phMinWageMonthlyFloor("NCR");
     const h = heuristics.find((x) => x.code === "PH-WO-NCR-MINWAGE")!;
     expect(h).toBeDefined();
     const failing = h.evaluate({

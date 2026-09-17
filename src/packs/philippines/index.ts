@@ -20,7 +20,7 @@ import type { LeaveProvider } from "@/sdk";
 
 import type { SignatureBlock } from "@/sdk/manifest";
 import { PH_SIGNATURE_BLOCK } from "./signature";
-import { PH_PARAMS } from "./params";
+import { PH_PARAMS, phMinWageMonthlyFloor } from "./params";
 import { calculatePhTax } from "./engines/tax";
 import { calculatePhBenefits } from "./engines/benefits";
 import { calculatePhThirteenth } from "./engines/thirteenth";
@@ -147,7 +147,7 @@ const phRules: ComplianceRule[] = [
     severity: "critical",
     weight: 10,
     evaluate: (emp) => {
-      const monthlyFloor = PH_PARAMS.minWageNCRDaily * PH_PARAMS.workingDaysPerMonth;
+      const monthlyFloor = phMinWageMonthlyFloor("NCR");
       const passed = emp.base_salary >= monthlyFloor;
       return {
         passed,
@@ -257,7 +257,7 @@ const phHeuristics: AuditHeuristic[] = [
     title: "Monthly pay at or above the NCR minimum wage",
     severity: "critical",
     evaluate: (ctx) => {
-      const monthlyFloor = PH_PARAMS.minWageNCRDaily * PH_PARAMS.workingDaysPerMonth;
+      const monthlyFloor = phMinWageMonthlyFloor("NCR");
       const below = ctx.employees.filter(
         (e) => Number(e.base_salary ?? 0) > 0 && Number(e.base_salary) < monthlyFloor,
       );
