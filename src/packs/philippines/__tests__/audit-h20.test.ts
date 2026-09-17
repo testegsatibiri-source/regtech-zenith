@@ -1,7 +1,7 @@
 // H20 — Philippines pack audit remediation invariants.
 import { describe, expect, it } from "vitest";
 import { philippinesPack } from "../index";
-import { PH_PARAMS } from "../params";
+import { PH_PARAMS, phMinWageMonthlyFloor } from "../params";
 import { calculatePhTax } from "../engines/tax";
 
 describe("PH tax bracket continuity", () => {
