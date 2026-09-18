@@ -2,7 +2,7 @@ import { createContext, useContext, type ReactNode } from "react";
 
 export type Lang = "en" | "id" | (string & {});
 
-type Dict = Record<string, { en: string; id: string }>;
+type Dict = Record<string, { en: string; id?: string; fil?: string }>;
 
 // Hybrid EN / Bahasa Indonesia dictionary.
 const D: Dict = {
@@ -184,6 +184,143 @@ const D: Dict = {
     en: "B2B infrastructure for payroll compliance.",
     id: "Infrastruktur B2B untuk Kepatuhan Penggajian.",
   },
+
+  // H25-PH — Philippines landing (Filipino/Taglish only; no language switcher).
+  "ph.nav.platform": { en: "Platform", fil: "Platform" },
+  "ph.nav.compliance": { en: "Compliance", fil: "Pagsunod" },
+  "ph.nav.api": { en: "API", fil: "API" },
+  "ph.nav.contact": { en: "Contact", fil: "Kontak" },
+  "ph.nav.signin": { en: "Sign in", fil: "Mag-sign in" },
+  "ph.nav.dashboard": { en: "Dashboard", fil: "Dashboard" },
+
+  "ph.hero.badge": {
+    en: "Philippines Country Pack",
+    fil: "Imprastraktura ng Payroll Compliance · Philippines Country Pack",
+  },
+  "ph.hero.title": {
+    en: "Payroll compliance engine for Philippine regulation",
+    fil: "Payroll compliance engine para sa regulasyon ng Pilipinas",
+  },
+  "ph.hero.sub": {
+    en: "Philippine statutory payroll logic — SSS, PhilHealth, Pag-IBIG, BIR withholding, 13th month pay and separation pay — in one modular, versioned parameter system with a full audit trail.",
+    fil: "Inilalagay namin ang statutory payroll logic ng Pilipinas — SSS, PhilHealth, Pag-IBIG, BIR withholding, 13th month pay at separation pay — sa iisang modular at versioned na sistema ng parameters, na may kumpletong audit trail sa bawat kalkulasyon.",
+  },
+  "ph.hero.ctaPrimary": {
+    en: "Join pilot validation",
+    fil: "Sumali sa Pilot Validation Program",
+  },
+  "ph.hero.ctaSecondary": {
+    en: "Regulatory & API docs",
+    fil: "Dokumentasyon ng Regulasyon at API",
+  },
+
+  "ph.status.title": { en: "Legal compliance commitment", fil: "Kompromiso sa Pagsunod sa Batas" },
+  "ph.status.operational": { en: "Operational status", fil: "Operational status" },
+  "ph.status.ruleset": { en: "Ruleset version", fil: "Bersyon ng ruleset" },
+  "ph.status.pack": { en: "Pack version", fil: "Bersyon ng pack" },
+  "ph.status.body": {
+    en: "The Philippines Country Pack is under independent verification with licensed labour and tax counsel in the Philippines. Status, ruleset and pack version above are read live from the runtime. The pack is not yet released for commercial use.",
+    fil: "Ang Philippines Country Pack ay dumadaan sa independent na beripikasyon kasama ang lisensyadong labor at tax counsel sa Pilipinas. Ang status, ruleset at bersyon ng pack sa itaas ay direktang binabasa mula sa runtime. Hindi pa ito inilalabas para sa komersyal na paggamit — pilot validation muna.",
+  },
+
+  "ph.coverage.title": { en: "Local regulatory coverage", fil: "Saklaw ng Lokal na Regulasyon" },
+  "ph.coverage.contrib.title": {
+    en: "Statutory contributions",
+    fil: "Statutory contributions (SSS, PhilHealth, Pag-IBIG)",
+  },
+  "ph.coverage.contrib.body": {
+    en: "Employer and employee shares computed from versioned contribution tables.",
+    fil: "Kalkulasyon ng share ng employer at employee mula sa versioned na contribution tables, na may nakatalang petsa ng bisa at pinagmulan ng bawat talahanayan.",
+  },
+  "ph.coverage.tax.title": { en: "BIR withholding tax", fil: "BIR withholding tax" },
+  "ph.coverage.tax.body": {
+    en: "Monthly withholding under the TRAIN schedule, including the exemption ceiling for 13th month pay and other benefits.",
+    fil: "Buwanang withholding batay sa TRAIN schedule, kasama ang exemption ceiling para sa 13th month pay at iba pang benepisyo.",
+  },
+  "ph.coverage.thirteenth.title": { en: "13th month pay", fil: "13th month pay (PD 851)" },
+  "ph.coverage.thirteenth.body": {
+    en: "Pro-rata computation on basic earnings within the calendar year.",
+    fil: "Pro-rata na kalkulasyon batay sa basic na kinita sa loob ng taon, kasama ang pagsubaybay sa deadline ng pagbabayad.",
+  },
+  "ph.coverage.leave.title": { en: "Leave entitlements", fil: "Mga leave entitlement" },
+  "ph.coverage.leave.body": {
+    en: "Service incentive leave and the statutory special leaves, tracked per employee.",
+    fil: "Service incentive leave at ang mga statutory special leave, sinusubaybayan bawat empleyado ayon sa haba ng serbisyo.",
+  },
+  "ph.coverage.separation.title": {
+    en: "Separation pay & due process",
+    fil: "Separation pay at due process",
+  },
+  "ph.coverage.separation.body": {
+    en: "Separation pay by ground for termination, with the notice and final-pay requirements surfaced as checks.",
+    fil: "Separation pay ayon sa dahilan ng termination, kasama ang twin-notice at final pay bilang mga awtomatikong pagsusuri bago makumpirma ang rekord.",
+  },
+  "ph.coverage.filings.title": { en: "Deadlines & filings", fil: "Mga deadline at filing" },
+  "ph.coverage.filings.body": {
+    en: "Filing calendar and prepared layouts for statutory submissions. Submission to government portals is done by your team, not automatically by the platform.",
+    fil: "Kalendaryo ng mga deadline at inihandang layout para sa statutory submissions. Ang aktwal na pagsusumite sa mga government portal ay ginagawa ng inyong team — hindi ito awtomatikong ipinapasa ng plataporma.",
+  },
+
+  "ph.validation.title": {
+    en: "Automatic validation, not just calculation",
+    fil: "Awtomatikong validation, hindi lang kalkulasyon",
+  },
+  "ph.validation.body": {
+    en: "Every transaction passes through a deterministic validation engine that checks the required evidence before a record is confirmed — a separation is only recorded when the documentation required by law is complete.",
+    fil: "Bawat transaksyon ay dumadaan sa deterministic validation engine na sinusuri ang kinakailangang ebidensya bago makumpirma ang anumang rekord — halimbawa, naitatala lang ang isang separation kapag kumpleto na ang dokumentasyong hinihingi ng batas.",
+  },
+
+  "ph.architecture.title": { en: "Architecture", fil: "Arkitektura" },
+  "ph.architecture.core.title": { en: "Global Core", fil: "Global Core" },
+  "ph.architecture.core.body": {
+    en: "Cross-module orchestration, employee lifecycle, API gateway, audit trail and authentication — identical in every country.",
+    fil: "Orkestrasyon ng mga modyul, employee lifecycle, API gateway, audit trail at authentication — pareho sa lahat ng bansa.",
+  },
+  "ph.architecture.pack.title": { en: "Country Pack PH", fil: "Country Pack PH" },
+  "ph.architecture.pack.body": {
+    en: "An isolated, cryptographically signed (Ed25519) module containing only Philippine labour and tax logic.",
+    fil: "Hiwalay at cryptographically signed (Ed25519) na modyul na naglalaman lamang ng lohika ng batas paggawa at buwis ng Pilipinas.",
+  },
+  "ph.architecture.audit.title": { en: "Audit trail", fil: "Audit trail" },
+  "ph.architecture.audit.body": {
+    en: "Every calculation references the exact ruleset version that produced it, ready for inspection.",
+    fil: "Bawat kalkulasyon ay may kaugnay na eksaktong bersyon ng ruleset na gumawa nito, handa para sa inspeksyon.",
+  },
+
+  "ph.cta.title": {
+    en: "Prepare your payroll operations for the Philippines",
+    fil: "Ihanda ang inyong payroll operations para sa Pilipinas",
+  },
+  "ph.cta.body": {
+    en: "We are opening a limited collaboration with multi-entity employers, accounting firms and HR consultants in the Philippines who want to validate this infrastructure in a controlled pilot.",
+    fil: "Nagbubukas kami ng limitadong kolaborasyon para sa mga multi-entity na employer, accounting firm at HR consultant sa Pilipinas na nais mag-validate ng imprastrukturang ito sa isang kontroladong pilot program.",
+  },
+  "ph.form.fullName": { en: "Full name", fil: "Buong pangalan" },
+  "ph.form.email": { en: "Corporate email", fil: "Email ng kumpanya" },
+  "ph.form.companyName": { en: "Entity / company name", fil: "Pangalan ng entity/kumpanya" },
+  "ph.form.employeeRange": { en: "Estimated employee count", fil: "Tantyang bilang ng empleyado" },
+  "ph.form.employeeRangePlaceholder": { en: "Select a range", fil: "Pumili ng saklaw" },
+  "ph.form.role": { en: "Role", fil: "Posisyon" },
+  "ph.form.rolePlaceholder": { en: "Select a role", fil: "Pumili ng posisyon" },
+  "ph.form.consent": {
+    en: "I agree to the privacy policy and to be contacted about the pilot programme.",
+    fil: "Sumasang-ayon ako sa Patakaran sa Privacy at maaari akong kontakin tungkol sa pilot program.",
+  },
+  "ph.form.consentLink": { en: "privacy policy", fil: "Patakaran sa Privacy" },
+  "ph.form.submit": { en: "Submit pilot access request", fil: "Ipadala ang request sa pilot" },
+  "ph.form.success": {
+    en: "Request received. We will contact you soon.",
+    fil: "Natanggap ang inyong request. Makikipag-ugnayan kami sa lalong madaling panahon.",
+  },
+  "ph.form.error": {
+    en: "Could not submit. Please try again.",
+    fil: "Hindi naipadala. Pakisubukan muli.",
+  },
+
+  "ph.footer.tagline": {
+    en: "B2B infrastructure for payroll compliance.",
+    fil: "Imprastrakturang B2B para sa payroll compliance.",
+  },
 };
 
 interface I18nCtx {
@@ -204,7 +341,7 @@ const Ctx = createContext<I18nCtx>({
 function translate(key: string, lang: Lang): string {
   const entry = D[key];
   if (!entry) return key;
-  return entry[lang as "en" | "id"] ?? entry.en;
+  return (entry as Record<string, string | undefined>)[String(lang)] ?? entry.en;
 }
 
 /**
