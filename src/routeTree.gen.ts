@@ -16,10 +16,12 @@ import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiDocsRouteImport } from './routes/api-docs'
 import { Route as PlatformRouteRouteImport } from './routes/platform/route'
+import { Route as PhRouteRouteImport } from './routes/ph.route'
 import { Route as IdRouteRouteImport } from './routes/id.route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PhIndexRouteImport } from './routes/ph.index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as IdIndexRouteImport } from './routes/id.index'
 import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
@@ -29,6 +31,7 @@ import { Route as PlatformParametersRouteImport } from './routes/platform/parame
 import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
+import { Route as PhPatakaranSaPrivacyRouteImport } from './routes/ph.patakaran-sa-privacy'
 import { Route as PacksCountryRouteImport } from './routes/packs.$country'
 import { Route as IdKebijakanPrivasiRouteImport } from './routes/id.kebijakan-privasi'
 import { Route as AuthenticatedSeparationsRouteImport } from './routes/_authenticated/separations'
@@ -91,6 +94,11 @@ const PlatformRouteRoute = PlatformRouteRouteImport.update({
   path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhRouteRoute = PhRouteRouteImport.update({
+  id: '/ph',
+  path: '/ph',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IdRouteRoute = IdRouteRouteImport.update({
   id: '/id',
   path: '/id',
@@ -109,6 +117,11 @@ const PlatformIndexRoute = PlatformIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PhIndexRoute = PhIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PhRouteRoute,
 } as any)
 const PacksIndexRoute = PacksIndexRouteImport.update({
   id: '/packs/',
@@ -154,6 +167,11 @@ const PlatformAuditRoute = PlatformAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
   getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PhPatakaranSaPrivacyRoute = PhPatakaranSaPrivacyRouteImport.update({
+  id: '/patakaran-sa-privacy',
+  path: '/patakaran-sa-privacy',
+  getParentRoute: () => PhRouteRoute,
 } as any)
 const PacksCountryRoute = PacksCountryRouteImport.update({
   id: '/packs/$country',
@@ -294,6 +312,7 @@ const ApiPublicV1CalculateBpjsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/id': typeof IdRouteRouteWithChildren
+  '/ph': typeof PhRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
@@ -315,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/separations': typeof AuthenticatedSeparationsRoute
   '/id/kebijakan-privasi': typeof IdKebijakanPrivasiRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
+  '/ph/patakaran-sa-privacy': typeof PhPatakaranSaPrivacyRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -324,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/platform/uada': typeof PlatformUadaRoute
   '/id/': typeof IdIndexRoute
   '/packs/': typeof PacksIndexRoute
+  '/ph/': typeof PhIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
@@ -360,6 +381,7 @@ export interface FileRoutesByTo {
   '/separations': typeof AuthenticatedSeparationsRoute
   '/id/kebijakan-privasi': typeof IdKebijakanPrivasiRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
+  '/ph/patakaran-sa-privacy': typeof PhPatakaranSaPrivacyRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -369,6 +391,7 @@ export interface FileRoutesByTo {
   '/platform/uada': typeof PlatformUadaRoute
   '/id': typeof IdIndexRoute
   '/packs': typeof PacksIndexRoute
+  '/ph': typeof PhIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
@@ -388,6 +411,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/id': typeof IdRouteRouteWithChildren
+  '/ph': typeof PhRouteRouteWithChildren
   '/platform': typeof PlatformRouteRouteWithChildren
   '/api-docs': typeof ApiDocsRoute
   '/auth': typeof AuthRoute
@@ -409,6 +433,7 @@ export interface FileRoutesById {
   '/_authenticated/separations': typeof AuthenticatedSeparationsRoute
   '/id/kebijakan-privasi': typeof IdKebijakanPrivasiRoute
   '/packs/$country': typeof PacksCountryRouteWithChildren
+  '/ph/patakaran-sa-privacy': typeof PhPatakaranSaPrivacyRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
@@ -418,6 +443,7 @@ export interface FileRoutesById {
   '/platform/uada': typeof PlatformUadaRoute
   '/id/': typeof IdIndexRoute
   '/packs/': typeof PacksIndexRoute
+  '/ph/': typeof PhIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/_authenticated/country-packs/$country': typeof AuthenticatedCountryPacksCountryRoute
   '/api/public/calculate-bpjs': typeof ApiPublicCalculateBpjsRoute
@@ -437,6 +463,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/id'
+    | '/ph'
     | '/platform'
     | '/api-docs'
     | '/auth'
@@ -458,6 +485,7 @@ export interface FileRouteTypes {
     | '/separations'
     | '/id/kebijakan-privasi'
     | '/packs/$country'
+    | '/ph/patakaran-sa-privacy'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -467,6 +495,7 @@ export interface FileRouteTypes {
     | '/platform/uada'
     | '/id/'
     | '/packs/'
+    | '/ph/'
     | '/platform/'
     | '/country-packs/$country'
     | '/api/public/calculate-bpjs'
@@ -503,6 +532,7 @@ export interface FileRouteTypes {
     | '/separations'
     | '/id/kebijakan-privasi'
     | '/packs/$country'
+    | '/ph/patakaran-sa-privacy'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -512,6 +542,7 @@ export interface FileRouteTypes {
     | '/platform/uada'
     | '/id'
     | '/packs'
+    | '/ph'
     | '/platform'
     | '/country-packs/$country'
     | '/api/public/calculate-bpjs'
@@ -530,6 +561,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/id'
+    | '/ph'
     | '/platform'
     | '/api-docs'
     | '/auth'
@@ -551,6 +583,7 @@ export interface FileRouteTypes {
     | '/_authenticated/separations'
     | '/id/kebijakan-privasi'
     | '/packs/$country'
+    | '/ph/patakaran-sa-privacy'
     | '/platform/audit'
     | '/platform/flags'
     | '/platform/packs'
@@ -560,6 +593,7 @@ export interface FileRouteTypes {
     | '/platform/uada'
     | '/id/'
     | '/packs/'
+    | '/ph/'
     | '/platform/'
     | '/_authenticated/country-packs/$country'
     | '/api/public/calculate-bpjs'
@@ -579,6 +613,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   IdRouteRoute: typeof IdRouteRouteWithChildren
+  PhRouteRoute: typeof PhRouteRouteWithChildren
   PlatformRouteRoute: typeof PlatformRouteRouteWithChildren
   ApiDocsRoute: typeof ApiDocsRoute
   AuthRoute: typeof AuthRoute
@@ -650,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ph': {
+      id: '/ph'
+      path: '/ph'
+      fullPath: '/ph'
+      preLoaderRoute: typeof PhRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/id': {
       id: '/id'
       path: '/id'
@@ -677,6 +719,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/platform/'
       preLoaderRoute: typeof PlatformIndexRouteImport
       parentRoute: typeof PlatformRouteRoute
+    }
+    '/ph/': {
+      id: '/ph/'
+      path: '/'
+      fullPath: '/ph/'
+      preLoaderRoute: typeof PhIndexRouteImport
+      parentRoute: typeof PhRouteRoute
     }
     '/packs/': {
       id: '/packs/'
@@ -740,6 +789,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/platform/audit'
       preLoaderRoute: typeof PlatformAuditRouteImport
       parentRoute: typeof PlatformRouteRoute
+    }
+    '/ph/patakaran-sa-privacy': {
+      id: '/ph/patakaran-sa-privacy'
+      path: '/patakaran-sa-privacy'
+      fullPath: '/ph/patakaran-sa-privacy'
+      preLoaderRoute: typeof PhPatakaranSaPrivacyRouteImport
+      parentRoute: typeof PhRouteRoute
     }
     '/packs/$country': {
       id: '/packs/$country'
@@ -976,6 +1032,19 @@ const IdRouteRouteChildren: IdRouteRouteChildren = {
 const IdRouteRouteWithChildren =
   IdRouteRoute._addFileChildren(IdRouteRouteChildren)
 
+interface PhRouteRouteChildren {
+  PhPatakaranSaPrivacyRoute: typeof PhPatakaranSaPrivacyRoute
+  PhIndexRoute: typeof PhIndexRoute
+}
+
+const PhRouteRouteChildren: PhRouteRouteChildren = {
+  PhPatakaranSaPrivacyRoute: PhPatakaranSaPrivacyRoute,
+  PhIndexRoute: PhIndexRoute,
+}
+
+const PhRouteRouteWithChildren =
+  PhRouteRoute._addFileChildren(PhRouteRouteChildren)
+
 interface PlatformRouteRouteChildren {
   PlatformAuditRoute: typeof PlatformAuditRoute
   PlatformFlagsRoute: typeof PlatformFlagsRoute
@@ -1018,6 +1087,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   IdRouteRoute: IdRouteRouteWithChildren,
+  PhRouteRoute: PhRouteRouteWithChildren,
   PlatformRouteRoute: PlatformRouteRouteWithChildren,
   ApiDocsRoute: ApiDocsRoute,
   AuthRoute: AuthRoute,
