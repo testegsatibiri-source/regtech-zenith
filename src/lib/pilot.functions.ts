@@ -35,6 +35,9 @@ const submitSchema = z.object({
   consent: z.literal(true, {
     errorMap: () => ({ message: "Consent is required" }),
   }),
+  // Which landing the request came from. Defaults to ID for backwards
+  // compatibility with the existing Indonesia form payload.
+  country: z.enum(["ID", "PH"]).default("ID"),
 });
 
 function extractIp(request: Request): string {
@@ -100,8 +103,8 @@ export const submitPilotRequest = createServerFn({ method: "POST" })
         employee_range: data.employeeRange,
         role: data.role,
         consent: data.consent,
-        consent_version: CONSENT_VERSION,
-        source: "/id",
+        consent_version: CONSENT_VERSIONS[country],
+        source: LANDING_SOURCES[country],
         ip_hash: ipHash,
         status: "new",
       })
