@@ -125,6 +125,7 @@ const DOMAINS: Record<string, string> = {
  */
 const LANDING_ROUTES: Record<string, string> = {
   ID: "/id",
+  PH: "/ph",
 };
 
 /** Countries on the roadmap that have no installed pack yet. */

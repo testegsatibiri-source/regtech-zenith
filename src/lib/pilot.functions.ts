@@ -7,7 +7,15 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sha256Hex } from "@/lib/hashing";
 
-const CONSENT_VERSION = "id-pilot-2026-09-08";
+const CONSENT_VERSIONS = {
+  ID: "id-pilot-2026-09-08",
+  PH: "ph-pilot-2026-09-17",
+} as const;
+
+const LANDING_SOURCES = {
+  ID: "/id",
+  PH: "/ph",
+} as const;
 
 const ROLES = ["admin", "platform_admin", "platform_operator"] as const;
 

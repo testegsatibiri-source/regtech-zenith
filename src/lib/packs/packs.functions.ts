@@ -31,3 +31,11 @@ export const getIdLandingData = createServerFn({ method: "GET" }).handler(async 
   const pack = catalog.find((e) => e.code === "ID") ?? null;
   return { pack };
 });
+
+// H25-PH — same shape as the Indonesia loader, independent of the ID pack.
+export const getPhLandingData = createServerFn({ method: "GET" }).handler(async () => {
+  const { loadCatalogForRequest } = await import("@/lib/packs/loader.server");
+  const catalog = await loadCatalogForRequest();
+  const pack = catalog.find((e) => e.code === "PH") ?? null;
+  return { pack };
+});
