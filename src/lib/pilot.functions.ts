@@ -70,6 +70,7 @@ export const submitPilotRequest = createServerFn({ method: "POST" })
     const ip = request ? extractIp(request) : "0.0.0.0";
     const ipHash = await sha256Hex(ip);
     const email = data.email.toLowerCase();
+    const country = data.country;
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
