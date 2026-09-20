@@ -132,7 +132,7 @@ const D: Dict = {
   },
   "id.validation.body": {
     en: "Every transaction passes through a deterministic validation engine that checks mandatory evidence before any record is confirmed — for example, a separation process is only registered when all legally required documentation is complete.",
-    id: "Cada transaksi passa por um motor de validação determinístico que verifica evidências obrigatórias antes de qualquer registro ser confirmado — por exemplo, um processo de rescisão só é registrado quando toda a documentação exigida por lei está completa.",
+    id: "Setiap transaksi melewati mesin validasi deterministik yang memeriksa bukti wajib sebelum catatan apa pun dikonfirmasi — misalnya, proses pemutusan hubungan kerja hanya tercatat ketika seluruh dokumentasi yang diwajibkan undang-undang sudah lengkap.",
   },
 
   "id.architecture.title": { en: "Architecture", id: "Arsitektur" },
@@ -144,12 +144,12 @@ const D: Dict = {
   "id.architecture.pack.title": { en: "Country Pack ID", id: "Country Pack ID" },
   "id.architecture.pack.body": {
     en: "An isolated, cryptographically signed (Ed25519) module containing only Indonesian labour-law logic.",
-    id: "Modul terisolasi dan bertanda tangan kriptografis (Ed25519) contendo apenas a lógica específica da legislação trabalhista indonésia.",
+    id: "Modul terisolasi dan bertanda tangan kriptografis (Ed25519) yang hanya berisi logika spesifik peraturan ketenagakerjaan Indonesia.",
   },
   "id.architecture.audit.title": { en: "Audit trail", id: "Jejak Audit" },
   "id.architecture.audit.body": {
     en: "Every calculation references the exact ruleset version that produced it, ready for inspection.",
-    id: "Cada cálculo referencia a versão exata do ruleset que o produziu, pronta para inspeção.",
+    id: "Setiap perhitungan mereferensikan versi ruleset yang persis menghasilkannya, siap untuk inspeksi.",
   },
 
   "id.cta.title": {
