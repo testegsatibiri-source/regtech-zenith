@@ -38,4 +38,16 @@ describe("H17-ID landing route", () => {
       }
     }
   });
+
+  it("does not leak Portuguese text into id/fil dictionary entries", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/i18n.tsx"), "utf8");
+    const localizedLines = source.split("\n").filter((l) => /^\s*(id|fil):\s*"/.test(l));
+    expect(localizedLines.length).toBeGreaterThan(0);
+    // PT-BR markers absent from Bahasa Indonesia and Filipino:
+    // ã/õ/ç diacritics plus common PT-only words.
+    const PT_PATTERN = /[ãõç]|\b(cada|contendo|através|então|agora|você|não|só)\b/i;
+    for (const line of localizedLines) {
+      expect(line, `dictionary line must not contain Portuguese: ${line.trim()}`).not.toMatch(PT_PATTERN);
+    }
+  });
 });
