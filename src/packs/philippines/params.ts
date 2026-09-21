@@ -173,14 +173,16 @@ export const PH_PARAMS = {
     },
     {
       table: PH_TABLES.WAGE_REGIONS,
-      source: "DOLE Wage Order NCR-23 (RTWPB-NCR)",
-      effectiveFrom: "2023-07-16",
-      sourceStatus: "stale",
+      source: "DOLE Wage Order NCR-28 (RTWPB-NCR)",
+      effectiveFrom: "2026-09-26",
+      sourceStatus: "official",
       notes:
-        "₱610/day is the NCR-23 rate. NCR-24 (₱645, 2024-07-17), NCR-26 (₱695, 2025-07-18) and " +
-        "NCR-27 (₱755, 2026-07-25; NCR-28 pending publication effectivity) have since superseded it. " +
-        "The pre-H24 comment cited 'NCR-24' for a value that is in fact the NCR-23 rate. " +
-        "Value correction requires params/rulesetVersion bump + re-signature — DEBT-031.",
+        "₱755/day non-agriculture (₱718 agriculture, service/retail ≤15 workers, " +
+        "manufacturing <10 workers) — single ₱60 tranche over the NCR-26 baseline. " +
+        "NCR-27 (same ₱755 first tranche, 2026-07-25) is enjoined (Pasig RTC Br. 152 " +
+        "TRO/injunction); NCR-28 supersedes it from 2026-09-26 — until then the " +
+        "operative floor is NCR-26 ₱695. Monthly floor consumed as ₱755 × 22 = ₱16,610. " +
+        "Reconciled 2026-09-21, closes DEBT-031 — evidence: legal-opinions/PH-wage-ncr-2026-09-16.md.",
     },
     {
       table: PH_TABLES.PAGIBIG,
