@@ -46,16 +46,21 @@ describe("[PH] pack-specific", () => {
     expect(r.base).toBe(30_000);
   });
 
-  it("SSS stepped table resolves exact MSC brackets", () => {
+  it("SSS stepped table resolves exact MSC brackets (Circular 2024-006, 2025)", () => {
     const b = philippinesPack.providers.benefits!;
+    // EE share = 5% of MSC; MSC resolves in ₱500 steps within ₱5,000–₱35,000.
     const row15k = b.calculate({ salary: 15_000 }).employee;
-    expect(row15k.sss).toBe(675);
+    expect(row15k.sss).toBe(750); // MSC 15,000 × 5%
     const row30k = b.calculate({ salary: 30_000 }).employee;
-    expect(row30k.sss).toBe(1_350);
+    expect(row30k.sss).toBe(1_500); // MSC 30,000 × 5% (Regular SS ₱1,000 + MPF ₱500)
     const row35k = b.calculate({ salary: 35_000 }).employee;
-    expect(row35k.sss).toBe(1_350); // clamped at MSC cap
+    expect(row35k.sss).toBe(1_750); // MSC 35,000 × 5% — top of the table
+    const row40k = b.calculate({ salary: 40_000 }).employee;
+    expect(row40k.sss).toBe(1_750); // clamped at MSC cap
     const row10k = b.calculate({ salary: 10_000 }).employee;
-    expect(row10k.sss).toBe(450);
+    expect(row10k.sss).toBe(500); // MSC 10,000 × 5%
+    const rowLow = b.calculate({ salary: 3_000 }).employee;
+    expect(rowLow.sss).toBe(250); // minimum MSC 5,000 × 5%
   });
 
   it("Tax applies BIR ₱90,000 annual benefits ceiling exemption", () => {
