@@ -1,4 +1,4 @@
-// Philippines pack parameters (PH-2024.1). Opaque to Core; consumed only by
+// Philippines pack parameters (PH-2025.1). Opaque to Core; consumed only by
 // this pack's engines. No external imports.
 //
 // H24 — Statutory provenance is structured data, not comments. Every table
@@ -6,14 +6,14 @@
 // truth for source/effectiveFrom/status is that array (see constants.ts).
 import { PH_TABLES, type PhStatutorySource } from "./constants";
 
-// SSS MSC 2024 — RA 11199 stepped table.
-// Each row: salary floor (inclusive), salary ceiling (inclusive), MSC, employee
-// share, employer share, EC (Employer Compensation). The combined rate is 14%
-// (4.5% employee + 9.5% employer), and EC is a flat employer contribution that
-// varies only with the MSC range.
-// NOTE (H24): superseded effective 2025-01-01 by SSS Circular 2024-006
-// (15%: 5% EE + 10% ER, MSC ₱5,000–₱35,000 with MPF). Values intentionally
-// unchanged in H24 — see DEBT-030. Provenance in `statutorySources`.
+// SSS MSC 2025 — SSS Circular 2024-006 (SSC Res. 560-s.2024), effective
+// 2025-01-01. Combined rate 15% (5% employee + 10% employer) on an MSC range
+// of ₱5,000–₱35,000 in ₱500 steps. EC is employer-only: ₱10 for MSC ≤
+// ₱14,500, ₱30 for MSC ≥ ₱15,000. The MSC slice above ₱20,000 funds the
+// Mandatory Provident Fund (MPF / MySSS Pension Booster); this pack surfaces
+// EE/ER totals only, so the MPF split is not itemized (documented in the
+// evidence file). Rows are generated deterministically from the published
+// schedule — employee = 5% × MSC, employer = 10% × MSC.
 const SSS_2024_TABLE = [
   { salaryMin: 0, salaryMax: 4_249.99, msc: 4_000, employee: 180.0, employer: 380.0, ec: 10 },
   { salaryMin: 4_250, salaryMax: 4_749.99, msc: 4_500, employee: 202.5, employer: 427.5, ec: 10 },
