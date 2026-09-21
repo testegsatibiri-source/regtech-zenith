@@ -1,4 +1,4 @@
-// SSS + PhilHealth + Pag-IBIG (2024).
+// SSS + PhilHealth + Pag-IBIG (SSS 2025 schedule — Circular 2024-006).
 import { PH_PARAMS } from "../params";
 import type { BenefitsInput, BenefitsOutput } from "@/sdk";
 
@@ -12,7 +12,7 @@ function findSssRow(salary: number) {
 export function calculatePhBenefits({ salary }: BenefitsInput): BenefitsOutput {
   const s = Math.max(0, salary);
 
-  // SSS — RA 11199 stepped MSC table (2024).
+  // SSS — Circular 2024-006 stepped MSC table (2025).
   const sssRow = s > 0 ? findSssRow(s) : null;
   const sssEE = sssRow ? Math.round(sssRow.employee) : 0;
   const sssER = sssRow ? Math.round(sssRow.employer) : 0;

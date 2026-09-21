@@ -1,4 +1,4 @@
-// Philippines CountryPack — v1.6.0 (PH-2024.6), H22 offboarding + leave + 201 File.
+// Philippines CountryPack — v1.7.0 (PH-2025.1), DEBT-030/031 statutory corrections.
 //   • interfaceVersion 1.0.0 (frozen contract)
 //   • dual signatureBlock (author + platform countersign) — must re-sign after ruleset bumps
 //   • dual signatureBlock (author + platform countersign)
@@ -61,7 +61,7 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.6.0",
+  version: "1.7.0",
   rulesetVersion: `PH-${PH_PARAMS.version}`,
   interfaceVersion: "1.0.0",
   engines: PROVIDES,
@@ -265,8 +265,8 @@ const phHeuristics: AuditHeuristic[] = [
         passed: below.length === 0,
         message:
           below.length === 0
-            ? `All employees are at or above PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-24)`
-            : `${below.length} employee(s) earn below the NCR minimum wage equivalent of PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-24)`,
+          ? `All employees are at or above PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-28)`
+            : `${below.length} employee(s) earn below the NCR minimum wage equivalent of PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-28)`,
         impact: below.length,
       };
     },
