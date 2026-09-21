@@ -144,13 +144,14 @@ export const PH_PARAMS = {
   statutorySources: [
     {
       table: PH_TABLES.SSS_MSC,
-      source: "SSS Circular 2024-004 / RA 11199 (Social Security Act of 2018)",
-      effectiveFrom: "2024-01-01",
-      sourceStatus: "stale",
+      source: "SSS Circular 2024-006 (SSC Res. 560-s.2024) / RA 11199 (Social Security Act of 2018)",
+      effectiveFrom: "2025-01-01",
+      sourceStatus: "official",
       notes:
-        "Superseded effective 2025-01-01 by SSS Circular 2024-006 (SSC Res. 560-s.2024): " +
-        "15% total (5% EE / 10% ER), MSC ₱5,000–₱35,000 with Mandatory Provident Fund. " +
-        "Value correction requires params/rulesetVersion bump + re-signature — DEBT-030.",
+        "15% total (5% EE / 10% ER), MSC ₱5,000–₱35,000 in ₱500 steps; EC ₱10 (MSC ≤ " +
+        "₱14,500) / ₱30 (MSC ≥ ₱15,000). The MSC slice above ₱20,000 funds the MPF " +
+        "(MySSS Pension Booster) — the pack surfaces EE/ER totals only. Reconciled " +
+        "2026-09-21, closes DEBT-030 — evidence: legal-opinions/PH-sss-msc-2026-09-16.md.",
     },
     {
       table: PH_TABLES.PHILHEALTH,
