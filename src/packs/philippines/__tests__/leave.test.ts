@@ -223,7 +223,7 @@ describe("Fase A ↔ Fase B boundary", () => {
           leaveAccrual: null,
         },
       },
-      "PH-2024.6",
+      "PH-2025.1",
     );
     expect(out.complete).toBe(false);
     expect(out.missing.join(" ")).toMatch(/LeaveProvider/);
@@ -256,7 +256,7 @@ describe("Fase A ↔ Fase B boundary", () => {
           leaveAccrual: accrual,
         },
       },
-      "PH-2024.6",
+      "PH-2025.1",
     );
     expect(out.complete).toBe(true);
     expect(out.components.find((c) => c.code === "SIL_UNUSED")?.amount).toBe(3600);
@@ -267,6 +267,6 @@ describe("pack registration", () => {
   it("advertises the leave capability and wires the provider", () => {
     expect(philippinesPack.supports("leave")).toBe(true);
     expect(philippinesPack.providers.leave).toBeDefined();
-    expect(philippinesPack.manifest.rulesetVersion).toBe("PH-2024.6");
+    expect(philippinesPack.manifest.rulesetVersion).toBe("PH-2025.1");
   });
 });

@@ -1,4 +1,4 @@
-// Philippines pack parameters (PH-2024.1). Opaque to Core; consumed only by
+// Philippines pack parameters (PH-2025.1). Opaque to Core; consumed only by
 // this pack's engines. No external imports.
 //
 // H24 — Statutory provenance is structured data, not comments. Every table
@@ -6,352 +6,42 @@
 // truth for source/effectiveFrom/status is that array (see constants.ts).
 import { PH_TABLES, type PhStatutorySource } from "./constants";
 
-// SSS MSC 2024 — RA 11199 stepped table.
-// Each row: salary floor (inclusive), salary ceiling (inclusive), MSC, employee
-// share, employer share, EC (Employer Compensation). The combined rate is 14%
-// (4.5% employee + 9.5% employer), and EC is a flat employer contribution that
-// varies only with the MSC range.
-// NOTE (H24): superseded effective 2025-01-01 by SSS Circular 2024-006
-// (15%: 5% EE + 10% ER, MSC ₱5,000–₱35,000 with MPF). Values intentionally
-// unchanged in H24 — see DEBT-030. Provenance in `statutorySources`.
-const SSS_2024_TABLE = [
-  { salaryMin: 0, salaryMax: 4_249.99, msc: 4_000, employee: 180.0, employer: 380.0, ec: 10 },
-  { salaryMin: 4_250, salaryMax: 4_749.99, msc: 4_500, employee: 202.5, employer: 427.5, ec: 10 },
-  { salaryMin: 4_750, salaryMax: 5_249.99, msc: 5_000, employee: 225.0, employer: 475.0, ec: 10 },
-  { salaryMin: 5_250, salaryMax: 5_749.99, msc: 5_500, employee: 247.5, employer: 522.5, ec: 10 },
-  { salaryMin: 5_750, salaryMax: 6_249.99, msc: 6_000, employee: 270.0, employer: 570.0, ec: 10 },
-  { salaryMin: 6_250, salaryMax: 6_749.99, msc: 6_500, employee: 292.5, employer: 617.5, ec: 10 },
-  { salaryMin: 6_750, salaryMax: 7_249.99, msc: 7_000, employee: 315.0, employer: 665.0, ec: 10 },
-  { salaryMin: 7_250, salaryMax: 7_749.99, msc: 7_500, employee: 337.5, employer: 712.5, ec: 10 },
-  { salaryMin: 7_750, salaryMax: 8_249.99, msc: 8_000, employee: 360.0, employer: 760.0, ec: 10 },
-  { salaryMin: 8_250, salaryMax: 8_749.99, msc: 8_500, employee: 382.5, employer: 807.5, ec: 10 },
-  { salaryMin: 8_750, salaryMax: 9_249.99, msc: 9_000, employee: 405.0, employer: 855.0, ec: 10 },
-  { salaryMin: 9_250, salaryMax: 9_749.99, msc: 9_500, employee: 427.5, employer: 902.5, ec: 10 },
-  { salaryMin: 9_750, salaryMax: 10_249.99, msc: 10_000, employee: 450.0, employer: 950.0, ec: 10 },
-  {
-    salaryMin: 10_250,
-    salaryMax: 10_749.99,
-    msc: 10_500,
-    employee: 472.5,
-    employer: 997.5,
-    ec: 10,
-  },
-  {
-    salaryMin: 10_750,
-    salaryMax: 11_249.99,
-    msc: 11_000,
-    employee: 495.0,
-    employer: 1_045.0,
-    ec: 10,
-  },
-  {
-    salaryMin: 11_250,
-    salaryMax: 11_749.99,
-    msc: 11_500,
-    employee: 517.5,
-    employer: 1_092.5,
-    ec: 10,
-  },
-  {
-    salaryMin: 11_750,
-    salaryMax: 12_249.99,
-    msc: 12_000,
-    employee: 540.0,
-    employer: 1_140.0,
-    ec: 10,
-  },
-  {
-    salaryMin: 12_250,
-    salaryMax: 12_749.99,
-    msc: 12_500,
-    employee: 562.5,
-    employer: 1_187.5,
-    ec: 10,
-  },
-  {
-    salaryMin: 12_750,
-    salaryMax: 13_249.99,
-    msc: 13_000,
-    employee: 585.0,
-    employer: 1_235.0,
-    ec: 10,
-  },
-  {
-    salaryMin: 13_250,
-    salaryMax: 13_749.99,
-    msc: 13_500,
-    employee: 607.5,
-    employer: 1_282.5,
-    ec: 10,
-  },
-  {
-    salaryMin: 13_750,
-    salaryMax: 14_249.99,
-    msc: 14_000,
-    employee: 630.0,
-    employer: 1_330.0,
-    ec: 10,
-  },
-  {
-    salaryMin: 14_250,
-    salaryMax: 14_749.99,
-    msc: 14_500,
-    employee: 652.5,
-    employer: 1_377.5,
-    ec: 10,
-  },
-  {
-    salaryMin: 14_750,
-    salaryMax: 15_249.99,
-    msc: 15_000,
-    employee: 675.0,
-    employer: 1_425.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 15_250,
-    salaryMax: 15_749.99,
-    msc: 15_500,
-    employee: 697.5,
-    employer: 1_472.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 15_750,
-    salaryMax: 16_249.99,
-    msc: 16_000,
-    employee: 720.0,
-    employer: 1_520.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 16_250,
-    salaryMax: 16_749.99,
-    msc: 16_500,
-    employee: 742.5,
-    employer: 1_567.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 16_750,
-    salaryMax: 17_249.99,
-    msc: 17_000,
-    employee: 765.0,
-    employer: 1_615.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 17_250,
-    salaryMax: 17_749.99,
-    msc: 17_500,
-    employee: 787.5,
-    employer: 1_662.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 17_750,
-    salaryMax: 18_249.99,
-    msc: 18_000,
-    employee: 810.0,
-    employer: 1_710.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 18_250,
-    salaryMax: 18_749.99,
-    msc: 18_500,
-    employee: 832.5,
-    employer: 1_757.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 18_750,
-    salaryMax: 19_249.99,
-    msc: 19_000,
-    employee: 855.0,
-    employer: 1_805.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 19_250,
-    salaryMax: 19_749.99,
-    msc: 19_500,
-    employee: 877.5,
-    employer: 1_852.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 19_750,
-    salaryMax: 20_249.99,
-    msc: 20_000,
-    employee: 900.0,
-    employer: 1_900.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 20_250,
-    salaryMax: 20_749.99,
-    msc: 20_500,
-    employee: 922.5,
-    employer: 1_947.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 20_750,
-    salaryMax: 21_249.99,
-    msc: 21_000,
-    employee: 945.0,
-    employer: 1_995.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 21_250,
-    salaryMax: 21_749.99,
-    msc: 21_500,
-    employee: 967.5,
-    employer: 2_042.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 21_750,
-    salaryMax: 22_249.99,
-    msc: 22_000,
-    employee: 990.0,
-    employer: 2_090.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 22_250,
-    salaryMax: 22_749.99,
-    msc: 22_500,
-    employee: 1_012.5,
-    employer: 2_137.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 22_750,
-    salaryMax: 23_249.99,
-    msc: 23_000,
-    employee: 1_035.0,
-    employer: 2_185.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 23_250,
-    salaryMax: 23_749.99,
-    msc: 23_500,
-    employee: 1_057.5,
-    employer: 2_232.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 23_750,
-    salaryMax: 24_249.99,
-    msc: 24_000,
-    employee: 1_080.0,
-    employer: 2_280.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 24_250,
-    salaryMax: 24_749.99,
-    msc: 24_500,
-    employee: 1_102.5,
-    employer: 2_327.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 24_750,
-    salaryMax: 25_249.99,
-    msc: 25_000,
-    employee: 1_125.0,
-    employer: 2_375.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 25_250,
-    salaryMax: 25_749.99,
-    msc: 25_500,
-    employee: 1_147.5,
-    employer: 2_422.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 25_750,
-    salaryMax: 26_249.99,
-    msc: 26_000,
-    employee: 1_170.0,
-    employer: 2_470.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 26_250,
-    salaryMax: 26_749.99,
-    msc: 26_500,
-    employee: 1_192.5,
-    employer: 2_517.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 26_750,
-    salaryMax: 27_249.99,
-    msc: 27_000,
-    employee: 1_215.0,
-    employer: 2_565.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 27_250,
-    salaryMax: 27_749.99,
-    msc: 27_500,
-    employee: 1_237.5,
-    employer: 2_612.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 27_750,
-    salaryMax: 28_249.99,
-    msc: 28_000,
-    employee: 1_260.0,
-    employer: 2_660.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 28_250,
-    salaryMax: 28_749.99,
-    msc: 28_500,
-    employee: 1_282.5,
-    employer: 2_707.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 28_750,
-    salaryMax: 29_249.99,
-    msc: 29_000,
-    employee: 1_305.0,
-    employer: 2_755.0,
-    ec: 30,
-  },
-  {
-    salaryMin: 29_250,
-    salaryMax: 29_749.99,
-    msc: 29_500,
-    employee: 1_327.5,
-    employer: 2_802.5,
-    ec: 30,
-  },
-  {
-    salaryMin: 29_750,
-    salaryMax: Infinity,
-    msc: 30_000,
-    employee: 1_350.0,
-    employer: 2_850.0,
-    ec: 30,
-  },
-] as const;
+// SSS MSC 2025 — SSS Circular 2024-006 (SSC Res. 560-s.2024), effective
+// 2025-01-01. Combined rate 15% (5% employee + 10% employer) on an MSC range
+// of ₱5,000–₱35,000 in ₱500 steps. EC is employer-only: ₱10 for MSC ≤
+// ₱14,500, ₱30 for MSC ≥ ₱15,000. The MSC slice above ₱20,000 funds the
+// Mandatory Provident Fund (MPF / MySSS Pension Booster); this pack surfaces
+// EE/ER totals only, so the MPF split is not itemized (documented in the
+// evidence file). Rows are generated deterministically from the published
+// schedule — employee = 5% × MSC, employer = 10% × MSC.
+interface SssTableRow {
+  salaryMin: number;
+  salaryMax: number;
+  msc: number;
+  employee: number;
+  employer: number;
+  ec: number;
+}
+
+function buildSss2025Table(): SssTableRow[] {
+  const rows: SssTableRow[] = [];
+  for (let msc = 5_000; msc <= 35_000; msc += 500) {
+    rows.push({
+      salaryMin: msc === 5_000 ? 0 : msc - 250,
+      salaryMax: msc === 35_000 ? Infinity : msc + 249.99,
+      msc,
+      employee: msc * 0.05,
+      employer: msc * 0.1,
+      ec: msc >= 15_000 ? 30 : 10,
+    });
+  }
+  return rows;
+}
+
+const SSS_2025_TABLE: readonly SssTableRow[] = buildSss2025Table();
 
 export const PH_PARAMS = {
-  version: "2024.6", // bumped from 2024.5 after H22 Fase C Solo Parent ID validation
+  version: "2025.1", // bumped from 2024.6 — DEBT-030/031 statutory corrections (SSS Circular 2024-006 + Wage Order NCR-28)
   currency: "PHP",
 
   // BIR Withholding Tax on Compensation — Monthly (TRAIN Law).
@@ -374,11 +64,11 @@ export const PH_PARAMS = {
 
   // SSS stepped table (provenance: PH_SSS_MSC).
   sss: {
-    table: SSS_2024_TABLE,
+    table: SSS_2025_TABLE,
     // Legacy bounds retained for quick validation and for engines that still
     // read the range. The real MSC is resolved via the table above.
-    mscMin: 4_000,
-    mscMax: 30_000,
+    mscMin: 5_000,
+    mscMax: 35_000,
   },
 
   // PhilHealth premium (provenance: PH_PHILHEALTH).
@@ -395,14 +85,15 @@ export const PH_PARAMS = {
   },
 
   // Regional minimum wages — array-shaped from the start (H24) so B4 can add
-  // regions without refactoring provenance. NCR only today. Value ₱610 is
-  // the Wage Order NCR-23 rate and is STALE (see DEBT-031); provenance per
-  // entry. `workingDaysPerMonth` stays top-level: payroll convention shared
-  // by leave/separation daily-rate math, not a regional statutory value.
+  // regions without refactoring provenance. NCR only today. Value ₱755 is the
+  // Wage Order NCR-28 non-agriculture rate (effective 2026-09-26); provenance
+  // per entry. `workingDaysPerMonth` stays top-level: payroll convention
+  // shared by leave/separation daily-rate math, not a regional statutory
+  // value.
   wageRegions: [
     {
       region: "NCR",
-      dailyMinWage: 610,
+      dailyMinWage: 755,
       workingDaysPerMonth: 22,
     },
   ] as const,
@@ -453,13 +144,14 @@ export const PH_PARAMS = {
   statutorySources: [
     {
       table: PH_TABLES.SSS_MSC,
-      source: "SSS Circular 2024-004 / RA 11199 (Social Security Act of 2018)",
-      effectiveFrom: "2024-01-01",
-      sourceStatus: "stale",
+      source: "SSS Circular 2024-006 (SSC Res. 560-s.2024) / RA 11199 (Social Security Act of 2018)",
+      effectiveFrom: "2025-01-01",
+      sourceStatus: "official",
       notes:
-        "Superseded effective 2025-01-01 by SSS Circular 2024-006 (SSC Res. 560-s.2024): " +
-        "15% total (5% EE / 10% ER), MSC ₱5,000–₱35,000 with Mandatory Provident Fund. " +
-        "Value correction requires params/rulesetVersion bump + re-signature — DEBT-030.",
+        "15% total (5% EE / 10% ER), MSC ₱5,000–₱35,000 in ₱500 steps; EC ₱10 (MSC ≤ " +
+        "₱14,500) / ₱30 (MSC ≥ ₱15,000). The MSC slice above ₱20,000 funds the MPF " +
+        "(MySSS Pension Booster) — the pack surfaces EE/ER totals only. Reconciled " +
+        "2026-09-21, closes DEBT-030 — evidence: legal-opinions/PH-sss-msc-2026-09-16.md.",
     },
     {
       table: PH_TABLES.PHILHEALTH,
@@ -481,14 +173,16 @@ export const PH_PARAMS = {
     },
     {
       table: PH_TABLES.WAGE_REGIONS,
-      source: "DOLE Wage Order NCR-23 (RTWPB-NCR)",
-      effectiveFrom: "2023-07-16",
-      sourceStatus: "stale",
+      source: "DOLE Wage Order NCR-28 (RTWPB-NCR)",
+      effectiveFrom: "2026-09-26",
+      sourceStatus: "official",
       notes:
-        "₱610/day is the NCR-23 rate. NCR-24 (₱645, 2024-07-17), NCR-26 (₱695, 2025-07-18) and " +
-        "NCR-27 (₱755, 2026-07-25; NCR-28 pending publication effectivity) have since superseded it. " +
-        "The pre-H24 comment cited 'NCR-24' for a value that is in fact the NCR-23 rate. " +
-        "Value correction requires params/rulesetVersion bump + re-signature — DEBT-031.",
+        "₱755/day non-agriculture (₱718 agriculture, service/retail ≤15 workers, " +
+        "manufacturing <10 workers) — single ₱60 tranche over the NCR-26 baseline. " +
+        "NCR-27 (same ₱755 first tranche, 2026-07-25) is enjoined (Pasig RTC Br. 152 " +
+        "TRO/injunction); NCR-28 supersedes it from 2026-09-26 — until then the " +
+        "operative floor is NCR-26 ₱695. Monthly floor consumed as ₱755 × 22 = ₱16,610. " +
+        "Reconciled 2026-09-21, closes DEBT-031 — evidence: legal-opinions/PH-wage-ncr-2026-09-16.md.",
     },
     {
       table: PH_TABLES.PAGIBIG,
