@@ -41,7 +41,7 @@ function buildSss2025Table(): SssTableRow[] {
 const SSS_2025_TABLE: readonly SssTableRow[] = buildSss2025Table();
 
 export const PH_PARAMS = {
-  version: "2024.6", // bumped from 2024.5 after H22 Fase C Solo Parent ID validation
+  version: "2025.1", // bumped from 2024.6 — DEBT-030/031 statutory corrections (SSS Circular 2024-006 + Wage Order NCR-28)
   currency: "PHP",
 
   // BIR Withholding Tax on Compensation — Monthly (TRAIN Law).
