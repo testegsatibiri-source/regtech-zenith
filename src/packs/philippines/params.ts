@@ -64,11 +64,11 @@ export const PH_PARAMS = {
 
   // SSS stepped table (provenance: PH_SSS_MSC).
   sss: {
-    table: SSS_2024_TABLE,
+    table: SSS_2025_TABLE,
     // Legacy bounds retained for quick validation and for engines that still
     // read the range. The real MSC is resolved via the table above.
-    mscMin: 4_000,
-    mscMax: 30_000,
+    mscMin: 5_000,
+    mscMax: 35_000,
   },
 
   // PhilHealth premium (provenance: PH_PHILHEALTH).
@@ -85,14 +85,15 @@ export const PH_PARAMS = {
   },
 
   // Regional minimum wages — array-shaped from the start (H24) so B4 can add
-  // regions without refactoring provenance. NCR only today. Value ₱610 is
-  // the Wage Order NCR-23 rate and is STALE (see DEBT-031); provenance per
-  // entry. `workingDaysPerMonth` stays top-level: payroll convention shared
-  // by leave/separation daily-rate math, not a regional statutory value.
+  // regions without refactoring provenance. NCR only today. Value ₱755 is the
+  // Wage Order NCR-28 non-agriculture rate (effective 2026-09-26); provenance
+  // per entry. `workingDaysPerMonth` stays top-level: payroll convention
+  // shared by leave/separation daily-rate math, not a regional statutory
+  // value.
   wageRegions: [
     {
       region: "NCR",
-      dailyMinWage: 610,
+      dailyMinWage: 755,
       workingDaysPerMonth: 22,
     },
   ] as const,
