@@ -229,8 +229,8 @@ const D: Dict = {
     fil: "Statutory contributions (SSS, PhilHealth, Pag-IBIG)",
   },
   "ph.coverage.contrib.body": {
-    en: "Employer and employee shares computed from versioned contribution tables.",
-    fil: "Kalkulasyon ng share ng employer at employee mula sa versioned na contribution tables, na may nakatalang petsa ng bisa at pinagmulan ng bawat talahanayan.",
+    en: "Employer and employee shares computed from versioned contribution tables, with a full change history for every parameter.",
+    fil: "Kalkulasyon ng share ng employer at employee mula sa versioned na contribution tables, na may kumpletong kasaysayan ng mga pagbabago sa parameters at pinagmulan ng bawat talahanayan.",
   },
   "ph.coverage.tax.title": { en: "BIR withholding tax", fil: "BIR withholding tax" },
   "ph.coverage.tax.body": {
@@ -257,8 +257,8 @@ const D: Dict = {
   },
   "ph.coverage.filings.title": { en: "Deadlines & filings", fil: "Mga deadline at filing" },
   "ph.coverage.filings.body": {
-    en: "Filing calendar and prepared layouts for statutory submissions. Submission to government portals is done by your team, not automatically by the platform.",
-    fil: "Kalendaryo ng mga deadline at inihandang layout para sa statutory submissions. Ang aktwal na pagsusumite sa mga government portal ay ginagawa ng inyong team — hindi ito awtomatikong ipinapasa ng plataporma.",
+    en: "Filing calendar and internally generated layouts — still pending validation against the official portals. Submission to government portals is done by your team, not automatically by the platform.",
+    fil: "Kalendaryo ng mga deadline at mga layout na ginagawa sa loob ng sistema — hinihintay pa ang validation laban sa mga opisyal na portal. Ang aktwal na pagsusumite sa mga government portal ay ginagawa ng inyong team — hindi ito awtomatikong ipinapasa ng plataporma.",
   },
 
   "ph.validation.title": {
