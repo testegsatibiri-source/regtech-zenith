@@ -19,7 +19,12 @@ Contexto: a correção do DEBT-030/031 (SSS 15% / Circular 2024-006 e NCR ₱755
 - Estrutura da página, títulos, demais seções, guard-rails de strings proibidas e o teste `-ph.route.test.ts` (nenhum termo banido nas novas strings).
 - Nada no pack PH, Core ou SDK.
 
+## Confirmações pedidas antes de aplicar
+
+- **Espelho em inglês:** `/ph` renderiza via `LocaleScope lang="fil"` sem seletor de idioma; como todas as chaves `ph.*` têm `fil`, o texto `en` não aparece na página — é só fallback estrutural do dicionário. Atualizo o `en` por consistência (custo zero), mas não é bloqueante.
+- **Guard-rail:** verifiquei as strings novas contra `BANNED_MARKETING` do teste: "awtomatikong ipinapasa" não casa com "awtomatikong pagsusumite", e não há "AI " maiúsculo. O teste será executado (não apenas assumido) após a edição.
+
 ## Critério de aceite
 
 - As duas seções em `/ph` exibem o texto revisado; nenhuma promessa de atualidade de tabelas ou prontidão de filings.
-- Typecheck limpo e suíte verde.
+- Typecheck limpo e suíte verde (incluindo `-ph.route.test.ts` executado).
