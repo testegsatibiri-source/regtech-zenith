@@ -22,23 +22,29 @@ Hoje não existe documentação de conformidade. Sem mudança de código:
 2. Listar como lacunas (com ticket nomeado) o que não está coberto: registro de tratamento de dados bancários, DPO nomeado, procedimento de breach notification (NPC exige 72h).
 3. Item 8 passa de ❓ para ⚠️ documentado — veredito final exige revisão externa (mesma janela do parecer B2b).
 
-## Etapa C — UI operacional (itens 14, 15)
+## Etapa C — UI operacional e elegibilidade do piloto (itens 12, 13, 14, 15)
 
 Espelhando o que já existe para a Indonésia, sem tocar em Core/SDK/Runtime:
 
 1. Formulário de funcionário PH: campos TIN, SSS, PhilHealth, Pag-IBIG (hoje o rascunho inicia com campos indonésios). Inclui validação de formato de cada identificador.
 2. `PhSeparationPanel` na tela de separations, espelhando `IdSeparationPanel` (Arts. 297-299, twin notice, COE 3 dias, final pay 30 dias).
 3. Download dos 5 filings (BIR 1601-C, Alphalist DAT, SSS R-3, PhilHealth RF-1, Pag-IBIG MCRF) pela UI, com SHA-256 visível ao lado de cada arquivo.
-4. Testes de rota/UI nos mesmos moldes dos existentes.
+4. **Filtro de elegibilidade no formulário de piloto da landing /ph** — a restrição B4/B6 vira escolha informada, não surpresa:
+   - Aviso textual em Filipino acima do formulário: o piloto cobre apenas funcionários na região NCR e não calcula horas extras.
+   - Dois campos obrigatórios: "Todos os funcionários estão em NCR?" e "Há horas extras na folha?".
+   - Se a resposta indicar fora de NCR ou com overtime, o formulário aceita o envio mas mostra claramente que o piloto ainda não cobre esse cenário; a resposta é gravada junto com o pedido para triagem.
+   - Requer colunas novas na tabela `pilot_requests` e nova versão de consentimento PH (o texto do consentimento muda).
+5. Testes de rota/UI nos mesmos moldes dos existentes, incluindo guard-rail de idioma.
 
-Resultado: itens 14 e 15 passam de ❌ para ✅ "reivindicado".
+Resultado: itens 14 e 15 passam de ❌ para ✅ "reivindicado"; itens 12 e 13 continuam ❌ em cobertura, mas deixam de ser risco oculto para o participante.
 
 ## Etapa D — Bloqueios externos (itens 4, 5, 11 — B2b, B1)
 
 Não são fecháveis por código; este plano apenas os formaliza:
 
 1. **B2b (item 4):** contratar advogado filipino com nº IBP para revisar as 5 tabelas estatutárias + lógica de cálculo. O parecer entra em `docs/governance/legal-opinions/` com sign-off duplo. Aproveitar a mesma contratação para revisar o documento da Etapa B (RA 10173).
-2. **B1 (itens 5, 11):** só se fecha com piloto real — ciclo completo folha → filings → upload real nos 4 portais, registrando aceite/rejeição de cada layout (cada rejeição vira ticket com dono). Captação do piloto via landing /ph já publicada.
+2. **B1 (itens 5, 11):** só se fecha com piloto real — ciclo completo folha → filings → upload real nos 4 portais, registrando aceite/rejeição de cada layout (cada rejeição vira ticket com dono).
+3. **Pré-requisito de captação — /ph ainda NÃO está publicada.** Verificado nesta sessão: `uboardasia.com/ph` responde 404; a landing existe apenas no preview. Não há porta de entrada real para pilotos hoje. Publicar exige sua ordem explícita, e o momento correto é depois da Etapa A (pack re-assinado) e da Etapa C (aviso de elegibilidade no formulário) — publicar antes exporia uma página que convida pilotos sem a restrição NCR/overtime declarada.
 
 ## Etapa E — Decisões contratuais (itens 16, 17)
 
