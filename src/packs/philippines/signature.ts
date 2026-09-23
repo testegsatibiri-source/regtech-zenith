@@ -1,4 +1,6 @@
-// H22 Phase C — Dual-signature block for the Philippines pack v1.6.0 (PH-2024.6).
+// H24 Etapa A — Dual-signature block for the Philippines pack v1.7.0 (PH-2025.1).
+// Re-signed 2026-09-23 after the DEBT-030 (SSS Circular 2024-006) and DEBT-031
+// (Wage Order NCR-28) statutory corrections.
 // Signatures are computed over the canonical manifest bytes
 // (country, name, currency, version, rulesetVersion, interfaceVersion,
 // commercialReady) — see @/packs/indonesia/params/canonical-manifest.
@@ -9,18 +11,18 @@ import type { SignatureBlock } from "@/sdk/manifest";
 export const PH_SIGNATURE_BLOCK: SignatureBlock = {
   author: {
     publisher: "uboard-ph",
-    keyId: "b12f6ea4fd9e5a9157a4532754ecc89a4c79ec548ed53eae6308ec074a082432",
+    keyId: "2ebf509a713b5a4f6a5c5b3666c59d50dba610ddf15a2f812384a42ec77a0a5f",
     algorithm: "Ed25519",
     signature:
-      "BFDLfGFWVMykPu0cHydyFaK5fqB+87glzY0dvWllYyGB7muT9LQztfKBOaBEYsTXt88t3lGkmX8f274Ypb3jCg==",
-    ts: "2026-08-28T00:15:21Z",
+      "pvWRX7TIYDCUQK7cVAXO9eR38HwF4fOoDZE/x2lsExXcJxNlZoj8+i2q106ShGPoXdnaFbbyoq6lQGz2bYPhDw==",
+    ts: "2026-09-23T01:02:33Z",
   },
   countersign: {
     publisher: "platform-cto-ph",
-    keyId: "e9aad9de922b46539a0ea9e7674f37b218dba8ce1b61c5272155331b0fd94e93",
+    keyId: "fc56acd8873fc3599e63232d41e4ade1943b1f6e68e6179336bd52d090872964",
     algorithm: "Ed25519",
     signature:
-      "pDweqG1vF02qzvms3pr460lKvYDKTRzc4eaYWta/qf6fOWrrMR6D7kkRdAHghEZ3EWRxGHv6XP0TOESq5mxNBQ==",
-    ts: "2026-08-28T00:15:21Z",
+      "ii1AE9CshYwf4EIzcXpJTlo1Gi8Owh37YBrzuE1Bvg0IqFU5nCx8A5ub/rMyLfp34o6qjKaylWIO/qhjGTqRCQ==",
+    ts: "2026-09-23T01:02:33Z",
   },
 };
