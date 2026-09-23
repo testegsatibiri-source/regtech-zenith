@@ -93,7 +93,7 @@ const block = {
   },
 };
 
-console.log("// === PH v1.6.0 signature block ===");
+console.log("// === PH v1.7.0 signature block ===");
 console.log(JSON.stringify(block, null, 2));
 console.log("\n// === Trust store public keys (INSERT or UPDATE) ===");
 console.log(`-- author: uboard-ph, keyId=${block.author.keyId}`);
