@@ -19,8 +19,8 @@ const manifest: CountryManifest = {
   country: "PH",
   name: "Philippines",
   currency: "PHP",
-  version: "1.6.0",
-  rulesetVersion: "PH-2024.6",
+  version: "1.7.0",
+  rulesetVersion: "PH-2025.1",
   interfaceVersion: "1.0.0",
   engines: [
     "payroll",
