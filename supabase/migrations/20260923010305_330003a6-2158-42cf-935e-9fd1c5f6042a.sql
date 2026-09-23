@@ -1,0 +1,4 @@
+-- Etapa A: rotate PH pack signing keys for v1.7.0 / PH-2025.1 (DEBT-030/031 corrections).
+UPDATE public.pack_signing_keys SET active = false WHERE key_id IN ('b12f6ea4fd9e5a9157a4532754ecc89a4c79ec548ed53eae6308ec074a082432', 'e9aad9de922b46539a0ea9e7674f37b218dba8ce1b61c5272155331b0fd94e93');
+INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'uboard-ph', 'Lr9QmnE7Wk9qXFs2ZsWdUNumEN3xWi+BI4SkLsd6Cl8=', 'ed25519', ARRAY['sign']::text[], 'db', true, '2ebf509a713b5a4f6a5c5b3666c59d50dba610ddf15a2f812384a42ec77a0a5f');
+INSERT INTO public.pack_signing_keys (id, publisher, public_key, algo, capabilities, provider, active, key_id) VALUES (gen_random_uuid(), 'platform-cto-ph', '/Fas2Ic/w1meYyMtQeSt4ZQ7H25o5heTNr1S0JCHKWQ=', 'ed25519', ARRAY['sign']::text[], 'db', true, 'fc56acd8873fc3599e63232d41e4ade1943b1f6e68e6179336bd52d090872964');
