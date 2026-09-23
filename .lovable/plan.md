@@ -33,7 +33,7 @@ Espelhando o que já existe para a Indonésia, sem tocar em Core/SDK/Runtime:
    - Aviso textual em Filipino acima do formulário: o piloto cobre apenas funcionários na região NCR e não calcula horas extras.
    - Dois campos obrigatórios: "Todos os funcionários estão em NCR?" e "Há horas extras na folha?".
    - Se a resposta indicar fora de NCR ou com overtime, o formulário aceita o envio mas mostra claramente que o piloto ainda não cobre esse cenário; a resposta é gravada junto com o pedido para triagem.
-   - Requer colunas novas na tabela `pilot_requests` e nova versão de consentimento PH (o texto do consentimento muda).
+   - Requer colunas novas na tabela `pilot_requests` e nova versão de consentimento PH (o texto do consentimento muda): **`ph-pilot-2026-09-23`**, substituindo `ph-pilot-2026-09-17` em `CONSENT_VERSIONS` e registrada na migração.
 5. Testes de rota/UI nos mesmos moldes dos existentes, incluindo guard-rail de idioma.
 
 Resultado: itens 14 e 15 passam de ❌ para ✅ "reivindicado"; itens 12 e 13 continuam ❌ em cobertura, mas deixam de ser risco oculto para o participante.
