@@ -65,6 +65,8 @@ export function PhPilotForm() {
           role: form.role as (typeof roles)[number],
           consent: form.consent,
           country: "PH" as const,
+          workforceAllNcr: form.workforceAllNcr === "yes",
+          hasOvertime: form.hasOvertime === "yes",
         },
       });
       setStatus("success");
@@ -75,7 +77,10 @@ export function PhPilotForm() {
         employeeRange: "",
         role: "",
         consent: false,
+        workforceAllNcr: "",
+        hasOvertime: "",
       });
+
     } catch {
       setStatus("error");
     }
