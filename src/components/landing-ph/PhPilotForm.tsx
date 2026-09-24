@@ -173,7 +173,43 @@ export function PhPilotForm() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>{t("ph.form.eligibility.ncr")}</Label>
+                  <Select
+                    value={form.workforceAllNcr}
+                    onValueChange={(v) => setForm((s) => ({ ...s, workforceAllNcr: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">{t("ph.form.eligibility.yes")}</SelectItem>
+                      <SelectItem value="no">{t("ph.form.eligibility.no")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("ph.form.eligibility.overtime")}</Label>
+                  <Select
+                    value={form.hasOvertime}
+                    onValueChange={(v) => setForm((s) => ({ ...s, hasOvertime: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">{t("ph.form.eligibility.yes")}</SelectItem>
+                      <SelectItem value="no">{t("ph.form.eligibility.no")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {outOfScope && (
+                  <p className="rounded-md bg-warning/10 p-3 text-sm text-warning-foreground">
+                    {t("ph.form.eligibility.warning")}
+                  </p>
+                )}
                 <div className="flex items-start gap-3">
+
                   <Checkbox
                     id="ph-consent"
                     checked={form.consent}
