@@ -9,8 +9,9 @@ import { sha256Hex } from "@/lib/hashing";
 
 const CONSENT_VERSIONS = {
   ID: "id-pilot-2026-09-08",
-  PH: "ph-pilot-2026-09-17",
+  PH: "ph-pilot-2026-09-23",
 } as const;
+
 
 const LANDING_SOURCES = {
   ID: "/id",
@@ -38,7 +39,12 @@ const submitSchema = z.object({
   // Which landing the request came from. Defaults to ID for backwards
   // compatibility with the existing Indonesia form payload.
   country: z.enum(["ID", "PH"]).default("ID"),
+  // PH pilot scope screening (B4/B6 are out of scope for the pilot). Optional
+  // so the ID payload stays valid; stored as NULL when not answered.
+  workforceAllNcr: z.boolean().optional(),
+  hasOvertime: z.boolean().optional(),
 });
+
 
 function extractIp(request: Request): string {
   const h = request.headers;
@@ -108,7 +114,10 @@ export const submitPilotRequest = createServerFn({ method: "POST" })
         source: LANDING_SOURCES[country],
         ip_hash: ipHash,
         status: "new",
+        workforce_all_ncr: data.workforceAllNcr ?? null,
+        has_overtime: data.hasOvertime ?? null,
       })
+
       .select("id")
       .single();
 
