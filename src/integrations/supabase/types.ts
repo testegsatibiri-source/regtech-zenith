@@ -1678,6 +1678,7 @@ export type Database = {
           email: string
           employee_range: string
           full_name: string
+          has_overtime: boolean | null
           id: string
           ip_hash: string | null
           notes: string | null
@@ -1685,6 +1686,7 @@ export type Database = {
           source: string
           status: string
           updated_at: string
+          workforce_all_ncr: boolean | null
         }
         Insert: {
           company_name: string
@@ -1694,6 +1696,7 @@ export type Database = {
           email: string
           employee_range: string
           full_name: string
+          has_overtime?: boolean | null
           id?: string
           ip_hash?: string | null
           notes?: string | null
@@ -1701,6 +1704,7 @@ export type Database = {
           source?: string
           status?: string
           updated_at?: string
+          workforce_all_ncr?: boolean | null
         }
         Update: {
           company_name?: string
@@ -1710,6 +1714,7 @@ export type Database = {
           email?: string
           employee_range?: string
           full_name?: string
+          has_overtime?: boolean | null
           id?: string
           ip_hash?: string | null
           notes?: string | null
@@ -1717,6 +1722,7 @@ export type Database = {
           source?: string
           status?: string
           updated_at?: string
+          workforce_all_ncr?: boolean | null
         }
         Relationships: []
       }
