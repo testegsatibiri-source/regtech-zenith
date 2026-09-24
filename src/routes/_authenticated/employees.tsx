@@ -72,7 +72,7 @@ function blank(companyId: string, term: PackTerminology): Emp {
     base_salary: 0,
     marital_status: term.taxStatus === "PTKP" ? "TK/0" : "S",
     religion: null,
-    country_metadata: Object.fromEntries(term.identifiers.map((f) => [f.key, ""])),
+    country_metadata: Object.fromEntries(term.identifiers.map((f) => [f.key, ""] as const)),
   };
 }
 
