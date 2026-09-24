@@ -15,7 +15,7 @@ import { useActivePack } from "@/lib/packs/useActivePack";
 import { MARITAL_STATUS, RELIGIONS } from "@/lib/countryPacks";
 import { evaluateEmployee, scoreFindings } from "@/lib/engines/compliance";
 import { formatCurrency } from "@/lib/format";
-import { terminologyFor } from "@/lib/packs/terminology";
+import { terminologyFor, type PackTerminology } from "@/lib/packs/terminology";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +100,7 @@ function Employees() {
   if (!companyId) return <p className="text-muted-foreground">Create a company first.</p>;
 
   function edit(e?: Emp) {
-    setDraft(e ? { ...e, country_metadata: { ...(e.country_metadata ?? {}) } } : blank(companyId!));
+    setDraft(e ? { ...e, country_metadata: { ...(e.country_metadata ?? {}) } } : blank(companyId!, t));
     setOpen(true);
   }
 
