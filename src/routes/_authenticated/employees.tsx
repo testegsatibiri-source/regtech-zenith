@@ -61,18 +61,21 @@ type Emp = {
   country_metadata: Record<string, unknown>;
 };
 
-function blank(companyId: string): Emp {
+// H24 — the blank draft follows the active Country Pack terminology instead of
+// hardcoded Indonesian identifiers (PH starts with TIN/SSS/PhilHealth/Pag-IBIG).
+function blank(companyId: string, term: PackTerminology): Emp {
   return {
     company_id: companyId,
     full_name: "",
     position: "",
     department: "",
-    base_salary: 5000000,
-    marital_status: "TK/0",
-    religion: "Islam",
-    country_metadata: { nik: "", npwp: "", bpjs_kesehatan: "", bpjs_ketenagakerjaan: "" },
+    base_salary: 0,
+    marital_status: term.taxStatus === "PTKP" ? "TK/0" : "S",
+    religion: null,
+    country_metadata: Object.fromEntries(term.identifiers.map((f) => [f.key, ""])),
   };
 }
+
 
 function Employees() {
   const { companyId } = useCompany();
