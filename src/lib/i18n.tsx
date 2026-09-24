@@ -316,6 +316,29 @@ const D: Dict = {
     en: "Could not submit. Please try again.",
     fil: "Hindi naipadala. Pakisubukan muli.",
   },
+  "ph.form.eligibility.title": {
+    en: "Pilot scope screening",
+    fil: "Screening ng saklaw ng pilot",
+  },
+  "ph.form.eligibility.notice": {
+    en: "The current pilot covers employees inside the NCR region and payrolls without overtime computation. Requests outside this scope are welcome, but the pack does not cover that scenario yet.",
+    fil: "Ang kasalukuyang pilot ay sumasaklaw lamang sa mga empleyadong nasa rehiyon ng NCR at sa payroll na walang kalkulasyon ng overtime. Tinatanggap pa rin ang mga request sa labas ng saklaw na ito, ngunit hindi pa sakop ng pack ang ganoong senaryo.",
+  },
+  "ph.form.eligibility.ncr": {
+    en: "Are all employees located in the NCR region?",
+    fil: "Nasa rehiyon ba ng NCR ang lahat ng inyong empleyado?",
+  },
+  "ph.form.eligibility.overtime": {
+    en: "Does your payroll include overtime?",
+    fil: "May overtime ba sa inyong payroll?",
+  },
+  "ph.form.eligibility.yes": { en: "Yes", fil: "Oo" },
+  "ph.form.eligibility.no": { en: "No", fil: "Hindi" },
+  "ph.form.eligibility.warning": {
+    en: "Based on your answers, the pilot does not cover this scenario yet. We will record the request for triage and let you know when regional wage tables or overtime computation become available.",
+    fil: "Batay sa inyong mga sagot, hindi pa sakop ng pilot ang senaryong ito. Itatala namin ang request para sa triage at ipaaalam namin kapag handa na ang regional wage tables o ang kalkulasyon ng overtime.",
+  },
+
 
   "ph.footer.tagline": {
     en: "B2B infrastructure for payroll compliance.",
