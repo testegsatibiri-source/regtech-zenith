@@ -33,8 +33,12 @@ export function PhPilotForm() {
     employeeRange: "",
     role: "",
     consent: false,
+    workforceAllNcr: "",
+    hasOvertime: "",
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  const outOfScope = form.workforceAllNcr === "no" || form.hasOvertime === "yes";
 
   const canSubmit =
     form.fullName.trim() &&
@@ -42,7 +46,10 @@ export function PhPilotForm() {
     form.companyName.trim() &&
     form.employeeRange &&
     form.role &&
+    form.workforceAllNcr &&
+    form.hasOvertime &&
     form.consent;
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
