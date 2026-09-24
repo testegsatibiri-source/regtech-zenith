@@ -102,6 +102,13 @@ export function PhPilotForm() {
               <p className="text-center text-green-600">{t("ph.form.success")}</p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+                  <p className="font-medium">{t("ph.form.eligibility.title")}</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {t("ph.form.eligibility.notice")}
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="ph-fullName">{t("ph.form.fullName")}</Label>
                   <Input
