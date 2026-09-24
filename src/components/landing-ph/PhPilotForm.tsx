@@ -33,8 +33,12 @@ export function PhPilotForm() {
     employeeRange: "",
     role: "",
     consent: false,
+    workforceAllNcr: "",
+    hasOvertime: "",
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  const outOfScope = form.workforceAllNcr === "no" || form.hasOvertime === "yes";
 
   const canSubmit =
     form.fullName.trim() &&
@@ -42,7 +46,10 @@ export function PhPilotForm() {
     form.companyName.trim() &&
     form.employeeRange &&
     form.role &&
+    form.workforceAllNcr &&
+    form.hasOvertime &&
     form.consent;
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +65,8 @@ export function PhPilotForm() {
           role: form.role as (typeof roles)[number],
           consent: form.consent,
           country: "PH" as const,
+          workforceAllNcr: form.workforceAllNcr === "yes",
+          hasOvertime: form.hasOvertime === "yes",
         },
       });
       setStatus("success");
@@ -68,7 +77,10 @@ export function PhPilotForm() {
         employeeRange: "",
         role: "",
         consent: false,
+        workforceAllNcr: "",
+        hasOvertime: "",
       });
+
     } catch {
       setStatus("error");
     }
@@ -90,6 +102,13 @@ export function PhPilotForm() {
               <p className="text-center text-green-600">{t("ph.form.success")}</p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+                  <p className="font-medium">{t("ph.form.eligibility.title")}</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {t("ph.form.eligibility.notice")}
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="ph-fullName">{t("ph.form.fullName")}</Label>
                   <Input
@@ -154,7 +173,43 @@ export function PhPilotForm() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>{t("ph.form.eligibility.ncr")}</Label>
+                  <Select
+                    value={form.workforceAllNcr}
+                    onValueChange={(v) => setForm((s) => ({ ...s, workforceAllNcr: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">{t("ph.form.eligibility.yes")}</SelectItem>
+                      <SelectItem value="no">{t("ph.form.eligibility.no")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("ph.form.eligibility.overtime")}</Label>
+                  <Select
+                    value={form.hasOvertime}
+                    onValueChange={(v) => setForm((s) => ({ ...s, hasOvertime: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">{t("ph.form.eligibility.yes")}</SelectItem>
+                      <SelectItem value="no">{t("ph.form.eligibility.no")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {outOfScope && (
+                  <p className="rounded-md bg-warning/10 p-3 text-sm text-warning-foreground">
+                    {t("ph.form.eligibility.warning")}
+                  </p>
+                )}
                 <div className="flex items-start gap-3">
+
                   <Checkbox
                     id="ph-consent"
                     checked={form.consent}
