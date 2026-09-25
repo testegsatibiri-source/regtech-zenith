@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { IdSeparationPanel } from "@/components/separations/IdSeparationPanel";
+import { PhSeparationPanel } from "@/components/separations/PhSeparationPanel";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/separations")({
@@ -121,7 +123,10 @@ function SeparationsPage() {
 
       {activePack.code === "ID" ? (
         <IdSeparationPanel companyId={companyId} />
+      ) : activePack.code === "PH" ? (
+        <PhSeparationPanel companyId={companyId} />
       ) : unsupported ? (
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
