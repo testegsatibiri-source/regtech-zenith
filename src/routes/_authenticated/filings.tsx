@@ -309,9 +309,15 @@ function FilingsPage() {
                     <p className="text-sm text-muted-foreground">{f.form_title}</p>
                     <p className="mt-1 font-mono text-xs text-muted-foreground">
                       {f.period_month ? `${MONTHS[f.period_month - 1]} ` : ""}
-                      {f.period_year} · {f.row_count} row(s) · sha256{" "}
-                      {f.artifact_checksum.slice(0, 16)}…
+                      {f.period_year} · {f.row_count} row(s)
                     </p>
+                    <p
+                      className="mt-1 break-all font-mono text-[11px] text-muted-foreground"
+                      title="SHA-256 of the generated artifact"
+                    >
+                      sha256 {f.artifact_checksum}
+                    </p>
+
                     {f.submission_reference && (
                       <p className="mt-1 text-xs text-success">
                         Receipt {f.submission_reference}
