@@ -2,6 +2,8 @@ import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { phStatusLabel, phStatusVariant } from "./statusLabels";
+import { GateSummary } from "@/components/assurance/GateSummary";
+import { evaluatePh } from "@/lib/assurance/registers/ph";
 
 interface PackSnapshot {
   tier?: string;
@@ -39,6 +41,7 @@ export function PhStatus({ pack }: { pack: PackSnapshot }) {
               </div>
             </div>
             <p className="text-muted-foreground">{t("ph.status.body")}</p>
+            <GateSummary evaluation={evaluatePh(new Date().toISOString().slice(0, 10))} />
           </CardContent>
         </Card>
       </div>
