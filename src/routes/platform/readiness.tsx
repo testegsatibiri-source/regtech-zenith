@@ -5,6 +5,8 @@ import { getReadiness } from "@/lib/platform/readiness.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { GateSummary } from "@/components/assurance/GateSummary";
+import { evaluatePh } from "@/lib/assurance/registers/ph";
 
 export const Route = createFileRoute("/platform/readiness")({
   component: ReadinessPage,
@@ -115,6 +117,15 @@ function ReadinessPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>PH assurance gates (H20–H24)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GateSummary evaluation={evaluatePh(new Date().toISOString())} />
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
