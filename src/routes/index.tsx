@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CountryPackCard, RoadmapPackCard } from "@/components/packs/CountryPackCard";
+import { CountryAssuranceCards } from "@/components/assurance/CountryAssuranceCards";
 import type { CatalogEntry } from "@/lib/packs/catalog";
 import { getPacksPageData } from "@/lib/packs/packs.functions";
 import type { AvailablePack } from "@/lib/packs/onboarding-contract";
@@ -187,6 +188,18 @@ function Landing() {
             title="AI compliance monitoring"
             desc="Detect anomalies before they become compliance risks."
           />
+        </div>
+      </section>
+
+      {/* Assurance status per jurisdiction */}
+      <section id="assurance" className="mx-auto max-w-6xl px-4 py-20">
+        <SectionTitle
+          eyebrow="Assurance"
+          title="Validation status, derived from evidence"
+          sub="Each jurisdiction is assessed against its own evidence register and gates. No combined score is published."
+        />
+        <div className="mt-10">
+          <CountryAssuranceCards />
         </div>
       </section>
 
