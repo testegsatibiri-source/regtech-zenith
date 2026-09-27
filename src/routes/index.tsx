@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CountryPackCard, RoadmapPackCard } from "@/components/packs/CountryPackCard";
+import { CountryAssuranceCards } from "@/components/assurance/CountryAssuranceCards";
 import type { CatalogEntry } from "@/lib/packs/catalog";
 import { getPacksPageData } from "@/lib/packs/packs.functions";
 import type { AvailablePack } from "@/lib/packs/onboarding-contract";
@@ -76,21 +77,21 @@ function Landing() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
           <div>
             <Badge className="mb-5 border-white/20 bg-white/10 text-white hover:bg-white/10">
-              Global compliance infrastructure
+              Homologation Pilot Program
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-tight md:text-5xl">
-              Payroll compliance infrastructure, built for every jurisdiction.
+              Payroll &amp; Compliance for Asia, under controlled validation
             </h1>
             <p className="mt-5 max-w-lg text-white/70">
-              One secure global core. Independent, signed country packs. Payroll, tax and statutory
-              compliance delivered as versioned engines — so a change in the law is a parameter
-              release, not a migration project.
+              Validate payroll and compliance operations through independent Country Packs for
+              Indonesia and the Philippines, with controlled access, defined validation scope, and
+              auditable assurance.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link to="/packs">
-                  Explore Country Packs <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+                <a href="#contact">
+                  Apply for the Pilot Program <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
               </Button>
               <Button
                 asChild
@@ -98,7 +99,7 @@ function Landing() {
                 variant="outline"
                 className="border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white"
               >
-                <a href="#contact">Talk to us</a>
+                <Link to="/packs">Explore Country Packs</Link>
               </Button>
             </div>
           </div>
@@ -187,6 +188,18 @@ function Landing() {
             title="AI compliance monitoring"
             desc="Detect anomalies before they become compliance risks."
           />
+        </div>
+      </section>
+
+      {/* Assurance status per jurisdiction */}
+      <section id="assurance" className="mx-auto max-w-6xl px-4 py-20">
+        <SectionTitle
+          eyebrow="Assurance"
+          title="Validation status, derived from evidence"
+          sub="Each jurisdiction is assessed against its own evidence register and gates. No combined score is published."
+        />
+        <div className="mt-10">
+          <CountryAssuranceCards />
         </div>
       </section>
 
