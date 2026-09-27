@@ -2,6 +2,8 @@ import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { idStatusLabel, idStatusVariant } from "./statusLabels";
+import { GateSummary } from "@/components/assurance/GateSummary";
+import { evaluateId } from "@/lib/assurance/registers/id";
 
 interface PackSnapshot {
   tier?: string;
@@ -39,6 +41,7 @@ export function IdStatus({ pack }: { pack: PackSnapshot }) {
               </div>
             </div>
             <p className="text-muted-foreground">{t("id.status.body")}</p>
+            <GateSummary evaluation={evaluateId(new Date().toISOString().slice(0, 10))} />
           </CardContent>
         </Card>
       </div>

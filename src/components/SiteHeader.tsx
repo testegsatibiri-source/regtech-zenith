@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { Button } from "@/components/ui/button";
+import { PilotNoticeBar } from "@/components/PilotNoticeBar";
 
 /**
  * Global shell header. Global surfaces are English-only by decision, so no
@@ -12,6 +13,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-lg">
+      <PilotNoticeBar />
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
