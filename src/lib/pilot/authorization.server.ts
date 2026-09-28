@@ -130,3 +130,39 @@ export async function logPilotAudit(entry: {
     payload: (entry.payload ?? {}) as never,
   });
 }
+
+/**
+ * Mark an approved request as converted exactly once. Re-running it for an
+ * already converted request is a no-op, so a user creating a second company
+ * never rewrites the original conversion evidence.
+ */
+export async function markPilotRequestConverted(
+  requestId: string,
+  companyId: string,
+  actorId: string,
+): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("pilot_requests")
+    .update({
+      status: "converted",
+      converted_company_id: companyId,
+      converted_at: new Date().toISOString(),
+    })
+    .eq("id", requestId)
+    .eq("status", "approved")
+    .select("id")
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) return; // already converted — idempotent
+
+  await logPilotAudit({
+    actor: actorId,
+    action: "pilot_request.converted",
+    target: requestId,
+    country: null,
+    oldValue: { status: "approved" },
+    newValue: { status: "converted", converted_company_id: companyId },
+  });
+}
