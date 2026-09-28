@@ -1671,10 +1671,18 @@ export type Database = {
       }
       pilot_requests: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          authorized_country:
+            | Database["public"]["Enums"]["pilot_authorized_country"]
+            | null
           company_name: string
           consent: boolean
           consent_version: string
+          converted_at: string | null
+          converted_company_id: string | null
           created_at: string
+          decision_reason: string | null
           email: string
           employee_range: string
           full_name: string
@@ -1682,17 +1690,26 @@ export type Database = {
           id: string
           ip_hash: string | null
           notes: string | null
+          pilot_expires_at: string | null
           role: string
           source: string
-          status: string
+          status: Database["public"]["Enums"]["pilot_request_status"]
           updated_at: string
           workforce_all_ncr: boolean | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          authorized_country?:
+            | Database["public"]["Enums"]["pilot_authorized_country"]
+            | null
           company_name: string
           consent: boolean
           consent_version: string
+          converted_at?: string | null
+          converted_company_id?: string | null
           created_at?: string
+          decision_reason?: string | null
           email: string
           employee_range: string
           full_name: string
@@ -1700,17 +1717,26 @@ export type Database = {
           id?: string
           ip_hash?: string | null
           notes?: string | null
+          pilot_expires_at?: string | null
           role: string
           source?: string
-          status?: string
+          status?: Database["public"]["Enums"]["pilot_request_status"]
           updated_at?: string
           workforce_all_ncr?: boolean | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          authorized_country?:
+            | Database["public"]["Enums"]["pilot_authorized_country"]
+            | null
           company_name?: string
           consent?: boolean
           consent_version?: string
+          converted_at?: string | null
+          converted_company_id?: string | null
           created_at?: string
+          decision_reason?: string | null
           email?: string
           employee_range?: string
           full_name?: string
@@ -1718,13 +1744,22 @@ export type Database = {
           id?: string
           ip_hash?: string | null
           notes?: string | null
+          pilot_expires_at?: string | null
           role?: string
           source?: string
-          status?: string
+          status?: Database["public"]["Enums"]["pilot_request_status"]
           updated_at?: string
           workforce_all_ncr?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pilot_requests_converted_company_id_fkey"
+            columns: ["converted_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_audit_log: {
         Row: {
@@ -2945,6 +2980,10 @@ export type Database = {
       is_uada_reader: { Args: never; Returns: boolean }
       is_uada_writer: { Args: never; Returns: boolean }
       owns_company: { Args: { _company_id: string }; Returns: boolean }
+      pilot_authorizes_country: {
+        Args: { _country: string; _email: string }
+        Returns: boolean
+      }
       uada_start_reindex: {
         Args: {
           _commit_sha: string
@@ -2992,6 +3031,13 @@ export type Database = {
         | "deprecated"
         | "yanked"
         | "archived"
+      pilot_authorized_country: "ID" | "PH" | "BOTH"
+      pilot_request_status:
+        | "new"
+        | "qualified"
+        | "approved"
+        | "converted"
+        | "rejected"
       regulatory_parameter_status:
         | "draft"
         | "review"
@@ -3157,6 +3203,14 @@ export const Constants = {
         "deprecated",
         "yanked",
         "archived",
+      ],
+      pilot_authorized_country: ["ID", "PH", "BOTH"],
+      pilot_request_status: [
+        "new",
+        "qualified",
+        "approved",
+        "converted",
+        "rejected",
       ],
       regulatory_parameter_status: [
         "draft",
