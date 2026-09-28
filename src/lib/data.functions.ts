@@ -36,6 +36,34 @@ export const createCompany = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => companySchema.parse(d))
   .handler(async ({ data, context }) => {
+    // --- Pilot authorization boundary -------------------------------------
+    // The platform is in homologation: only approved Pilot Program
+    // participants (or platform staff) may create a workspace, and only in
+    // the jurisdiction their approval covers. This runs BEFORE any write and
+    // is the real control — the UI gate is only UX. A client that calls this
+    // RPC directly, or signs in through Google, hits exactly this check.
+    const { authorizePilotCountry, logPilotAudit } = await import(
+      "@/lib/pilot/authorization.server"
+    );
+    const { DENIAL_MESSAGES } = await import("@/lib/pilot/authorization");
+
+    const auth = await authorizePilotCountry({
+      userId: context.userId,
+      claims: context.claims as unknown as Record<string, unknown>,
+      country: data.country_code,
+    });
+
+    if (!auth.allowed) {
+      await logPilotAudit({
+        actor: context.userId,
+        action: "pilot_request.company_creation_denied",
+        target: auth.decision.requestId,
+        country: data.country_code,
+        payload: { reason: auth.decision.reason },
+      });
+      throw new Error(DENIAL_MESSAGES[auth.decision.reason]);
+    }
+
     // Re-validate availability at submit time (pack may have degraded) and
     // derive the currency from the pack manifest — never from the client.
     const { assertPackAvailable } = await import("@/lib/packs/loader.server");
@@ -47,6 +75,22 @@ export const createCompany = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
+
+    // Idempotent conversion: an approved request becomes `converted` once, and
+    // keeps its entitlement (converted still authorizes the same country).
+    if (auth.via === "pilot") {
+      const { markPilotRequestConverted } = await import("@/lib/pilot/authorization.server");
+      await markPilotRequestConverted(auth.requestId, row.id, context.userId);
+    }
+
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_request.company_created",
+      target: auth.via === "pilot" ? auth.requestId : null,
+      country: data.country_code,
+      payload: { via: auth.via, companyId: row.id },
+    });
+
     return row;
   });
 

@@ -155,37 +155,51 @@ async function auditView(actorId: string, requestId: string): Promise<void> {
   });
 }
 
+// `pilot_requests` is deny-all under RLS (no row is reachable by anon or
+// authenticated). Reads therefore run with the service role *after* the
+// caller's platform role has been verified server-side, and every read is
+// written to the audit trail.
+const PILOT_STATUSES = ["new", "qualified", "approved", "converted", "rejected"] as const;
+
 const listQuerySchema = z.object({
-  limit: z.number().int().min(1).max(100).default(50),
-  status: z.enum(["new", "contacted", "qualified", "converted", "closed"]).optional(),
+  limit: z.number().int().min(1).max(200).default(50),
+  status: z.enum(PILOT_STATUSES).optional(),
+  country: z.enum(["ID", "PH"]).optional(),
 });
 
 export const listPilotRequests = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => listQuerySchema.parse(d))
   .handler(async ({ data, context }) => {
-    const allowed = await hasAnyPlatformRole(context.supabase as never, context.userId);
-    if (!allowed) throw new Error("Forbidden");
+    const { userHasAnyRole, PLATFORM_ROLES, logPilotAudit } = await import(
+      "@/lib/pilot/authorization.server"
+    );
+    if (!(await userHasAnyRole(context.userId, PLATFORM_ROLES))) {
+      throw new Error("Forbidden");
+    }
 
-    let q = context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q = supabaseAdmin
       .from("pilot_requests")
       .select(
-        "id, full_name, email, company_name, employee_range, role, status, source, created_at",
+        "id, full_name, email, company_name, employee_range, role, status, source, created_at, " +
+          "approved_at, approved_by, authorized_country, pilot_expires_at, decision_reason, " +
+          "converted_company_id, converted_at, workforce_all_ncr, has_overtime, consent_version, notes",
       )
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.status) q = q.eq("status", data.status);
+    if (data.country) q = q.eq("source", LANDING_SOURCES[data.country]);
 
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
 
-    await context.supabase.from("platform_audit_log").insert({
+    await logPilotAudit({
       actor: context.userId,
       action: "pilot_request.list",
       target: "pilot_requests",
-      country_code: "ID",
-      component: "pilot.functions",
-      payload: { scope: "list", status: data.status ?? null },
+      country: data.country ?? null,
+      payload: { status: data.status ?? null, count: (rows ?? []).length },
     });
 
     return rows ?? [];
@@ -197,10 +211,13 @@ export const getPilotRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => byIdSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const allowed = await hasAnyPlatformRole(context.supabase as never, context.userId);
-    if (!allowed) throw new Error("Forbidden");
+    const { userHasAnyRole, PLATFORM_ROLES } = await import("@/lib/pilot/authorization.server");
+    if (!(await userHasAnyRole(context.userId, PLATFORM_ROLES))) {
+      throw new Error("Forbidden");
+    }
 
-    const { data: row, error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
       .from("pilot_requests")
       .select("*")
       .eq("id", data.id)
@@ -208,6 +225,191 @@ export const getPilotRequest = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await auditView(context.userId, data.id);
+
+    return row;
+  });
+
+// ---------------------------------------------------------------------------
+// Lifecycle mutations.
+//
+// Only `platform_admin` / `platform_operator` may move a request. The actor is
+// ALWAYS derived from the verified session — `approved_by` is never accepted
+// from the client. Every transition is written to `platform_audit_log` with
+// the previous and new state.
+// ---------------------------------------------------------------------------
+
+async function requireDecisionRole(userId: string): Promise<void> {
+  const { userHasAnyRole, PILOT_DECISION_ROLES } = await import(
+    "@/lib/pilot/authorization.server"
+  );
+  if (!(await userHasAnyRole(userId, PILOT_DECISION_ROLES))) {
+    throw new Error("Forbidden");
+  }
+}
+
+async function loadRequest(id: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("pilot_requests")
+    .select("id, status, authorized_country, pilot_expires_at, source")
+    .eq("id", id)
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+const approveSchema = z.object({
+  id: z.string().uuid(),
+  authorizedCountry: z.enum(["ID", "PH", "BOTH"]),
+  // Optional explicit end of the pilot entitlement (ISO date-time).
+  pilotExpiresAt: z.string().datetime().optional().nullable(),
+  reason: z.string().trim().max(1000).optional().nullable(),
+});
+
+export const approvePilotRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => approveSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireDecisionRole(context.userId);
+    const previous = await loadRequest(data.id);
+    if (previous.status === "converted") {
+      throw new Error("A converted pilot request cannot be re-approved.");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("pilot_requests")
+      .update({
+        status: "approved",
+        authorized_country: data.authorizedCountry,
+        pilot_expires_at: data.pilotExpiresAt ?? null,
+        decision_reason: data.reason ?? null,
+        approved_at: new Date().toISOString(),
+        // Derived from the verified session — never from the request payload.
+        approved_by: context.userId,
+      })
+      .eq("id", data.id)
+      .select("id, status, authorized_country, pilot_expires_at")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { logPilotAudit } = await import("@/lib/pilot/authorization.server");
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_request.approved",
+      target: data.id,
+      country: data.authorizedCountry === "BOTH" ? null : data.authorizedCountry,
+      oldValue: previous,
+      newValue: row,
+    });
+
+    return row;
+  });
+
+const qualifySchema = z.object({
+  id: z.string().uuid(),
+  reason: z.string().trim().max(1000).optional().nullable(),
+});
+
+export const qualifyPilotRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => qualifySchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireDecisionRole(context.userId);
+    const previous = await loadRequest(data.id);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("pilot_requests")
+      .update({ status: "qualified", decision_reason: data.reason ?? null })
+      .eq("id", data.id)
+      .select("id, status")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { logPilotAudit } = await import("@/lib/pilot/authorization.server");
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_request.qualified",
+      target: data.id,
+      country: null,
+      oldValue: previous,
+      newValue: row,
+    });
+
+    return row;
+  });
+
+const rejectSchema = z.object({
+  id: z.string().uuid(),
+  reason: z.string().trim().min(1).max(1000),
+});
+
+export const rejectPilotRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => rejectSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireDecisionRole(context.userId);
+    const previous = await loadRequest(data.id);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Rejection revokes the entitlement: the authorized country is cleared so
+    // no stale approval can keep a workspace door open.
+    const { data: row, error } = await supabaseAdmin
+      .from("pilot_requests")
+      .update({
+        status: "rejected",
+        authorized_country: null,
+        decision_reason: data.reason,
+        approved_at: null,
+        approved_by: null,
+      })
+      .eq("id", data.id)
+      .select("id, status, authorized_country")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { logPilotAudit } = await import("@/lib/pilot/authorization.server");
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_request.rejected",
+      target: data.id,
+      country: null,
+      oldValue: previous,
+      newValue: row,
+    });
+
+    return row;
+  });
+
+const notesSchema = z.object({
+  id: z.string().uuid(),
+  notes: z.string().trim().max(4000),
+});
+
+export const updatePilotNotes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => notesSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireDecisionRole(context.userId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("pilot_requests")
+      .update({ notes: data.notes })
+      .eq("id", data.id)
+      .select("id, notes")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { logPilotAudit } = await import("@/lib/pilot/authorization.server");
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_request.notes_updated",
+      target: data.id,
+      country: null,
+      payload: { length: data.notes.length },
+    });
 
     return row;
   });
