@@ -10,6 +10,9 @@ import {
   type PilotAuthorizationRecord,
 } from "./authorization";
 
+/** The denial half of the decision union, narrowed for callers. */
+type PilotDenial = Extract<PilotAuthorizationDecision, { allowed: false }>;
+
 /** Platform roles that may operate the Backoffice. */
 export const PLATFORM_ROLES = [
   "platform_admin",
@@ -85,7 +88,7 @@ export async function authorizePilotCountry(args: {
 }): Promise<
   | { allowed: true; via: "platform_role"; requestId: null; email: string | null }
   | { allowed: true; via: "pilot"; requestId: string; email: string }
-  | { allowed: false; decision: PilotAuthorizationDecision; email: string | null }
+  | { allowed: false; decision: PilotDenial; email: string | null }
 > {
   const email = await resolveSessionEmail(args.userId, args.claims);
 
