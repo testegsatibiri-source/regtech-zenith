@@ -65,7 +65,7 @@ function PilotsPage() {
     queryFn: () => listFn({ data: { limit: 200, ...(status === "all" ? {} : { status }) } }),
   });
 
-  const rows = data ?? [];
+  const rows = (data ?? []) as unknown as Row[];
   const current = rows.find((r) => r.id === selected) ?? null;
 
   function invalidate() {
@@ -209,7 +209,28 @@ function PilotsPage() {
   );
 }
 
-type Row = Awaited<ReturnType<typeof listPilotRequests>>[number];
+/** Explicit view model: the list projection, not the whole table row. */
+interface Row {
+  id: string;
+  full_name: string;
+  email: string;
+  company_name: string;
+  employee_range: string | null;
+  role: string | null;
+  status: string;
+  source: string | null;
+  created_at: string;
+  approved_at: string | null;
+  authorized_country: string | null;
+  pilot_expires_at: string | null;
+  decision_reason: string | null;
+  converted_company_id: string | null;
+  converted_at: string | null;
+  workforce_all_ncr: boolean | null;
+  has_overtime: boolean | null;
+  consent_version: string | null;
+  notes: string | null;
+}
 
 function RequestDetail(props: {
   request: Row;
