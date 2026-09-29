@@ -130,8 +130,26 @@ function AuthPage() {
               Continue with Google
             </Button>
 
-            <p className="mt-4 text-center text-xs text-muted-foreground">
-              Access is invite-only. Ask your organization administrator for an invitation.
+            {/* Homologation phase: there is no public sign-up. Workspace
+                creation is gated server-side by an approved pilot request, so
+                this CTA is the only legitimate entry path for a new company. */}
+            <div className="mt-5 rounded-md border border-border bg-muted/40 p-3 text-center">
+              <p className="text-xs text-muted-foreground">
+                UBoardAsia operates controlled access during its Homologation Pilot Program.
+                New organizations join by approved application only.
+              </p>
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                <Button asChild size="sm" variant="secondary">
+                  <Link to="/ph">Apply — Philippines</Link>
+                </Button>
+                <Button asChild size="sm" variant="secondary">
+                  <Link to="/id">Apply — Indonesia</Link>
+                </Button>
+              </div>
+            </div>
+
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              Already invited? Ask your organization administrator for your credentials.
             </p>
           </CardContent>
         </Card>
