@@ -27,6 +27,7 @@ import { Route as IdIndexRouteImport } from './routes/id.index'
 import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
 import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
+import { Route as PlatformPilotsRouteImport } from './routes/platform/pilots'
 import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
 import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
@@ -146,6 +147,11 @@ const PlatformReleasesRoute = PlatformReleasesRouteImport.update({
 const PlatformReadinessRoute = PlatformReadinessRouteImport.update({
   id: '/readiness',
   path: '/readiness',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformPilotsRoute = PlatformPilotsRouteImport.update({
+  id: '/pilots',
+  path: '/pilots',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
 const PlatformParametersRoute = PlatformParametersRouteImport.update({
@@ -339,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/pilots': typeof PlatformPilotsRoute
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
@@ -386,6 +393,7 @@ export interface FileRoutesByTo {
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/pilots': typeof PlatformPilotsRoute
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
@@ -438,6 +446,7 @@ export interface FileRoutesById {
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
+  '/platform/pilots': typeof PlatformPilotsRoute
   '/platform/readiness': typeof PlatformReadinessRoute
   '/platform/releases': typeof PlatformReleasesRoute
   '/platform/uada': typeof PlatformUadaRoute
@@ -490,6 +499,7 @@ export interface FileRouteTypes {
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
+    | '/platform/pilots'
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
@@ -537,6 +547,7 @@ export interface FileRouteTypes {
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
+    | '/platform/pilots'
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
@@ -588,6 +599,7 @@ export interface FileRouteTypes {
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
+    | '/platform/pilots'
     | '/platform/readiness'
     | '/platform/releases'
     | '/platform/uada'
@@ -760,6 +772,13 @@ declare module '@tanstack/react-router' {
       path: '/readiness'
       fullPath: '/platform/readiness'
       preLoaderRoute: typeof PlatformReadinessRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/pilots': {
+      id: '/platform/pilots'
+      path: '/pilots'
+      fullPath: '/platform/pilots'
+      preLoaderRoute: typeof PlatformPilotsRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
     '/platform/parameters': {
@@ -1050,6 +1069,7 @@ interface PlatformRouteRouteChildren {
   PlatformFlagsRoute: typeof PlatformFlagsRoute
   PlatformPacksRoute: typeof PlatformPacksRoute
   PlatformParametersRoute: typeof PlatformParametersRoute
+  PlatformPilotsRoute: typeof PlatformPilotsRoute
   PlatformReadinessRoute: typeof PlatformReadinessRoute
   PlatformReleasesRoute: typeof PlatformReleasesRoute
   PlatformUadaRoute: typeof PlatformUadaRoute
@@ -1061,6 +1081,7 @@ const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformFlagsRoute: PlatformFlagsRoute,
   PlatformPacksRoute: PlatformPacksRoute,
   PlatformParametersRoute: PlatformParametersRoute,
+  PlatformPilotsRoute: PlatformPilotsRoute,
   PlatformReadinessRoute: PlatformReadinessRoute,
   PlatformReleasesRoute: PlatformReleasesRoute,
   PlatformUadaRoute: PlatformUadaRoute,

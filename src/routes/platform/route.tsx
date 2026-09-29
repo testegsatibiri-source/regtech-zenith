@@ -14,6 +14,7 @@ import {
   LogOut,
   Activity,
   Brain,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
