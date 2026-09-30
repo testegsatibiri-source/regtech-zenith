@@ -413,3 +413,52 @@ export const updatePilotNotes = createServerFn({ method: "POST" })
 
     return row;
   });
+
+// AI-assisted case triage. Advisory only: it never changes the request state.
+// Contact PII (name, e-mail) is deliberately withheld from the model.
+const summarizeSchema = z.object({
+  id: z.string().uuid(),
+  notes: z.string().max(5000).optional().nullable(),
+});
+
+export const summarizePilotRisk = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => summarizeSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireDecisionRole(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: r, error } = await supabaseAdmin
+      .from("pilot_requests")
+      .select(
+        "id, company_name, employee_range, role, status, source, created_at, authorized_country, pilot_expires_at, workforce_all_ncr, has_overtime, consent_version, notes",
+      )
+      .eq("id", data.id)
+      .single();
+    if (error || !r) throw new Error("Pilot request not found");
+    const notes = (data.notes ?? r.notes ?? "").trim();
+    const caseText = [
+      `Company: ${r.company_name ?? "—"}`,
+      `Applicant role: ${r.role ?? "—"}`,
+      `Employee range: ${r.employee_range ?? "—"}`,
+      `Source landing: ${r.source ?? "—"}`,
+      `Current status: ${r.status}`,
+      `Authorized country: ${r.authorized_country ?? "—"}`,
+      `Pilot expires: ${r.pilot_expires_at ?? "—"}`,
+      `Workforce all in NCR (PH): ${r.workforce_all_ncr ?? "—"}`,
+      `Has overtime (PH): ${r.has_overtime ?? "—"}`,
+      `Consent version: ${r.consent_version ?? "—"}`,
+      `Submitted: ${r.created_at}`,
+      `Operator notes:\n${notes || "(none)"}`,
+    ].join("\n");
+    const { summarizePilotCase } = await import("@/lib/pilot/risk-summary.server");
+    const summary = await summarizePilotCase(caseText);
+    await supabaseAdmin.from("platform_audit_log").insert({
+      actor: context.userId,
+      action: "pilot_request.ai_risk_summary",
+      target: r.id,
+      country_code: r.source?.toUpperCase().includes("PH") ? "PH" : "ID",
+      component: "pilot.functions",
+      payload: { id: r.id, model: "openai/gpt-6-astra", advisory: true },
+    });
+    return { summary, generatedAt: new Date().toISOString() };
+  });
