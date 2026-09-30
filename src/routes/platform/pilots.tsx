@@ -379,6 +379,9 @@ function RequestDetail(props: {
             Save notes
           </Button>
         </div>
+
+        <RiskSummary id={r.id} notes={notes} />
+      </CardContent>
       </CardContent>
     </Card>
   );
