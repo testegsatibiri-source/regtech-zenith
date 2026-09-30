@@ -47,7 +47,7 @@ export const Route = createFileRoute("/onboarding")({
       className="flex min-h-screen items-center justify-center p-6 text-sm text-destructive"
       role="alert"
     >
-      {error.message}
+      {error instanceof Error ? error.message : String(error)}
     </div>
   ),
   component: OnboardingPage,
