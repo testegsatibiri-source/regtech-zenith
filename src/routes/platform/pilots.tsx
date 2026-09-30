@@ -14,6 +14,7 @@ import {
   rejectPilotRequest,
   qualifyPilotRequest,
   updatePilotNotes,
+  summarizePilotRisk,
 } from "@/lib/pilot.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -382,10 +383,37 @@ function RequestDetail(props: {
 
         <RiskSummary id={r.id} notes={notes} />
       </CardContent>
-      </CardContent>
     </Card>
   );
 }
+
+function RiskSummary(props: { id: string; notes: string }) {
+  const fn = useServerFn(summarizePilotRisk);
+  const m = useMutation({
+    mutationFn: () => fn({ data: { id: props.id, notes: props.notes } }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <div className="space-y-2 border-t border-border pt-4">
+      <div className="flex items-center justify-between gap-2">
+        <Label>AI case summary &amp; compliance risks</Label>
+        <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate()}>
+          {m.isPending ? "Analyzing…" : m.data ? "Regenerate" : "Analyze case"}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Advisory only — uses the case data and the notes above (contact name and e-mail are not
+        sent). The decision remains with the operator.
+      </p>
+      {m.data ? (
+        <div className="whitespace-pre-wrap rounded-md border border-border bg-muted/40 p-3 text-sm">
+          {m.data.summary}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 
 function fmtBool(v: boolean | null | undefined): string {
   return v === null || v === undefined ? "—" : v ? "Yes" : "No";
