@@ -15,6 +15,7 @@ import {
   Activity,
   Brain,
   Users,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -53,6 +54,7 @@ function PlatformLayout() {
   const nav = [
     { to: "/platform", label: "Overview", icon: LayoutDashboard },
     { to: "/platform/pilots", label: "Pilot Program", icon: Users },
+    { to: "/platform/customers", label: "Customers", icon: Building2 },
     { to: "/platform/readiness", label: "Readiness", icon: Activity },
     { to: "/platform/packs", label: "Country Packs", icon: Package },
     { to: "/platform/releases", label: "Release Center", icon: Rocket },
