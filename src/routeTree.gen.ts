@@ -40,6 +40,7 @@ import { Route as PhIndexRouteImport } from './routes/ph.index'
 import { Route as PhPatakaranSaPrivacyRouteImport } from './routes/ph.patakaran-sa-privacy'
 import { Route as PlatformIndexRouteImport } from './routes/platform/index'
 import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
+import { Route as PlatformCustomersRouteImport } from './routes/platform/customers'
 import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
 import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
 import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
@@ -215,6 +216,11 @@ const PlatformAuditRoute = PlatformAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => PlatformRouteRoute,
 } as any)
+const PlatformCustomersRoute = PlatformCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
 const PlatformFlagsRoute = PlatformFlagsRouteImport.update({
   id: '/flags',
   path: '/flags',
@@ -342,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/ph/patakaran-sa-privacy': typeof PhPatakaranSaPrivacyRoute
   '/platform/audit': typeof PlatformAuditRoute
+  '/platform/customers': typeof PlatformCustomersRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
@@ -390,6 +397,7 @@ export interface FileRoutesByTo {
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/ph/patakaran-sa-privacy': typeof PhPatakaranSaPrivacyRoute
   '/platform/audit': typeof PlatformAuditRoute
+  '/platform/customers': typeof PlatformCustomersRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/packs/$country': typeof PacksCountryRouteWithChildren
   '/ph/patakaran-sa-privacy': typeof PhPatakaranSaPrivacyRoute
   '/platform/audit': typeof PlatformAuditRoute
+  '/platform/customers': typeof PlatformCustomersRoute
   '/platform/flags': typeof PlatformFlagsRoute
   '/platform/packs': typeof PlatformPacksRoute
   '/platform/parameters': typeof PlatformParametersRoute
@@ -496,6 +505,7 @@ export interface FileRouteTypes {
     | '/packs/$country'
     | '/ph/patakaran-sa-privacy'
     | '/platform/audit'
+    | '/platform/customers'
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
@@ -544,6 +554,7 @@ export interface FileRouteTypes {
     | '/packs/$country'
     | '/ph/patakaran-sa-privacy'
     | '/platform/audit'
+    | '/platform/customers'
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
@@ -596,6 +607,7 @@ export interface FileRouteTypes {
     | '/packs/$country'
     | '/ph/patakaran-sa-privacy'
     | '/platform/audit'
+    | '/platform/customers'
     | '/platform/flags'
     | '/platform/packs'
     | '/platform/parameters'
@@ -865,6 +877,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformAuditRouteImport
       parentRoute: typeof PlatformRouteRoute
     }
+    '/platform/customers': {
+      id: '/platform/customers'
+      path: '/customers'
+      fullPath: '/platform/customers'
+      preLoaderRoute: typeof PlatformCustomersRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
     '/platform/flags': {
       id: '/platform/flags'
       path: '/flags'
@@ -1066,6 +1085,7 @@ const PhRouteRouteWithChildren =
 
 interface PlatformRouteRouteChildren {
   PlatformAuditRoute: typeof PlatformAuditRoute
+  PlatformCustomersRoute: typeof PlatformCustomersRoute
   PlatformFlagsRoute: typeof PlatformFlagsRoute
   PlatformPacksRoute: typeof PlatformPacksRoute
   PlatformParametersRoute: typeof PlatformParametersRoute
@@ -1078,6 +1098,7 @@ interface PlatformRouteRouteChildren {
 
 const PlatformRouteRouteChildren: PlatformRouteRouteChildren = {
   PlatformAuditRoute: PlatformAuditRoute,
+  PlatformCustomersRoute: PlatformCustomersRoute,
   PlatformFlagsRoute: PlatformFlagsRoute,
   PlatformPacksRoute: PlatformPacksRoute,
   PlatformParametersRoute: PlatformParametersRoute,
