@@ -462,3 +462,104 @@ export const summarizePilotRisk = createServerFn({ method: "POST" })
     });
     return { summary, generatedAt: new Date().toISOString() };
   });
+
+// ---------------------------------------------------------------------------
+// Operator-created pilots. A platform operator registers a customer directly
+// (e.g. after a sales call). The row is born `approved`, `approved_by` comes
+// from the session, and the creation is audited. Workspace creation still
+// passes through the same `createCompany` gate.
+// ---------------------------------------------------------------------------
+const manualSchema = z.object({
+  fullName: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(255),
+  companyName: z.string().trim().min(1).max(120),
+  employeeRange: z.enum(["1-50", "51-200", "201-1000", "1000+"]),
+  role: z.string().trim().min(1).max(80),
+  authorizedCountry: z.enum(["ID", "PH", "BOTH"]),
+  pilotExpiresAt: z.string().datetime().optional().nullable(),
+  reason: z.string().trim().min(1).max(1000),
+});
+
+export const createPilotManually = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => manualSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await requireDecisionRole(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const email = data.email.toLowerCase();
+    const { data: row, error } = await supabaseAdmin
+      .from("pilot_requests")
+      .insert({
+        full_name: data.fullName,
+        email,
+        company_name: data.companyName,
+        employee_range: data.employeeRange,
+        role: data.role,
+        // Not an applicant consent: the operator records the commercial basis
+        // in `decision_reason`; the customer accepts terms at first login.
+        consent: false,
+        consent_version: "operator-manual-v1",
+        source: "/platform",
+        status: "approved",
+        authorized_country: data.authorizedCountry,
+        pilot_expires_at: data.pilotExpiresAt ?? null,
+        decision_reason: data.reason,
+        approved_at: new Date().toISOString(),
+        approved_by: context.userId,
+      })
+      .select("id, status, authorized_country, pilot_expires_at")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { logPilotAudit } = await import("@/lib/pilot/authorization.server");
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_request.created_by_operator",
+      target: row.id,
+      country: data.authorizedCountry === "BOTH" ? null : data.authorizedCountry,
+      newValue: row,
+    });
+    return row;
+  });
+
+// Customer workspaces (companies) with their pilot origin, for the Backoffice.
+export const listPilotCustomers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userHasAnyRole, PLATFORM_ROLES, logPilotAudit } = await import(
+      "@/lib/pilot/authorization.server"
+    );
+    if (!(await userHasAnyRole(context.userId, PLATFORM_ROLES))) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: companies, error }, { data: pilots }] = await Promise.all([
+      supabaseAdmin
+        .from("companies")
+        .select("id, name, legal_name, country_code, currency, owner_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      supabaseAdmin
+        .from("pilot_requests")
+        .select("id, email, status, authorized_country, pilot_expires_at, converted_company_id")
+        .not("converted_company_id", "is", null),
+    ]);
+    if (error) throw new Error(error.message);
+    const byCompany = new Map((pilots ?? []).map((p) => [p.converted_company_id, p]));
+    const rows = (companies ?? []).map((c) => {
+      const p = byCompany.get(c.id);
+      return {
+        ...c,
+        pilotId: p?.id ?? null,
+        ownerEmail: p?.email ?? null,
+        pilotExpiresAt: p?.pilot_expires_at ?? null,
+        authorizedCountry: p?.authorized_country ?? null,
+      };
+    });
+    await logPilotAudit({
+      actor: context.userId,
+      action: "pilot_customer.list",
+      target: "companies",
+      country: null,
+      payload: { count: rows.length },
+    });
+    return rows;
+  });
