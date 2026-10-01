@@ -16,6 +16,7 @@ import {
   updatePilotNotes,
   summarizePilotRisk,
 } from "@/lib/pilot.functions";
+import { NewPilotForm } from "@/components/platform/NewPilotForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ function PilotsPage() {
 
   const [status, setStatus] = useState<Status | "all">("all");
   const [selected, setSelected] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["platform", "pilots", status],
@@ -114,13 +116,26 @@ function PilotsPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-3xl font-bold">Pilot Program</h1>
-        <p className="text-muted-foreground">
-          Controlled access intake for Indonesia and the Philippines. Approval grants workspace
-          creation for the authorized jurisdiction only.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Pilot Program</h1>
+          <p className="text-muted-foreground">
+            Controlled access intake for Indonesia and the Philippines. Approval grants workspace
+            creation for the authorized jurisdiction only.
+          </p>
+        </div>
+        {!showNew && <Button onClick={() => setShowNew(true)}>New pilot customer</Button>}
       </header>
+
+      {showNew && (
+        <NewPilotForm
+          onCancel={() => setShowNew(false)}
+          onDone={() => {
+            setShowNew(false);
+            invalidate();
+          }}
+        />
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <Button
