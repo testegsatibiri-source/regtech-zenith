@@ -8,7 +8,11 @@ const registrationRequestSchema = z
     organizationName: z.string().trim().min(2).max(200),
     legalName: z.string().trim().max(250).optional().nullable(),
     taxId: z.string().trim().max(100).optional().nullable(),
-    countryRequested: z.string().trim().regex(/^[A-Za-z]{2}$/).transform((value) => value.toUpperCase()),
+    countryRequested: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z]{2}$/)
+      .transform((value) => value.toUpperCase()),
     planRequested: z
       .string()
       .trim()
@@ -93,7 +97,6 @@ export const submitRegistrationRequest = createServerFn({ method: "POST" })
     return row;
   });
 
-
 const registrationListSchema = z.object({
   status: z.enum(["SUBMITTED", "IN_REVIEW", "APPROVED", "REJECTED", "WITHDRAWN", "CONVERTED"]).optional(),
   limit: z.number().int().min(1).max(200).default(100),
@@ -136,19 +139,36 @@ const registrationDecisionSchema = z
   .object({
     id: z.string().uuid(),
     action: z.enum(["START_REVIEW", "APPROVE", "REJECT"]),
-    countryApproved: z.string().trim().regex(/^[A-Za-z]{2}$/).transform((value) => value.toUpperCase()).optional(),
+    countryApproved: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z]{2}$/)
+      .transform((value) => value.toUpperCase())
+      .optional(),
     reason: z.string().trim().max(1000).optional().nullable(),
   })
   .strict()
   .superRefine((value, ctx) => {
     if (value.action === "APPROVE" && !value.countryApproved) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["countryApproved"], message: "Approved country is required." });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["countryApproved"],
+        message: "Approved country is required.",
+      });
     }
     if (value.action === "REJECT" && !value.reason?.trim()) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["reason"], message: "A rejection reason is required." });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reason"],
+        message: "A rejection reason is required.",
+      });
     }
     if (value.action !== "APPROVE" && value.countryApproved) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["countryApproved"], message: "Only approvals can set an approved country." });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["countryApproved"],
+        message: "Only approvals can set an approved country.",
+      });
     }
   });
 
@@ -165,7 +185,9 @@ export const decideRegistrationRequest = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: previous, error: readError } = await supabaseAdmin
       .from("registration_requests")
-      .select("id, status, country_requested, country_approved, organization_type, organization_name, plan_requested")
+      .select(
+        "id, status, country_requested, country_approved, organization_type, organization_name, plan_requested",
+      )
       .eq("id", data.id)
       .single();
     if (readError) throw new Error(readError.message);
@@ -209,7 +231,9 @@ export const decideRegistrationRequest = createServerFn({ method: "POST" })
       .update(update)
       .eq("id", data.id)
       .in("status", ["SUBMITTED", "IN_REVIEW"])
-      .select("id, status, country_requested, country_approved, reviewed_by, reviewed_at, decision_reason")
+      .select(
+        "id, status, country_requested, country_approved, reviewed_by, reviewed_at, decision_reason",
+      )
       .single();
     if (error) throw new Error(error.message);
 
