@@ -78,36 +78,7 @@ export type Database = {
           tax_id?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "registration_requests_applicant_user_id_fkey"
-            columns: ["applicant_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registration_requests_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registration_requests_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registration_requests_source_pilot_request_id_fkey"
-            columns: ["source_pilot_request_id"]
-            isOneToOne: true
-            referencedRelation: "pilot_requests"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       alert_escalations: {
         Row: {
