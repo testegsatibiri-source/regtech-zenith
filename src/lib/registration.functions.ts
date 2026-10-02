@@ -98,7 +98,9 @@ export const submitRegistrationRequest = createServerFn({ method: "POST" })
   });
 
 const registrationListSchema = z.object({
-  status: z.enum(["SUBMITTED", "IN_REVIEW", "APPROVED", "REJECTED", "WITHDRAWN", "CONVERTED"]).optional(),
+  status: z
+    .enum(["SUBMITTED", "IN_REVIEW", "APPROVED", "REJECTED", "WITHDRAWN", "CONVERTED"])
+    .optional(),
   limit: z.number().int().min(1).max(200).default(100),
 });
 
