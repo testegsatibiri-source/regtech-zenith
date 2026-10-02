@@ -9,81 +9,65 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as CalculatorRouteImport } from './routes/calculator'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as ApiDocsRouteImport } from './routes/api-docs'
-import { Route as PlatformRouteRouteImport } from './routes/platform/route'
-import { Route as PhRouteRouteImport } from './routes/ph.route'
-import { Route as IdRouteRouteImport } from './routes/id.route'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PlatformIndexRouteImport } from './routes/platform/index'
-import { Route as PhIndexRouteImport } from './routes/ph.index'
-import { Route as PacksIndexRouteImport } from './routes/packs.index'
-import { Route as IdIndexRouteImport } from './routes/id.index'
-import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
-import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
-import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
-import { Route as PlatformPilotsRouteImport } from './routes/platform/pilots'
-import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
-import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
-import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
-import { Route as PlatformCustomersRouteImport } from './routes/platform/customers'
-import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
-import { Route as PhPatakaranSaPrivacyRouteImport } from './routes/ph.patakaran-sa-privacy'
-import { Route as PacksCountryRouteImport } from './routes/packs.$country'
-import { Route as IdKebijakanPrivasiRouteImport } from './routes/id.kebijakan-privasi'
-import { Route as AuthenticatedSeparationsRouteImport } from './routes/_authenticated/separations'
-import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
-import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
-import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
-import { Route as AuthenticatedLeaveRouteImport } from './routes/_authenticated/leave'
-import { Route as AuthenticatedFilingsRouteImport } from './routes/_authenticated/filings'
-import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
-import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticated/company'
-import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as ApiDocsRouteImport } from './routes/api-docs'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CalculatorRouteImport } from './routes/calculator'
+import { Route as IdRouteRouteImport } from './routes/id.route'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PhRouteRouteImport } from './routes/ph.route'
+import { Route as PlatformRouteRouteImport } from './routes/platform/route'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticated/company'
+import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
+import { Route as AuthenticatedFilingsRouteImport } from './routes/_authenticated/filings'
+import { Route as AuthenticatedLeaveRouteImport } from './routes/_authenticated/leave'
+import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
+import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
+import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
+import { Route as AuthenticatedSeparationsRouteImport } from './routes/_authenticated/separations'
+import { Route as IdIndexRouteImport } from './routes/id.index'
+import { Route as IdKebijakanPrivasiRouteImport } from './routes/id.kebijakan-privasi'
+import { Route as PacksIndexRouteImport } from './routes/packs.index'
+import { Route as PacksCountryRouteImport } from './routes/packs.$country'
+import { Route as PhIndexRouteImport } from './routes/ph.index'
+import { Route as PhPatakaranSaPrivacyRouteImport } from './routes/ph.patakaran-sa-privacy'
+import { Route as PlatformIndexRouteImport } from './routes/platform/index'
+import { Route as PlatformAuditRouteImport } from './routes/platform/audit'
+import { Route as PlatformCustomersRouteImport } from './routes/platform/customers'
+import { Route as PlatformFlagsRouteImport } from './routes/platform/flags'
+import { Route as PlatformPacksRouteImport } from './routes/platform/packs'
+import { Route as PlatformParametersRouteImport } from './routes/platform/parameters'
+import { Route as PlatformPilotsRouteImport } from './routes/platform/pilots'
+import { Route as PlatformReadinessRouteImport } from './routes/platform/readiness'
+import { Route as PlatformReleasesRouteImport } from './routes/platform/releases'
+import { Route as PlatformUadaRouteImport } from './routes/platform/uada'
 import { Route as AuthenticatedCountryPacksIndexRouteImport } from './routes/_authenticated/country-packs.index'
-import { Route as PacksCountryCalculatorRouteImport } from './routes/packs.$country.calculator'
-import { Route as ApiPublicPrivacyPurgeRouteImport } from './routes/api/public/privacy-purge'
-import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
-import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
-import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
 import { Route as AuthenticatedCountryPacksCountryRouteImport } from './routes/_authenticated/country-packs.$country'
-import { Route as ApiPublicV1ReadinessRouteImport } from './routes/api/public/v1/readiness'
-import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
-import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
-import { Route as ApiPublicV1CalculateTaxRouteImport } from './routes/api/public/v1/calculate-tax'
+import { Route as ApiPublicCalculateBpjsRouteImport } from './routes/api/public/calculate-bpjs'
+import { Route as ApiPublicCalculateTaxRouteImport } from './routes/api/public/calculate-tax'
+import { Route as ApiPublicOpenapiDotjsonRouteImport } from './routes/api/public/openapi[.]json'
+import { Route as ApiPublicPrivacyPurgeRouteImport } from './routes/api/public/privacy-purge'
+import { Route as PacksCountryCalculatorRouteImport } from './routes/packs.$country.calculator'
 import { Route as ApiPublicV1CalculateBpjsRouteImport } from './routes/api/public/v1/calculate-bpjs'
+import { Route as ApiPublicV1CalculateTaxRouteImport } from './routes/api/public/v1/calculate-tax'
+import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
+import { Route as ApiPublicV1OpenapiDotjsonRouteImport } from './routes/api/public/v1/openapi[.]json'
+import { Route as ApiPublicV1ReadinessRouteImport } from './routes/api/public/v1/readiness'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalculatorRoute = CalculatorRouteImport.update({
-  id: '/calculator',
-  path: '/calculator',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDocsRoute = ApiDocsRouteImport.update({
@@ -91,14 +75,14 @@ const ApiDocsRoute = ApiDocsRouteImport.update({
   path: '/api-docs',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlatformRouteRoute = PlatformRouteRouteImport.update({
-  id: '/platform',
-  path: '/platform',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PhRouteRoute = PhRouteRouteImport.update({
-  id: '/ph',
-  path: '/ph',
+const CalculatorRoute = CalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IdRouteRoute = IdRouteRouteImport.update({
@@ -106,144 +90,34 @@ const IdRouteRoute = IdRouteRouteImport.update({
   path: '/id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PhRouteRoute = PhRouteRouteImport.update({
+  id: '/ph',
+  path: '/ph',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlatformIndexRoute = PlatformIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PhIndexRoute = PhIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PhRouteRoute,
-} as any)
-const PacksIndexRoute = PacksIndexRouteImport.update({
-  id: '/packs/',
-  path: '/packs/',
+const PlatformRouteRoute = PlatformRouteRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IdIndexRoute = IdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => IdRouteRoute,
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PlatformUadaRoute = PlatformUadaRouteImport.update({
-  id: '/uada',
-  path: '/uada',
-  getParentRoute: () => PlatformRouteRoute,
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PlatformReleasesRoute = PlatformReleasesRouteImport.update({
-  id: '/releases',
-  path: '/releases',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformReadinessRoute = PlatformReadinessRouteImport.update({
-  id: '/readiness',
-  path: '/readiness',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformPilotsRoute = PlatformPilotsRouteImport.update({
-  id: '/pilots',
-  path: '/pilots',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformParametersRoute = PlatformParametersRouteImport.update({
-  id: '/parameters',
-  path: '/parameters',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformPacksRoute = PlatformPacksRouteImport.update({
-  id: '/packs',
-  path: '/packs',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformFlagsRoute = PlatformFlagsRouteImport.update({
-  id: '/flags',
-  path: '/flags',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformCustomersRoute = PlatformCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PlatformAuditRoute = PlatformAuditRouteImport.update({
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
-  getParentRoute: () => PlatformRouteRoute,
-} as any)
-const PhPatakaranSaPrivacyRoute = PhPatakaranSaPrivacyRouteImport.update({
-  id: '/patakaran-sa-privacy',
-  path: '/patakaran-sa-privacy',
-  getParentRoute: () => PhRouteRoute,
-} as any)
-const PacksCountryRoute = PacksCountryRouteImport.update({
-  id: '/packs/$country',
-  path: '/packs/$country',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IdKebijakanPrivasiRoute = IdKebijakanPrivasiRouteImport.update({
-  id: '/kebijakan-privasi',
-  path: '/kebijakan-privasi',
-  getParentRoute: () => IdRouteRoute,
-} as any)
-const AuthenticatedSeparationsRoute =
-  AuthenticatedSeparationsRouteImport.update({
-    id: '/separations',
-    path: '/separations',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPersonnelRoute = AuthenticatedPersonnelRouteImport.update({
-  id: '/personnel',
-  path: '/personnel',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
-  id: '/payroll',
-  path: '/payroll',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedLeaveRoute = AuthenticatedLeaveRouteImport.update({
-  id: '/leave',
-  path: '/leave',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedFilingsRoute = AuthenticatedFilingsRouteImport.update({
-  id: '/filings',
-  path: '/filings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
-  id: '/employees',
-  path: '/employees',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
-  id: '/contracts',
-  path: '/contracts',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCompanyRoute = AuthenticatedCompanyRouteImport.update({
-  id: '/company',
-  path: '/company',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
@@ -251,10 +125,136 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+const AuthenticatedCompanyRoute = AuthenticatedCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFilingsRoute = AuthenticatedFilingsRouteImport.update({
+  id: '/filings',
+  path: '/filings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLeaveRoute = AuthenticatedLeaveRouteImport.update({
+  id: '/leave',
+  path: '/leave',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPersonnelRoute = AuthenticatedPersonnelRouteImport.update({
+  id: '/personnel',
+  path: '/personnel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSeparationsRoute =
+  AuthenticatedSeparationsRouteImport.update({
+    id: '/separations',
+    path: '/separations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const IdIndexRoute = IdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IdRouteRoute,
+} as any)
+const IdKebijakanPrivasiRoute = IdKebijakanPrivasiRouteImport.update({
+  id: '/kebijakan-privasi',
+  path: '/kebijakan-privasi',
+  getParentRoute: () => IdRouteRoute,
+} as any)
+const PacksIndexRoute = PacksIndexRouteImport.update({
+  id: '/packs/',
+  path: '/packs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PacksCountryRoute = PacksCountryRouteImport.update({
+  id: '/packs/$country',
+  path: '/packs/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhIndexRoute = PhIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PhRouteRoute,
+} as any)
+const PhPatakaranSaPrivacyRoute = PhPatakaranSaPrivacyRouteImport.update({
+  id: '/patakaran-sa-privacy',
+  path: '/patakaran-sa-privacy',
+  getParentRoute: () => PhRouteRoute,
+} as any)
+const PlatformIndexRoute = PlatformIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformAuditRoute = PlatformAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformCustomersRoute = PlatformCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformFlagsRoute = PlatformFlagsRouteImport.update({
+  id: '/flags',
+  path: '/flags',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformPacksRoute = PlatformPacksRouteImport.update({
+  id: '/packs',
+  path: '/packs',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformParametersRoute = PlatformParametersRouteImport.update({
+  id: '/parameters',
+  path: '/parameters',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformPilotsRoute = PlatformPilotsRouteImport.update({
+  id: '/pilots',
+  path: '/pilots',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformReadinessRoute = PlatformReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformReleasesRoute = PlatformReleasesRouteImport.update({
+  id: '/releases',
+  path: '/releases',
+  getParentRoute: () => PlatformRouteRoute,
+} as any)
+const PlatformUadaRoute = PlatformUadaRouteImport.update({
+  id: '/uada',
+  path: '/uada',
+  getParentRoute: () => PlatformRouteRoute,
 } as any)
 const AuthenticatedCountryPacksIndexRoute =
   AuthenticatedCountryPacksIndexRouteImport.update({
@@ -262,19 +262,15 @@ const AuthenticatedCountryPacksIndexRoute =
     path: '/country-packs/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const PacksCountryCalculatorRoute = PacksCountryCalculatorRouteImport.update({
-  id: '/calculator',
-  path: '/calculator',
-  getParentRoute: () => PacksCountryRoute,
-} as any)
-const ApiPublicPrivacyPurgeRoute = ApiPublicPrivacyPurgeRouteImport.update({
-  id: '/api/public/privacy-purge',
-  path: '/api/public/privacy-purge',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
-  id: '/api/public/openapi.json',
-  path: '/api/public/openapi.json',
+const AuthenticatedCountryPacksCountryRoute =
+  AuthenticatedCountryPacksCountryRouteImport.update({
+    id: '/country-packs/$country',
+    path: '/country-packs/$country',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicCalculateBpjsRoute = ApiPublicCalculateBpjsRouteImport.update({
+  id: '/api/public/calculate-bpjs',
+  path: '/api/public/calculate-bpjs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCalculateTaxRoute = ApiPublicCalculateTaxRouteImport.update({
@@ -282,20 +278,35 @@ const ApiPublicCalculateTaxRoute = ApiPublicCalculateTaxRouteImport.update({
   path: '/api/public/calculate-tax',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicCalculateBpjsRoute = ApiPublicCalculateBpjsRouteImport.update({
-  id: '/api/public/calculate-bpjs',
-  path: '/api/public/calculate-bpjs',
+const ApiPublicOpenapiDotjsonRoute = ApiPublicOpenapiDotjsonRouteImport.update({
+  id: '/api/public/openapi.json',
+  path: '/api/public/openapi.json',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCountryPacksCountryRoute =
-  AuthenticatedCountryPacksCountryRouteImport.update({
-    id: '/country-packs/$country',
-    path: '/country-packs/$country',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const ApiPublicPrivacyPurgeRoute = ApiPublicPrivacyPurgeRouteImport.update({
+  id: '/api/public/privacy-purge',
+  path: '/api/public/privacy-purge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PacksCountryCalculatorRoute = PacksCountryCalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => PacksCountryRoute,
+} as any)
+const ApiPublicV1CalculateBpjsRoute =
+  ApiPublicV1CalculateBpjsRouteImport.update({
+    id: '/api/public/v1/calculate-bpjs',
+    path: '/api/public/v1/calculate-bpjs',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicV1ReadinessRoute = ApiPublicV1ReadinessRouteImport.update({
-  id: '/api/public/v1/readiness',
-  path: '/api/public/v1/readiness',
+const ApiPublicV1CalculateTaxRoute = ApiPublicV1CalculateTaxRouteImport.update({
+  id: '/api/public/v1/calculate-tax',
+  path: '/api/public/v1/calculate-tax',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1HealthRoute = ApiPublicV1HealthRouteImport.update({
+  id: '/api/public/v1/health',
+  path: '/api/public/v1/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicV1OpenapiDotjsonRoute =
@@ -304,22 +315,11 @@ const ApiPublicV1OpenapiDotjsonRoute =
     path: '/api/public/v1/openapi.json',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicV1HealthRoute = ApiPublicV1HealthRouteImport.update({
-  id: '/api/public/v1/health',
-  path: '/api/public/v1/health',
+const ApiPublicV1ReadinessRoute = ApiPublicV1ReadinessRouteImport.update({
+  id: '/api/public/v1/readiness',
+  path: '/api/public/v1/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicV1CalculateTaxRoute = ApiPublicV1CalculateTaxRouteImport.update({
-  id: '/api/public/v1/calculate-tax',
-  path: '/api/public/v1/calculate-tax',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicV1CalculateBpjsRoute =
-  ApiPublicV1CalculateBpjsRouteImport.update({
-    id: '/api/public/v1/calculate-bpjs',
-    path: '/api/public/v1/calculate-bpjs',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -660,67 +660,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calculator': {
-      id: '/calculator'
-      path: '/calculator'
-      fullPath: '/calculator'
-      preLoaderRoute: typeof CalculatorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api-docs': {
-      id: '/api-docs'
-      path: '/api-docs'
-      fullPath: '/api-docs'
-      preLoaderRoute: typeof ApiDocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/platform': {
-      id: '/platform'
-      path: '/platform'
-      fullPath: '/platform'
-      preLoaderRoute: typeof PlatformRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ph': {
-      id: '/ph'
-      path: '/ph'
-      fullPath: '/ph'
-      preLoaderRoute: typeof PhRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/id': {
-      id: '/id'
-      path: '/id'
-      fullPath: '/id'
-      preLoaderRoute: typeof IdRouteRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -730,193 +674,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/api-docs': {
+      id: '/api-docs'
+      path: '/api-docs'
+      fullPath: '/api-docs'
+      preLoaderRoute: typeof ApiDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/platform/': {
-      id: '/platform/'
-      path: '/'
-      fullPath: '/platform/'
-      preLoaderRoute: typeof PlatformIndexRouteImport
-      parentRoute: typeof PlatformRouteRoute
-    }
-    '/ph/': {
-      id: '/ph/'
-      path: '/'
-      fullPath: '/ph/'
-      preLoaderRoute: typeof PhIndexRouteImport
-      parentRoute: typeof PhRouteRoute
-    }
-    '/packs/': {
-      id: '/packs/'
-      path: '/packs'
-      fullPath: '/packs/'
-      preLoaderRoute: typeof PacksIndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/id/': {
-      id: '/id/'
-      path: '/'
-      fullPath: '/id/'
-      preLoaderRoute: typeof IdIndexRouteImport
-      parentRoute: typeof IdRouteRoute
+    '/calculator': {
+      id: '/calculator'
+      path: '/calculator'
+      fullPath: '/calculator'
+      preLoaderRoute: typeof CalculatorRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/uada': {
-      id: '/platform/uada'
-      path: '/uada'
-      fullPath: '/platform/uada'
-      preLoaderRoute: typeof PlatformUadaRouteImport
-      parentRoute: typeof PlatformRouteRoute
+    '/id': {
+      id: '/id'
+      path: '/id'
+      fullPath: '/id'
+      preLoaderRoute: typeof IdRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/releases': {
-      id: '/platform/releases'
-      path: '/releases'
-      fullPath: '/platform/releases'
-      preLoaderRoute: typeof PlatformReleasesRouteImport
-      parentRoute: typeof PlatformRouteRoute
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/readiness': {
-      id: '/platform/readiness'
-      path: '/readiness'
-      fullPath: '/platform/readiness'
-      preLoaderRoute: typeof PlatformReadinessRouteImport
-      parentRoute: typeof PlatformRouteRoute
+    '/ph': {
+      id: '/ph'
+      path: '/ph'
+      fullPath: '/ph'
+      preLoaderRoute: typeof PhRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/pilots': {
-      id: '/platform/pilots'
-      path: '/pilots'
-      fullPath: '/platform/pilots'
-      preLoaderRoute: typeof PlatformPilotsRouteImport
-      parentRoute: typeof PlatformRouteRoute
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/parameters': {
-      id: '/platform/parameters'
-      path: '/parameters'
-      fullPath: '/platform/parameters'
-      preLoaderRoute: typeof PlatformParametersRouteImport
-      parentRoute: typeof PlatformRouteRoute
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/packs': {
-      id: '/platform/packs'
-      path: '/packs'
-      fullPath: '/platform/packs'
-      preLoaderRoute: typeof PlatformPacksRouteImport
-      parentRoute: typeof PlatformRouteRoute
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/platform/flags': {
-      id: '/platform/flags'
-      path: '/flags'
-      fullPath: '/platform/flags'
-      preLoaderRoute: typeof PlatformFlagsRouteImport
-      parentRoute: typeof PlatformRouteRoute
-    }
-    '/platform/customers': {
-      id: '/platform/customers'
-      path: '/customers'
-      fullPath: '/platform/customers'
-      preLoaderRoute: typeof PlatformCustomersRouteImport
-      parentRoute: typeof PlatformRouteRoute
-    }
-    '/platform/audit': {
-      id: '/platform/audit'
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
       path: '/audit'
-      fullPath: '/platform/audit'
-      preLoaderRoute: typeof PlatformAuditRouteImport
-      parentRoute: typeof PlatformRouteRoute
-    }
-    '/ph/patakaran-sa-privacy': {
-      id: '/ph/patakaran-sa-privacy'
-      path: '/patakaran-sa-privacy'
-      fullPath: '/ph/patakaran-sa-privacy'
-      preLoaderRoute: typeof PhPatakaranSaPrivacyRouteImport
-      parentRoute: typeof PhRouteRoute
-    }
-    '/packs/$country': {
-      id: '/packs/$country'
-      path: '/packs/$country'
-      fullPath: '/packs/$country'
-      preLoaderRoute: typeof PacksCountryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/id/kebijakan-privasi': {
-      id: '/id/kebijakan-privasi'
-      path: '/kebijakan-privasi'
-      fullPath: '/id/kebijakan-privasi'
-      preLoaderRoute: typeof IdKebijakanPrivasiRouteImport
-      parentRoute: typeof IdRouteRoute
-    }
-    '/_authenticated/separations': {
-      id: '/_authenticated/separations'
-      path: '/separations'
-      fullPath: '/separations'
-      preLoaderRoute: typeof AuthenticatedSeparationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/privacy': {
-      id: '/_authenticated/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/personnel': {
-      id: '/_authenticated/personnel'
-      path: '/personnel'
-      fullPath: '/personnel'
-      preLoaderRoute: typeof AuthenticatedPersonnelRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/payroll': {
-      id: '/_authenticated/payroll'
-      path: '/payroll'
-      fullPath: '/payroll'
-      preLoaderRoute: typeof AuthenticatedPayrollRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/leave': {
-      id: '/_authenticated/leave'
-      path: '/leave'
-      fullPath: '/leave'
-      preLoaderRoute: typeof AuthenticatedLeaveRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/filings': {
-      id: '/_authenticated/filings'
-      path: '/filings'
-      fullPath: '/filings'
-      preLoaderRoute: typeof AuthenticatedFilingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/employees': {
-      id: '/_authenticated/employees'
-      path: '/employees'
-      fullPath: '/employees'
-      preLoaderRoute: typeof AuthenticatedEmployeesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/contracts': {
-      id: '/_authenticated/contracts'
-      path: '/contracts'
-      fullPath: '/contracts'
-      preLoaderRoute: typeof AuthenticatedContractsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/company': {
-      id: '/_authenticated/company'
-      path: '/company'
-      fullPath: '/company'
-      preLoaderRoute: typeof AuthenticatedCompanyRouteImport
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
@@ -926,12 +751,187 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/audit': {
-      id: '/_authenticated/audit'
-      path: '/audit'
-      fullPath: '/audit'
-      preLoaderRoute: typeof AuthenticatedAuditRouteImport
+    '/_authenticated/company': {
+      id: '/_authenticated/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof AuthenticatedCompanyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contracts': {
+      id: '/_authenticated/contracts'
+      path: '/contracts'
+      fullPath: '/contracts'
+      preLoaderRoute: typeof AuthenticatedContractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employees': {
+      id: '/_authenticated/employees'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof AuthenticatedEmployeesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/filings': {
+      id: '/_authenticated/filings'
+      path: '/filings'
+      fullPath: '/filings'
+      preLoaderRoute: typeof AuthenticatedFilingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/leave': {
+      id: '/_authenticated/leave'
+      path: '/leave'
+      fullPath: '/leave'
+      preLoaderRoute: typeof AuthenticatedLeaveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payroll': {
+      id: '/_authenticated/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof AuthenticatedPayrollRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/personnel': {
+      id: '/_authenticated/personnel'
+      path: '/personnel'
+      fullPath: '/personnel'
+      preLoaderRoute: typeof AuthenticatedPersonnelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/privacy': {
+      id: '/_authenticated/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/separations': {
+      id: '/_authenticated/separations'
+      path: '/separations'
+      fullPath: '/separations'
+      preLoaderRoute: typeof AuthenticatedSeparationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/id/': {
+      id: '/id/'
+      path: '/'
+      fullPath: '/id/'
+      preLoaderRoute: typeof IdIndexRouteImport
+      parentRoute: typeof IdRouteRoute
+    }
+    '/id/kebijakan-privasi': {
+      id: '/id/kebijakan-privasi'
+      path: '/kebijakan-privasi'
+      fullPath: '/id/kebijakan-privasi'
+      preLoaderRoute: typeof IdKebijakanPrivasiRouteImport
+      parentRoute: typeof IdRouteRoute
+    }
+    '/packs/': {
+      id: '/packs/'
+      path: '/packs'
+      fullPath: '/packs/'
+      preLoaderRoute: typeof PacksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packs/$country': {
+      id: '/packs/$country'
+      path: '/packs/$country'
+      fullPath: '/packs/$country'
+      preLoaderRoute: typeof PacksCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ph/': {
+      id: '/ph/'
+      path: '/'
+      fullPath: '/ph/'
+      preLoaderRoute: typeof PhIndexRouteImport
+      parentRoute: typeof PhRouteRoute
+    }
+    '/ph/patakaran-sa-privacy': {
+      id: '/ph/patakaran-sa-privacy'
+      path: '/patakaran-sa-privacy'
+      fullPath: '/ph/patakaran-sa-privacy'
+      preLoaderRoute: typeof PhPatakaranSaPrivacyRouteImport
+      parentRoute: typeof PhRouteRoute
+    }
+    '/platform/': {
+      id: '/platform/'
+      path: '/'
+      fullPath: '/platform/'
+      preLoaderRoute: typeof PlatformIndexRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/audit': {
+      id: '/platform/audit'
+      path: '/audit'
+      fullPath: '/platform/audit'
+      preLoaderRoute: typeof PlatformAuditRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/customers': {
+      id: '/platform/customers'
+      path: '/customers'
+      fullPath: '/platform/customers'
+      preLoaderRoute: typeof PlatformCustomersRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/flags': {
+      id: '/platform/flags'
+      path: '/flags'
+      fullPath: '/platform/flags'
+      preLoaderRoute: typeof PlatformFlagsRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/packs': {
+      id: '/platform/packs'
+      path: '/packs'
+      fullPath: '/platform/packs'
+      preLoaderRoute: typeof PlatformPacksRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/parameters': {
+      id: '/platform/parameters'
+      path: '/parameters'
+      fullPath: '/platform/parameters'
+      preLoaderRoute: typeof PlatformParametersRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/pilots': {
+      id: '/platform/pilots'
+      path: '/pilots'
+      fullPath: '/platform/pilots'
+      preLoaderRoute: typeof PlatformPilotsRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/readiness': {
+      id: '/platform/readiness'
+      path: '/readiness'
+      fullPath: '/platform/readiness'
+      preLoaderRoute: typeof PlatformReadinessRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/releases': {
+      id: '/platform/releases'
+      path: '/releases'
+      fullPath: '/platform/releases'
+      preLoaderRoute: typeof PlatformReleasesRouteImport
+      parentRoute: typeof PlatformRouteRoute
+    }
+    '/platform/uada': {
+      id: '/platform/uada'
+      path: '/uada'
+      fullPath: '/platform/uada'
+      preLoaderRoute: typeof PlatformUadaRouteImport
+      parentRoute: typeof PlatformRouteRoute
     }
     '/_authenticated/country-packs/': {
       id: '/_authenticated/country-packs/'
@@ -940,25 +940,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCountryPacksIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/packs/$country/calculator': {
-      id: '/packs/$country/calculator'
-      path: '/calculator'
-      fullPath: '/packs/$country/calculator'
-      preLoaderRoute: typeof PacksCountryCalculatorRouteImport
-      parentRoute: typeof PacksCountryRoute
+    '/_authenticated/country-packs/$country': {
+      id: '/_authenticated/country-packs/$country'
+      path: '/country-packs/$country'
+      fullPath: '/country-packs/$country'
+      preLoaderRoute: typeof AuthenticatedCountryPacksCountryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/privacy-purge': {
-      id: '/api/public/privacy-purge'
-      path: '/api/public/privacy-purge'
-      fullPath: '/api/public/privacy-purge'
-      preLoaderRoute: typeof ApiPublicPrivacyPurgeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/openapi.json': {
-      id: '/api/public/openapi.json'
-      path: '/api/public/openapi.json'
-      fullPath: '/api/public/openapi.json'
-      preLoaderRoute: typeof ApiPublicOpenapiDotjsonRouteImport
+    '/api/public/calculate-bpjs': {
+      id: '/api/public/calculate-bpjs'
+      path: '/api/public/calculate-bpjs'
+      fullPath: '/api/public/calculate-bpjs'
+      preLoaderRoute: typeof ApiPublicCalculateBpjsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/calculate-tax': {
@@ -968,39 +961,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCalculateTaxRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/calculate-bpjs': {
-      id: '/api/public/calculate-bpjs'
-      path: '/api/public/calculate-bpjs'
-      fullPath: '/api/public/calculate-bpjs'
-      preLoaderRoute: typeof ApiPublicCalculateBpjsRouteImport
+    '/api/public/openapi.json': {
+      id: '/api/public/openapi.json'
+      path: '/api/public/openapi.json'
+      fullPath: '/api/public/openapi.json'
+      preLoaderRoute: typeof ApiPublicOpenapiDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/country-packs/$country': {
-      id: '/_authenticated/country-packs/$country'
-      path: '/country-packs/$country'
-      fullPath: '/country-packs/$country'
-      preLoaderRoute: typeof AuthenticatedCountryPacksCountryRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/api/public/v1/readiness': {
-      id: '/api/public/v1/readiness'
-      path: '/api/public/v1/readiness'
-      fullPath: '/api/public/v1/readiness'
-      preLoaderRoute: typeof ApiPublicV1ReadinessRouteImport
+    '/api/public/privacy-purge': {
+      id: '/api/public/privacy-purge'
+      path: '/api/public/privacy-purge'
+      fullPath: '/api/public/privacy-purge'
+      preLoaderRoute: typeof ApiPublicPrivacyPurgeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/v1/openapi.json': {
-      id: '/api/public/v1/openapi.json'
-      path: '/api/public/v1/openapi.json'
-      fullPath: '/api/public/v1/openapi.json'
-      preLoaderRoute: typeof ApiPublicV1OpenapiDotjsonRouteImport
-      parentRoute: typeof rootRouteImport
+    '/packs/$country/calculator': {
+      id: '/packs/$country/calculator'
+      path: '/calculator'
+      fullPath: '/packs/$country/calculator'
+      preLoaderRoute: typeof PacksCountryCalculatorRouteImport
+      parentRoute: typeof PacksCountryRoute
     }
-    '/api/public/v1/health': {
-      id: '/api/public/v1/health'
-      path: '/api/public/v1/health'
-      fullPath: '/api/public/v1/health'
-      preLoaderRoute: typeof ApiPublicV1HealthRouteImport
+    '/api/public/v1/calculate-bpjs': {
+      id: '/api/public/v1/calculate-bpjs'
+      path: '/api/public/v1/calculate-bpjs'
+      fullPath: '/api/public/v1/calculate-bpjs'
+      preLoaderRoute: typeof ApiPublicV1CalculateBpjsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/calculate-tax': {
@@ -1010,11 +996,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1CalculateTaxRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/v1/calculate-bpjs': {
-      id: '/api/public/v1/calculate-bpjs'
-      path: '/api/public/v1/calculate-bpjs'
-      fullPath: '/api/public/v1/calculate-bpjs'
-      preLoaderRoute: typeof ApiPublicV1CalculateBpjsRouteImport
+    '/api/public/v1/health': {
+      id: '/api/public/v1/health'
+      path: '/api/public/v1/health'
+      fullPath: '/api/public/v1/health'
+      preLoaderRoute: typeof ApiPublicV1HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/openapi.json': {
+      id: '/api/public/v1/openapi.json'
+      path: '/api/public/v1/openapi.json'
+      fullPath: '/api/public/v1/openapi.json'
+      preLoaderRoute: typeof ApiPublicV1OpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/readiness': {
+      id: '/api/public/v1/readiness'
+      path: '/api/public/v1/readiness'
+      fullPath: '/api/public/v1/readiness'
+      preLoaderRoute: typeof ApiPublicV1ReadinessRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
