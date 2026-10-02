@@ -80,9 +80,11 @@ ALTER TABLE public.plan_entitlements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organization_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organization_entitlements ENABLE ROW LEVEL SECURITY;
 
-GRANT SELECT ON public.plans, public.plan_entitlements TO authenticated;
-GRANT SELECT ON public.organization_subscriptions, public.organization_entitlements TO authenticated;
-GRANT ALL ON public.plans, public.plan_entitlements, public.organization_subscriptions, public.organization_entitlements TO service_role;
+-- Supabase projects can have permissive default grants on public tables; revoke
+-- explicitly before granting the minimal client reads below.
+REVOKE ALL PRIVILEGES ON TABLE public.plans, public.plan_entitlements, public.organization_subscriptions, public.organization_entitlements FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.plans, public.plan_entitlements, public.organization_subscriptions, public.organization_entitlements TO authenticated;
+GRANT ALL PRIVILEGES ON TABLE public.plans, public.plan_entitlements, public.organization_subscriptions, public.organization_entitlements TO service_role;
 
 CREATE POLICY plans_read_active ON public.plans
   FOR SELECT TO authenticated USING (status = 'ACTIVE');
@@ -109,4 +111,4 @@ COMMENT ON TABLE public.plan_entitlements IS 'Entitlement defaults attached to a
 COMMENT ON TABLE public.organization_subscriptions IS 'Organization-level subscription history. Writes are reserved for trusted server-side billing/registration workflows.';
 COMMENT ON TABLE public.organization_entitlements IS 'Effective entitlement records for an organization. Server-side authorization must evaluate status and validity dates; never trust frontend counts.';
 COMMENT ON COLUMN public.organization_subscriptions.price_minor IS 'Price in minor currency units, e.g. cents/centavos. NULL until a commercial price is configured.';
-COMMENT ON COLUMN public.organization_entitlements.value IS 'Structured entitlement value; limits and capabilities are data-driven, not hard-coded in UI roles.';
+COMMENT ON COLUMN public.organization_entitlements.value IS 'Structured entitlement value; limits and capabilities are data-driven, not hard-coded in UI roles.'
