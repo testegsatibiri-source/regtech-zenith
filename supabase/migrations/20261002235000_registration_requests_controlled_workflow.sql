@@ -1,5 +1,5 @@
 -- Phase 3: controlled registration requests. Approval/conversion fields are server-only.
-CREATE TABLE public.registration_requests (
+CREATE TABLE IF NOT EXISTS public.registration_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   applicant_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
   organization_type public.organization_type NOT NULL,
@@ -24,9 +24,9 @@ CREATE TABLE public.registration_requests (
   CHECK (status <> 'CONVERTED' OR organization_id IS NOT NULL),
   UNIQUE (source_pilot_request_id)
 );
-CREATE INDEX registration_requests_applicant_created_idx ON public.registration_requests(applicant_user_id, created_at DESC);
-CREATE INDEX registration_requests_status_created_idx ON public.registration_requests(status, created_at DESC);
-CREATE INDEX registration_requests_org_idx ON public.registration_requests(organization_id) WHERE organization_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS registration_requests_applicant_created_idx ON public.registration_requests(applicant_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS registration_requests_status_created_idx ON public.registration_requests(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS registration_requests_org_idx ON public.registration_requests(organization_id) WHERE organization_id IS NOT NULL;
 
 ALTER TABLE public.registration_requests ENABLE ROW LEVEL SECURITY;
 REVOKE ALL PRIVILEGES ON TABLE public.registration_requests FROM PUBLIC, anon, authenticated;
@@ -34,9 +34,11 @@ GRANT SELECT ON TABLE public.registration_requests TO authenticated;
 GRANT INSERT (applicant_user_id, organization_type, organization_name, legal_name, tax_id, country_requested, plan_requested, expected_companies, expected_users, source_pilot_request_id) ON TABLE public.registration_requests TO authenticated;
 GRANT ALL PRIVILEGES ON TABLE public.registration_requests TO service_role;
 
+DROP POLICY IF EXISTS registration_requests_select_own ON public.registration_requests;
 CREATE POLICY registration_requests_select_own
   ON public.registration_requests FOR SELECT TO authenticated
   USING (applicant_user_id = (SELECT auth.uid()));
+DROP POLICY IF EXISTS registration_requests_insert_own ON public.registration_requests;
 CREATE POLICY registration_requests_insert_own
   ON public.registration_requests FOR INSERT TO authenticated
   WITH CHECK (
@@ -49,6 +51,7 @@ CREATE POLICY registration_requests_insert_own
     AND organization_id IS NULL
   );
 
+DROP TRIGGER IF EXISTS registration_requests_updated_at ON public.registration_requests;
 CREATE TRIGGER registration_requests_updated_at
   BEFORE UPDATE ON public.registration_requests
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
