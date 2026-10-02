@@ -42,7 +42,18 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/dashboard" });
+    if (!user) return;
+    // Platform staff land in the Backoffice; access is still enforced there.
+    void supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        const staff = (data ?? []).some((r) =>
+          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(r.role),
+        );
+        navigate({ to: staff ? "/platform" : "/dashboard" });
+      });
   }, [user, navigate]);
 
   async function signIn() {
