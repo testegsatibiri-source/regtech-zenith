@@ -62,6 +62,21 @@ function ShellInner({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pathname } = useRouterState({ select: (s) => s.location });
+  const [isStaff, setIsStaff] = useState(false);
+  useEffect(() => {
+    void supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+      setIsStaff(
+        (roles ?? []).some((r) =>
+          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(r.role),
+        ),
+      );
+    });
+  }, []);
 
   const nav = [
     { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
@@ -116,7 +131,15 @@ function ShellInner({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-border p-3">
+        <div className="space-y-1 border-t border-border p-3">
+          {isStaff && (
+            <Link
+              to="/platform"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <ShieldCheck className="h-4 w-4" /> Backoffice
+            </Link>
+          )}
           <Button
             variant="ghost"
             size="sm"
