@@ -208,6 +208,7 @@ export const decideRegistrationRequest = createServerFn({ method: "POST" })
       .from("registration_requests")
       .update(update)
       .eq("id", data.id)
+      .in("status", ["SUBMITTED", "IN_REVIEW"])
       .select("id, status, country_requested, country_approved, reviewed_by, reviewed_at, decision_reason")
       .single();
     if (error) throw new Error(error.message);
