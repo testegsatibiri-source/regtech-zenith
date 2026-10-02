@@ -92,3 +92,133 @@ export const submitRegistrationRequest = createServerFn({ method: "POST" })
     if (!row) throw new Error("Registration request was not created.");
     return row;
   });
+
+
+const registrationListSchema = z.object({
+  status: z.enum(["SUBMITTED", "IN_REVIEW", "APPROVED", "REJECTED", "WITHDRAWN", "CONVERTED"]).optional(),
+  limit: z.number().int().min(1).max(200).default(100),
+});
+
+export const listRegistrationRequests = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => registrationListSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { userHasAnyRole, PILOT_DECISION_ROLES, logPilotAudit } =
+      await import("@/lib/pilot/authorization.server");
+    if (!(await userHasAnyRole(context.userId, PILOT_DECISION_ROLES))) {
+      throw new Error("Forbidden");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let query = supabaseAdmin
+      .from("registration_requests")
+      .select(
+        "id, applicant_user_id, organization_type, organization_name, legal_name, country_requested, country_approved, plan_requested, expected_companies, expected_users, status, reviewed_by, reviewed_at, decision_reason, organization_id, created_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.status) query = query.eq("status", data.status);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    await logPilotAudit({
+      actor: context.userId,
+      action: "registration_request.list",
+      target: "registration_requests",
+      country: null,
+      payload: { status: data.status ?? null, count: (rows ?? []).length },
+    });
+    return rows ?? [];
+  });
+
+const registrationDecisionSchema = z
+  .object({
+    id: z.string().uuid(),
+    action: z.enum(["START_REVIEW", "APPROVE", "REJECT"]),
+    countryApproved: z.string().trim().regex(/^[A-Za-z]{2}$/).transform((value) => value.toUpperCase()).optional(),
+    reason: z.string().trim().max(1000).optional().nullable(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.action === "APPROVE" && !value.countryApproved) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["countryApproved"], message: "Approved country is required." });
+    }
+    if (value.action === "REJECT" && !value.reason?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["reason"], message: "A rejection reason is required." });
+    }
+    if (value.action !== "APPROVE" && value.countryApproved) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["countryApproved"], message: "Only approvals can set an approved country." });
+    }
+  });
+
+export const decideRegistrationRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => registrationDecisionSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { userHasAnyRole, PILOT_DECISION_ROLES, logPilotAudit } =
+      await import("@/lib/pilot/authorization.server");
+    if (!(await userHasAnyRole(context.userId, PILOT_DECISION_ROLES))) {
+      throw new Error("Forbidden");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: previous, error: readError } = await supabaseAdmin
+      .from("registration_requests")
+      .select("id, status, country_requested, country_approved, organization_type, organization_name, plan_requested")
+      .eq("id", data.id)
+      .single();
+    if (readError) throw new Error(readError.message);
+    if (previous.status !== "SUBMITTED" && previous.status !== "IN_REVIEW") {
+      throw new Error("Only submitted or in-review requests can be decided.");
+    }
+
+    let update: {
+      status: "IN_REVIEW" | "APPROVED" | "REJECTED";
+      country_approved?: string | null;
+      reviewed_by?: string;
+      reviewed_at?: string;
+      decision_reason?: string | null;
+    };
+
+    if (data.action === "START_REVIEW") {
+      update = { status: "IN_REVIEW" };
+    } else if (data.action === "APPROVE") {
+      const country = data.countryApproved!;
+      const { assertPackAvailable } = await import("@/lib/packs/loader.server");
+      await assertPackAvailable(country);
+      update = {
+        status: "APPROVED",
+        country_approved: country,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+        decision_reason: data.reason ?? null,
+      };
+    } else {
+      update = {
+        status: "REJECTED",
+        country_approved: null,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+        decision_reason: data.reason!.trim(),
+      };
+    }
+
+    const { data: row, error } = await supabaseAdmin
+      .from("registration_requests")
+      .update(update)
+      .eq("id", data.id)
+      .select("id, status, country_requested, country_approved, reviewed_by, reviewed_at, decision_reason")
+      .single();
+    if (error) throw new Error(error.message);
+
+    await logPilotAudit({
+      actor: context.userId,
+      action: `registration_request.${data.action.toLowerCase()}`,
+      target: data.id,
+      country: row.country_approved ?? row.country_requested,
+      oldValue: previous,
+      newValue: row,
+    });
+    return row;
+  });
