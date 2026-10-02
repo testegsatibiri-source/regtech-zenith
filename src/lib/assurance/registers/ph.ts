@@ -14,7 +14,8 @@ export const PH_EVIDENCE: EvidenceRecord[] = [
     claim: "SSS contributions follow Circular 2024-006 (15%, MSC 5,000–35,000 + MPF).",
     layer: "TEST",
     status: "VERIFIED",
-    source: "src/packs/philippines/params.ts; docs/governance/legal-opinions/PH-sss-msc-2026-09-16.md",
+    source:
+      "src/packs/philippines/params.ts; docs/governance/legal-opinions/PH-sss-msc-2026-09-16.md",
     version: "PH-2025.1",
     effectiveFrom: "2025-01-01",
     expiresAt: "2027-03-31",
@@ -28,7 +29,8 @@ export const PH_EVIDENCE: EvidenceRecord[] = [
     claim: "Withholding tax follows the TRAIN (RA 10963) 2023+ table.",
     layer: "TEST",
     status: "VERIFIED",
-    source: "src/packs/philippines/engines/tax.ts; docs/governance/legal-opinions/PH-bir-withholding-2026-09-16.md",
+    source:
+      "src/packs/philippines/engines/tax.ts; docs/governance/legal-opinions/PH-bir-withholding-2026-09-16.md",
     version: "PH-2025.1",
     effectiveFrom: "2023-01-01",
     expiresAt: "2027-03-31",
@@ -56,7 +58,8 @@ export const PH_EVIDENCE: EvidenceRecord[] = [
     claim: "Separation pay per Labor Code Arts. 297–299 with immutable approved cases.",
     layer: "TEST",
     status: "VERIFIED",
-    source: "src/packs/philippines/engines/separation.ts; src/components/separations/PhSeparationPanel.tsx",
+    source:
+      "src/packs/philippines/engines/separation.ts; src/components/separations/PhSeparationPanel.tsx",
     version: "PH-2025.1",
     effectiveFrom: "2025-01-01",
     expiresAt: "2027-03-31",
@@ -85,7 +88,8 @@ export const PH_EVIDENCE: EvidenceRecord[] = [
     claim: "Pack integrity via Ed25519 dual signature verified at install.",
     layer: "TEST",
     status: "VERIFIED",
-    source: "src/packs/philippines/signature.ts; scripts/sign-ph.ts; src/packs/__tests__/signature-tamper.test.ts",
+    source:
+      "src/packs/philippines/signature.ts; scripts/sign-ph.ts; src/packs/__tests__/signature-tamper.test.ts",
     version: "1.7.0",
     effectiveFrom: "2026-09-23",
     expiresAt: "2027-09-23",
@@ -109,12 +113,48 @@ export const PH_EVIDENCE: EvidenceRecord[] = [
 ];
 
 export const PH_GAPS: GapRecord[] = [
-  { gapId: "GAP-PH-LEGAL-001", title: "External legal opinion (IBP-registered PH counsel) on tables + calculation logic", state: "OPEN", owner: "ceo", closureCriterion: "Signed opinion covering 5 tables, dual sign-off" },
-  { gapId: "GAP-PH-FILING-001", title: "Real upload acceptance on BIR eFPS/eBIRForms, SSS, PhilHealth, Pag-IBIG portals", state: "OPEN", owner: "country_cto:PH", closureCriterion: "5 filings accepted in pilot, evidence archived" },
-  { gapId: "GAP-PH-WAGE-REGIONAL-001", title: "Wage Order resolution beyond NCR (location + industry + effective date)", state: "OPEN", owner: "country_cto:PH", closureCriterion: "All RTWPB wage orders modeled with sources and goldens" },
-  { gapId: "GAP-PH-OVERTIME-001", title: "Compositional overtime / night diff / holiday premium engine", state: "OPEN", owner: "country_cto:PH", closureCriterion: "DOLE premium engine with golden tests" },
-  { gapId: "GAP-PH-DPA-DPO-001", title: "DPO appointment, 72h breach runbook, field encryption of PH identifiers", state: "OPEN", owner: "platform_admin", closureCriterion: "PH-RA10173-1..4 closed" },
-  { gapId: "GAP-PH-OPS-SLA-001", title: "SLA in PHT timezone + E&O insurance", state: "OPEN", owner: "ceo", closureCriterion: "Signed SLA and policy on file" },
+  {
+    gapId: "GAP-PH-LEGAL-001",
+    title: "External legal opinion (IBP-registered PH counsel) on tables + calculation logic",
+    state: "OPEN",
+    owner: "ceo",
+    closureCriterion: "Signed opinion covering 5 tables, dual sign-off",
+  },
+  {
+    gapId: "GAP-PH-FILING-001",
+    title: "Real upload acceptance on BIR eFPS/eBIRForms, SSS, PhilHealth, Pag-IBIG portals",
+    state: "OPEN",
+    owner: "country_cto:PH",
+    closureCriterion: "5 filings accepted in pilot, evidence archived",
+  },
+  {
+    gapId: "GAP-PH-WAGE-REGIONAL-001",
+    title: "Wage Order resolution beyond NCR (location + industry + effective date)",
+    state: "OPEN",
+    owner: "country_cto:PH",
+    closureCriterion: "All RTWPB wage orders modeled with sources and goldens",
+  },
+  {
+    gapId: "GAP-PH-OVERTIME-001",
+    title: "Compositional overtime / night diff / holiday premium engine",
+    state: "OPEN",
+    owner: "country_cto:PH",
+    closureCriterion: "DOLE premium engine with golden tests",
+  },
+  {
+    gapId: "GAP-PH-DPA-DPO-001",
+    title: "DPO appointment, 72h breach runbook, field encryption of PH identifiers",
+    state: "OPEN",
+    owner: "platform_admin",
+    closureCriterion: "PH-RA10173-1..4 closed",
+  },
+  {
+    gapId: "GAP-PH-OPS-SLA-001",
+    title: "SLA in PHT timezone + E&O insurance",
+    state: "OPEN",
+    owner: "ceo",
+    closureCriterion: "Signed SLA and policy on file",
+  },
 ];
 
 export const PH_GATES: GateDefinition[] = [

@@ -62,10 +62,7 @@ export async function findPilotRequestByEmail(
 }
 
 /** Does this user hold any of the given platform roles? */
-export async function userHasAnyRole(
-  userId: string,
-  roles: readonly string[],
-): Promise<boolean> {
+export async function userHasAnyRole(userId: string, roles: readonly string[]): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("user_roles")

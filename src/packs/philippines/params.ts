@@ -144,7 +144,8 @@ export const PH_PARAMS = {
   statutorySources: [
     {
       table: PH_TABLES.SSS_MSC,
-      source: "SSS Circular 2024-006 (SSC Res. 560-s.2024) / RA 11199 (Social Security Act of 2018)",
+      source:
+        "SSS Circular 2024-006 (SSC Res. 560-s.2024) / RA 11199 (Social Security Act of 2018)",
       effectiveFrom: "2025-01-01",
       sourceStatus: "official",
       notes:
@@ -199,8 +200,7 @@ export const PH_PARAMS = {
 /** Monthly minimum-wage floor for a region (default NCR). Single reader for
  *  PH-DOLE-MINWAGE / PH-WO-NCR-MINWAGE — H24 array-shaped wage regions. */
 export function phMinWageMonthlyFloor(region = "NCR"): number {
-  const entry =
-    PH_PARAMS.wageRegions.find((r) => r.region === region) ?? PH_PARAMS.wageRegions[0];
+  const entry = PH_PARAMS.wageRegions.find((r) => r.region === region) ?? PH_PARAMS.wageRegions[0];
   return entry.dailyMinWage * entry.workingDaysPerMonth;
 }
 

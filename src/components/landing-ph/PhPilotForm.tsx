@@ -50,7 +50,6 @@ export function PhPilotForm() {
     form.hasOvertime &&
     form.consent;
 
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
@@ -80,7 +79,6 @@ export function PhPilotForm() {
         workforceAllNcr: "",
         hasOvertime: "",
       });
-
     } catch {
       setStatus("error");
     }
@@ -104,9 +102,7 @@ export function PhPilotForm() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
                   <p className="font-medium">{t("ph.form.eligibility.title")}</p>
-                  <p className="mt-1 text-muted-foreground">
-                    {t("ph.form.eligibility.notice")}
-                  </p>
+                  <p className="mt-1 text-muted-foreground">{t("ph.form.eligibility.notice")}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -209,7 +205,6 @@ export function PhPilotForm() {
                   </p>
                 )}
                 <div className="flex items-start gap-3">
-
                   <Checkbox
                     id="ph-consent"
                     checked={form.consent}

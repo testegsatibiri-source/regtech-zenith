@@ -49,7 +49,9 @@ function AuthPage() {
       .eq("user_id", user.id)
       .then(({ data }) => {
         const staff = (data ?? []).some((r) =>
-          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(r.role),
+          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(
+            r.role,
+          ),
         );
         navigate({ to: staff ? "/platform" : "/dashboard" });
       });
@@ -148,8 +150,8 @@ function AuthPage() {
                 this CTA is the only legitimate entry path for a new company. */}
             <div className="mt-5 rounded-md border border-border bg-muted/40 p-3 text-center">
               <p className="text-xs text-muted-foreground">
-                UBoardAsia operates controlled access during its Homologation Pilot Program.
-                New organizations join by approved application only.
+                UBoardAsia operates controlled access during its Homologation Pilot Program. New
+                organizations join by approved application only.
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
                 <Button asChild size="sm" variant="secondary">

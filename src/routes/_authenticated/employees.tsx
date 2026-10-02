@@ -76,7 +76,6 @@ function blank(companyId: string, term: PackTerminology): Emp {
   };
 }
 
-
 function Employees() {
   const { companyId } = useCompany();
   const activePack = useActivePack();
@@ -100,7 +99,9 @@ function Employees() {
   if (!companyId) return <p className="text-muted-foreground">Create a company first.</p>;
 
   function edit(e?: Emp) {
-    setDraft(e ? { ...e, country_metadata: { ...(e.country_metadata ?? {}) } } : blank(companyId!, t));
+    setDraft(
+      e ? { ...e, country_metadata: { ...(e.country_metadata ?? {}) } } : blank(companyId!, t),
+    );
     setOpen(true);
   }
 

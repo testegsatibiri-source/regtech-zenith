@@ -42,9 +42,8 @@ export const createCompany = createServerFn({ method: "POST" })
     // the jurisdiction their approval covers. This runs BEFORE any write and
     // is the real control — the UI gate is only UX. A client that calls this
     // RPC directly, or signs in through Google, hits exactly this check.
-    const { authorizePilotCountry, logPilotAudit } = await import(
-      "@/lib/pilot/authorization.server"
-    );
+    const { authorizePilotCountry, logPilotAudit } =
+      await import("@/lib/pilot/authorization.server");
     const { DENIAL_MESSAGES } = await import("@/lib/pilot/authorization");
 
     const auth = await authorizePilotCountry({

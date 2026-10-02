@@ -76,8 +76,12 @@ function PilotsPage() {
   }
 
   const approve = useMutation({
-    mutationFn: (vars: { id: string; authorizedCountry: "ID" | "PH" | "BOTH"; pilotExpiresAt: string | null; reason: string | null }) =>
-      approveFn({ data: vars }),
+    mutationFn: (vars: {
+      id: string;
+      authorizedCountry: "ID" | "PH" | "BOTH";
+      pilotExpiresAt: string | null;
+      reason: string | null;
+    }) => approveFn({ data: vars }),
     onSuccess: () => {
       toast.success("Pilot approved");
       invalidate();
@@ -385,12 +389,7 @@ function RequestDetail(props: {
 
         <div className="space-y-2 border-t border-border pt-4">
           <Label htmlFor="notes">Internal compliance notes</Label>
-          <Textarea
-            id="notes"
-            rows={3}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+          <Textarea id="notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
           <Button size="sm" variant="secondary" onClick={() => props.onSaveNotes(notes)}>
             Save notes
           </Button>
@@ -428,7 +427,6 @@ function RiskSummary(props: { id: string; notes: string }) {
     </div>
   );
 }
-
 
 function fmtBool(v: boolean | null | undefined): string {
   return v === null || v === undefined ? "—" : v ? "Yes" : "No";

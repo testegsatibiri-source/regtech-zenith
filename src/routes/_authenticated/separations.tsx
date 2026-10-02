@@ -126,7 +126,6 @@ function SeparationsPage() {
       ) : activePack.code === "PH" ? (
         <PhSeparationPanel companyId={companyId} />
       ) : unsupported ? (
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

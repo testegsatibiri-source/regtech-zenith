@@ -47,7 +47,9 @@ describe("H17-ID landing route", () => {
     // ã/õ/ç diacritics plus common PT-only words.
     const PT_PATTERN = /[ãõç]|\b(cada|contendo|através|então|agora|você|não|só)\b/i;
     for (const line of localizedLines) {
-      expect(line, `dictionary line must not contain Portuguese: ${line.trim()}`).not.toMatch(PT_PATTERN);
+      expect(line, `dictionary line must not contain Portuguese: ${line.trim()}`).not.toMatch(
+        PT_PATTERN,
+      );
     }
   });
 });

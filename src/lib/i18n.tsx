@@ -339,7 +339,6 @@ const D: Dict = {
     fil: "Batay sa inyong mga sagot, hindi pa sakop ng pilot ang senaryong ito. Itatala namin ang request para sa triage at ipaaalam namin kapag handa na ang regional wage tables o ang kalkulasyon ng overtime.",
   },
 
-
   "ph.footer.tagline": {
     en: "B2B infrastructure for payroll compliance.",
     fil: "Imprastrakturang B2B para sa payroll compliance.",

@@ -32,7 +32,4 @@ if (missing.length) {
   console.error("verify-bundle-packs: packs missing from built catalog:", missing.join(", "));
   process.exit(1);
 }
-console.log(
-  "verify-bundle-packs: OK —",
-  entries.map((e) => `${e.code}:${e.tier}`).join(" "),
-);
+console.log("verify-bundle-packs: OK —", entries.map((e) => `${e.code}:${e.tier}`).join(" "));

@@ -62,7 +62,10 @@ describe("PH statutory provenance — evidence linkage", () => {
     for (const e of PH_PARAMS.statutorySources) {
       if (e.sourceStatus !== "official") continue;
       const ev = evidenceFiles.find((f) => f.tableId === e.table);
-      expect(ev, `no evidence file with Table ID ${e.table} (status '${e.sourceStatus}')`).toBeTruthy();
+      expect(
+        ev,
+        `no evidence file with Table ID ${e.table} (status '${e.sourceStatus}')`,
+      ).toBeTruthy();
     }
   });
 
