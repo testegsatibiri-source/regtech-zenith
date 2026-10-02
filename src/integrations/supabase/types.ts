@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      registration_requests: {
+        Row: {
+          applicant_user_id: string
+          country_approved: string | null
+          country_requested: string
+          created_at: string
+          decision_reason: string | null
+          expected_companies: number
+          expected_users: number
+          id: string
+          legal_name: string | null
+          organization_id: string | null
+          organization_name: string
+          organization_type: Database["public"]["Enums"]["organization_type"]
+          plan_requested: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_pilot_request_id: string | null
+          status: string
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          applicant_user_id: string
+          country_approved?: string | null
+          country_requested: string
+          created_at?: string
+          decision_reason?: string | null
+          expected_companies?: number
+          expected_users?: number
+          id?: string
+          legal_name?: string | null
+          organization_id?: string | null
+          organization_name: string
+          organization_type: Database["public"]["Enums"]["organization_type"]
+          plan_requested?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_pilot_request_id?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applicant_user_id?: string
+          country_approved?: string | null
+          country_requested?: string
+          created_at?: string
+          decision_reason?: string | null
+          expected_companies?: number
+          expected_users?: number
+          id?: string
+          legal_name?: string | null
+          organization_id?: string | null
+          organization_name?: string
+          organization_type?: Database["public"]["Enums"]["organization_type"]
+          plan_requested?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_pilot_request_id?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_requests_applicant_user_id_fkey"
+            columns: ["applicant_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_requests_source_pilot_request_id_fkey"
+            columns: ["source_pilot_request_id"]
+            isOneToOne: true
+            referencedRelation: "pilot_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_escalations: {
         Row: {
           after_seconds: number
@@ -3002,6 +3097,11 @@ export type Database = {
       }
     }
     Enums: {
+        organization_company_relationship: "OWNER" | "ACCOUNTING_FIRM" | "PAYROLL_PROVIDER" | "ADVISOR"
+        organization_member_role: "OWNER" | "ADMIN" | "ACCOUNTANT" | "HR" | "PAYROLL_OPERATOR" | "VIEWER"
+        organization_member_status: "INVITED" | "ACTIVE" | "SUSPENDED" | "REMOVED"
+        organization_status: "PENDING" | "ACTIVE" | "SUSPENDED" | "ARCHIVED"
+        organization_type: "ACCOUNTING_FIRM" | "COMPANY"
       app_role:
         | "admin"
         | "manager"
@@ -3172,6 +3272,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      organization_company_relationship: ["OWNER", "ACCOUNTING_FIRM", "PAYROLL_PROVIDER", "ADVISOR"],
+      organization_member_role: ["OWNER", "ADMIN", "ACCOUNTANT", "HR", "PAYROLL_OPERATOR", "VIEWER"],
+      organization_member_status: ["INVITED", "ACTIVE", "SUSPENDED", "REMOVED"],
+      organization_status: ["PENDING", "ACTIVE", "SUSPENDED", "ARCHIVED"],
+      organization_type: ["ACCOUNTING_FIRM", "COMPANY"],
       app_role: [
         "admin",
         "manager",
