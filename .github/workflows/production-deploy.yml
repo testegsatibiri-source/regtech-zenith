@@ -1,18 +1,12 @@
 name: Production Deploy
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
-      force_deploy:
-        description: "Ignore missing secrets and try to deploy anyway"
-        type: boolean
-        default: false
       confirm_production:
-        description: 'Type "PRODUCTION" to confirm — required for manual dispatch'
+        description: 'Type "PRODUCTION" to authorize a production release'
+        required: true
         type: string
-        default: ""
 
 concurrency:
   group: production-deploy
@@ -28,138 +22,108 @@ jobs:
       test-command: "bun test"
       typecheck: true
 
-  preflight:
-    runs-on: ubuntu-latest
-    outputs:
-      ready: ${{ steps.check.outputs.ready }}
-      dispatch_ok: ${{ steps.dispatch.outputs.ok }}
-    steps:
-      - id: dispatch
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.confirm_production }}" != "PRODUCTION" ]; then
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "::error title=Confirmation required::Manual production dispatch requires confirm_production = \"PRODUCTION\"."
-            exit 1
-          fi
-          echo "ok=true" >> "$GITHUB_OUTPUT"
-      - id: check
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF_PROD: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
-          SUPABASE_DB_PASSWORD_PROD: ${{ secrets.SUPABASE_DB_PASSWORD_PROD }}
-        run: |
-          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ] \
-             && [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_PROJECT_REF_PROD" ] && [ -n "$SUPABASE_DB_PASSWORD_PROD" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "✅ Production secrets configured — deployment will proceed."
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            {
-              echo "### ⏭️ Production deploy skipped"
-              echo ""
-              echo "Deployment skipped because production infrastructure is not configured yet (missing GitHub Secrets). CI completed successfully."
-              echo ""
-              echo "**Required secrets (production environment):** \`VERCEL_TOKEN\`, \`VERCEL_ORG_ID\`, \`VERCEL_PROJECT_ID\`, \`SUPABASE_ACCESS_TOKEN\`, \`SUPABASE_PROJECT_REF_PROD\`, \`SUPABASE_DB_PASSWORD_PROD\`."
-              echo "**To enable:** configure them in the \`production\` environment (Settings → Environments) or trigger this workflow manually with \`force_deploy: true\` + \`confirm_production: PRODUCTION\`."
-            } >> "$GITHUB_STEP_SUMMARY"
-            echo "::notice title=Deploy skipped::Production infrastructure not configured (missing GitHub Secrets). CI completed successfully."
-          fi
-
   deploy-production:
-    needs: [full-ci, preflight]
-    if: needs.preflight.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true'
+    needs: [full-ci]
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm_production == 'PRODUCTION'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     environment:
       name: production
-      url: https://app.uboard.app
+    permissions:
+      contents: write
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF_PROD: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD_PROD }}
     steps:
+      - name: Fail closed if production is not configured
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.confirm_production }}" != "PRODUCTION" ]; then
+            echo "::error::Type PRODUCTION to authorize a production release."
+            exit 1
+          fi
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_REF_PROD SUPABASE_DB_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Required production secret is missing: $name"
+              exit 1
+            fi
+          done
+          if [ "$SUPABASE_PROJECT_REF_PROD" = "lyjxnceaoaivnantwmni" ]; then
+            echo "::error::Production must never target the reviewed staging project."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.3.3"
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - name: Apply prod migrations
-        # GitHub runners have no IPv6; use the IPv4 session pooler.
-        run: |
-          set -euo pipefail
-          REF="${{ secrets.SUPABASE_PROJECT_REF_PROD }}"
-          supabase link --project-ref "$REF"
-          REGION=$(curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-            https://api.supabase.com/v1/projects | jq -r --arg ref "$REF" '.[] | select(.id==$ref) | .region')
-          if [ -z "$REGION" ] || [ "$REGION" = "null" ]; then
-            echo "::error::Could not resolve region for project $REF"; exit 1
-          fi
-          PW_ENC=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri')
-          echo "::add-mask::$PW_ENC"
-          supabase db push --db-url "postgresql://postgres.${REF}:${PW_ENC}@aws-0-${REGION}.pooler.supabase.com:5432/postgres?sslmode=require"
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD_PROD }}
-
-
       - name: Install Vercel CLI
         run: bun add -g vercel@latest
 
-      - name: Pull production env
-        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+      - name: Pull production environment
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
-      - name: Build production
-        run: vercel build --prod --token=$VERCEL_TOKEN
+      - name: Build production artifact
+        run: vercel build --prod --token="$VERCEL_TOKEN"
         env:
-          # Pins nitro's `vercel` preset (see vite.config.ts). Absent elsewhere
-          # means Lovable/Cloudflare — do not set this in other workflows.
           BUILD_TARGET: vercel
 
-      - name: Deploy production
+      - name: Validate Supabase project region
+        id: supabase
+        run: |
+          set -euo pipefail
+          REGION=$(curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" https://api.supabase.com/v1/projects | jq -r --arg ref "$SUPABASE_PROJECT_REF_PROD" '.[] | select(.id==$ref) | .region')
+          if [ -z "$REGION" ] || [ "$REGION" = "null" ]; then
+            echo "::error::Unable to resolve production project region."
+            exit 1
+          fi
+          echo "region=$REGION" >> "$GITHUB_OUTPUT"
+
+      - name: Dry-run production migrations
+        run: |
+          set -euo pipefail
+          PW_ENC=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri')
+          echo "::add-mask::$PW_ENC"
+          DB_URL="postgresql://postgres.$SUPABASE_PROJECT_REF_PROD:$PW_ENC@aws-0-${{ steps.supabase.outputs.region }}.pooler.supabase.com:5432/postgres?sslmode=require"
+          supabase db push --db-url "$DB_URL" --dry-run
+
+      - name: Apply production migrations
+        run: |
+          set -euo pipefail
+          PW_ENC=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p|@uri')
+          echo "::add-mask::$PW_ENC"
+          DB_URL="postgresql://postgres.$SUPABASE_PROJECT_REF_PROD:$PW_ENC@aws-0-${{ steps.supabase.outputs.region }}.pooler.supabase.com:5432/postgres?sslmode=require"
+          supabase db push --db-url "$DB_URL"
+
+      - name: Deploy production artifact
         id: deploy
         run: |
-          URL=$(vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN | tail -n1)
+          set -euo pipefail
+          URL=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN" | tail -n1)
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Post-deploy health check
         run: |
+          set -euo pipefail
           sleep 10
-          curl -fsSL "${{ steps.deploy.outputs.url }}/api/public/v1/health" | tee health.json
+          curl -fsSL --retry 5 --retry-delay 3 "${{ steps.deploy.outputs.url }}/api/public/v1/health" | tee health.json
           grep -q '"status":"ok"' health.json
 
       - name: Tag release
         run: |
+          set -euo pipefail
           VERSION=$(node -p "require('./package.json').version")
           TAG="v${VERSION}-$(date -u +%Y%m%d%H%M%S)"
           git tag "$TAG"
           git push origin "$TAG"
-
-  auto-issue-on-failure:
-    needs: [full-ci, preflight, deploy-production]
-    if: failure() && (needs.preflight.outputs.ready == 'true' || github.event.inputs.force_deploy == 'true')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `PRODUCTION DEPLOY FAILED — ${context.sha.slice(0,7)}`,
-              body: `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nFollow docs/governance/rollback-playbook.md.`,
-              labels: ['production-incident', 'urgent']
-            });
