@@ -65,9 +65,10 @@ async function persistCompatReports(): Promise<void> {
     const artifactSignatures = registrySignatures.length
       ? (registrySignatures as Parameters<typeof compatibilityService.check>[0]["signatures"])
       : signatureBlockToRecords(m.signatureBlock);
-    const signatures = (artifactSignatures ?? []).filter((signature) =>
-      trust.requiredCapabilities.includes(signature.capability),
-    );
+    // Do not pre-filter by required capabilities here: production requires both
+    // author and countersign records. CompatibilityService must see the complete
+    // signature set so it can validate count, distinct signers, and each capability.
+    const signatures = artifactSignatures ?? [];
     try {
       const report = await compatibilityService.check({
         pack: rec.pack,
