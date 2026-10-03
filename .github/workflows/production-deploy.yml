@@ -45,6 +45,10 @@ jobs:
             echo "::error::Type PRODUCTION to authorize a production release."
             exit 1
           fi
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "::error::Production releases must be dispatched from the main branch."
+            exit 1
+          fi
           for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_REF_PROD SUPABASE_DB_PASSWORD; do
             if [ -z "${!name:-}" ]; then
               echo "::error::Required production secret is missing: $name"
