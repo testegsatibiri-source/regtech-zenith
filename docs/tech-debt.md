@@ -186,36 +186,56 @@ Anything not tagged is not tracked — either tag it or delete it.
 
 
 ### P3 — Backlog
-- **DEBT-018 · Public API multi-country.** `/api/public/v1/calculate-tax` and `/calculate-bpjs` remain ID-only (fields `maritalStatus`, `hasNpwp`, IDR). Reshape when a real PH/MY API customer exists.
-- **DEBT-013 · Read replica for `apiAuth` key lookup.** `supabaseAdmin` is correct; revisit once traffic > 100 rps.
+
+- **DEBT-018 · Public API multi-country.** `/api/public/v1/calculate-tax` and
+`/calculate-bpjs` remain ID-only (fields `maritalStatus`, `hasNpwp`, IDR).
+Reshape when a real PH/MY API customer exists.
+- **DEBT-013 · Read replica for `apiAuth` key lookup.** `supabaseAdmin` is
+correct; revisit once traffic > 100 rps.
+
 
 ### Deferred
-- **Country Pack marketplace.** Deferred until ≥ 3 external maintainers exist (see `docs/architecture/repository-strategy.md` exit criteria).
-- **Signature verification hot-path.** Deferred with DEBT-016 until publisher key store is designed.
-- **Hot reload / remote plugins.** Deferred to platform v3.0 (see `docs/governance/architecture-freeze.md`).
+
+- **Country Pack marketplace.** Deferred until ≥ 3 external maintainers exist
+(see `docs/architecture/repository-strategy.md` exit criteria).
+- **Signature verification hot-path.** Deferred with DEBT-016 until publisher
+key store is designed.
+- **Hot reload / remote plugins.** Deferred to platform v3.0 (see
+`docs/governance/architecture-freeze.md`).
 - **Microservice split of providers.** Deferred to v3.0 isolation criterion.
 
+
 ### Won't Do
-- **DEBT-011 · Linter WARN 0029 on `has_role`.** Function is intentionally executable by `authenticated` because RLS policies elsewhere call it inline. Accepted risk; not a defect.
+
+- **DEBT-011 · Linter WARN 0029 on `has_role`.** Function is intentionally
+executable by `authenticated` because RLS policies elsewhere call it inline.
+Accepted risk; not a defect.
 
 ---
 
 ## H23-A0 delivered (ID UMP 2026 epistemic update)
 
-- `src/packs/indonesia/params/ump-2026.ts` updated to 38 provinces with 2026 values reported by Kemnaker via CNN Indonesia.
-- Every entry carries `sourceStatus: "media-report"` because the exact SK Gubernur figures are still pending; `stale` flags removed.
-- `UmpSourceStatus` type added (`official | media-report | stale`) so the engine can distinguish precision levels.
-- `ComplianceRule.evaluate` and `Finding` now support an optional `conclusive` flag.
-- `ID-UMR-01` reports **non-conclusive** while the source is not `official`; score is not inflated by unverified data.
-- Test coverage: `src/packs/indonesia/__tests__/ump.test.ts` (4 tests) locks the epistemic contract.
+- `src/packs/indonesia/params/ump-2026.ts` updated to 38 provinces with 2026
+values reported by Kemnaker via CNN Indonesia.
+- Every entry carries `sourceStatus: "media-report"` because the exact SK
+Gubernur figures are still pending; `stale` flags removed.
+- `UmpSourceStatus` type added (`official | media-report | stale`) so the
+engine can distinguish precision levels.
+- `ComplianceRule.evaluate` and `Finding` now support an optional `conclusive`
+flag.
+- `ID-UMR-01` reports **non-conclusive** while the source is not `official`;
+score is not inflated by unverified data.
+- Test coverage: `src/packs/indonesia/__tests__/ump.test.ts` (4 tests) locks
+the epistemic contract.
 
 **Remaining for DEBT-024 close:** reconcile each provincial figure against the official Gubernatorial Decree and flip `sourceStatus` to `"official"` before Indonesia can advance past A0.
 
+
 ### DEBT-025 — UMK layer not reconciled (H23-A0)
+
 `src/packs/indonesia/params/umk-2026.ts` ships the UMP→UMK resolution hierarchy (PP 36/2021 jo. Permenaker 16/2024 Art. 8) with 16 high-headcount regencies/cities carrying the last reported **2025** figures, all marked `sourceStatus: "stale"`. `resolveWageFloor()` takes the worst status across the chain, so a stale UMK contaminates an official UMP and `ID-UMR-01` degrades to `conclusive: false` with a printed resolution trail. Absence of a row means "not reconciled", never "no UMK exists".
 
 **Remaining for DEBT-025 close:** load the 2026 SK Gubernur UMK decrees for all 38 provinces, flip entries to `"official"`, and confirm `umkConclusive()` returns true.
-
 
 
 ## Fast follow-ups (< 1 hour each)
