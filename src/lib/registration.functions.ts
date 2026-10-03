@@ -250,7 +250,6 @@ export const decideRegistrationRequest = createServerFn({ method: "POST" })
     return row;
   });
 
-
 const convertRegistrationSchema = z.object({ id: z.string().uuid() }).strict();
 
 type ConversionRpcResult = {
@@ -294,7 +293,9 @@ export const convertApprovedRegistrationRequest = createServerFn({ method: "POST
       throw new Error("Only an approved request can be converted.");
     }
     if (request.status === "CONVERTED" && !request.organization_id) {
-      throw new Error("Converted request is missing its organization link; manual reconciliation required.");
+      throw new Error(
+        "Converted request is missing its organization link; manual reconciliation required.",
+      );
     }
     if (!request.country_approved) {
       throw new Error("An approved country is required before conversion.");
