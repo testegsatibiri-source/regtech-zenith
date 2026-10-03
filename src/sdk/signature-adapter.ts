@@ -22,9 +22,7 @@ function toRecord(
   };
 }
 
-export function signatureBlockToRecords(
-  block: SignatureBlock | undefined,
-): PackSignatureRecord[] {
+export function signatureBlockToRecords(block: SignatureBlock | undefined): PackSignatureRecord[] {
   if (!block) return [];
   const records = [toRecord(block.author, "pack.sign")];
   if (block.countersign) records.push(toRecord(block.countersign, "pack.countersign"));
