@@ -32,8 +32,7 @@ export const ID_EVIDENCE: EvidenceRecord[] = [
       "BPJS Ketenagakerjaan 2026 rates (JHT 2%/3,7%, JP 1%/2% cap Rp 10.547.000, JKK 5 risk levels, JKM 0,3%, JKP) applied per component.",
     layer: "TEST",
     status: "VERIFIED",
-    source:
-      "src/packs/indonesia/params/bpjs-2026.ts; src/packs/indonesia/__tests__/h23-a.test.ts",
+    source: "src/packs/indonesia/params/bpjs-2026.ts; src/packs/indonesia/__tests__/h23-a.test.ts",
     version: "ID-2026.4",
     effectiveFrom: "2026-01-01",
     expiresAt: "2027-03-31",
@@ -109,7 +108,8 @@ export const ID_EVIDENCE: EvidenceRecord[] = [
       "UU PDP (Law 27/2022) consent versioning, retention and field encryption implemented for pilot data.",
     layer: "IMPLEMENTATION",
     status: "PARTIAL",
-    source: "src/lib/privacy.functions.ts; src/lib/pilot.functions.ts; docs/adr/ADR-0038-commercial-readiness-privacy-extension.md",
+    source:
+      "src/lib/privacy.functions.ts; src/lib/pilot.functions.ts; docs/adr/ADR-0038-commercial-readiness-privacy-extension.md",
     version: "1.0",
     effectiveFrom: "2026-09-08",
     expiresAt: "2027-03-31",

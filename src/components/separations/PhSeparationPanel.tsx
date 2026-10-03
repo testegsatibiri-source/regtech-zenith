@@ -110,11 +110,7 @@ export function PhSeparationPanel({ companyId }: { companyId: string }) {
               </div>
               <div className="space-y-2">
                 <Label>Date hired</Label>
-                <Input
-                  type="date"
-                  value={joinDate}
-                  onChange={(e) => setJoinDate(e.target.value)}
-                />
+                <Input type="date" value={joinDate} onChange={(e) => setJoinDate(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Separation date</Label>

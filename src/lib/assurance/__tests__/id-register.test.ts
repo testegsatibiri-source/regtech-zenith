@@ -91,7 +91,10 @@ describe("ID assurance evaluation", () => {
   });
 
   it("human-readable register lists every EV/GAP id", () => {
-    const doc = readFileSync("docs/governance/evidence-register/ID-evidence-register-v1.0.md", "utf8");
+    const doc = readFileSync(
+      "docs/governance/evidence-register/ID-evidence-register-v1.0.md",
+      "utf8",
+    );
     for (const id of [...ID_EVIDENCE.map((e) => e.evidenceId), ...ID_GAPS.map((g) => g.gapId)]) {
       expect(doc).toContain(id);
     }

@@ -6,6 +6,12 @@ import type { PlatformAction } from "../policy/types";
 import { permissionService } from "../permissionService";
 import { auditService } from "./audit";
 import { CountryRuntime } from "@/sdk";
+import { compatibilityService } from "@/sdk/compatibility";
+import { currentTrustPolicy } from "@/sdk/trust-policy";
+import { currentEnv } from "@/sdk/feature-gates";
+import { trustStore } from "./signing";
+import { signatureBlockToRecords } from "@/sdk/signature-adapter";
+import { canonicalManifestBytes } from "@/packs/indonesia/params/canonical-manifest";
 
 export type ReleaseStatus =
   | "draft"
@@ -58,6 +64,32 @@ async function evaluateGates(country: string): Promise<{ ok: boolean; details: s
   } catch (e) {
     details.push(`health check threw: ${(e as Error).message}`);
   }
+
+  // Signature gate: release publication must verify the exact runtime artifact.
+  const trust = currentTrustPolicy();
+  const manifest = rec.pack.manifest;
+  const signatures = signatureBlockToRecords(manifest.signatureBlock);
+  const signatureReport = await compatibilityService.check({
+    pack: rec.pack,
+    installed: CountryRuntime.list(),
+    signatures,
+    trust,
+    trustStore,
+    manifestBytes: canonicalManifestBytes(manifest),
+  });
+  if (!signatureReport.ok) {
+    details.push(
+      `signature verification failed: ${signatureReport.rejections.map((r) => r.code).join(", ")}`,
+    );
+  }
+
+  // Production must never publish while the registry gate is disabled.
+  if (currentEnv() === "production") {
+    // The production workflow separately controls deployment; this service still
+    // refuses a release if signature verification is unavailable or invalid.
+    if (!signatureReport.ok) details.push("production registry publication blocked");
+  }
+
   return { ok: details.length === 0, details };
 }
 

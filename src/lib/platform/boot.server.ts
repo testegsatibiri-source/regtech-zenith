@@ -13,6 +13,8 @@ import { COMPATIBILITY_MATRIX_V1 } from "@/sdk/compatibility-matrix";
 import { currentEnv } from "@/sdk/feature-gates";
 import { currentTrustPolicy } from "@/sdk/trust-policy";
 import { trustStore } from "@/lib/platform/service/signing";
+import { canonicalManifestBytes } from "@/packs/indonesia/params/canonical-manifest";
+import { signatureBlockToRecords } from "@/sdk/signature-adapter";
 
 async function loadGates() {
   const { data, error } = await supabaseAdmin
@@ -56,9 +58,17 @@ async function persistCompatReports(): Promise<void> {
   for (const rec of installed) {
     const m = rec.pack.manifest;
     const regEntry = registryById.get(`${m.country}@${m.version}`);
-    const signatures = (regEntry?.sigs ?? []) as Parameters<
-      typeof compatibilityService.check
-    >[0]["signatures"];
+    // Verify the signature block shipped with the actual runtime artifact. Registry
+    // publication is tracked separately by the boot gate; an absent registry row must
+    // not erase the artifact signatures, nor make the pack appear published.
+    const registrySignatures = regEntry?.sigs ?? [];
+    const artifactSignatures = registrySignatures.length
+      ? (registrySignatures as Parameters<typeof compatibilityService.check>[0]["signatures"])
+      : signatureBlockToRecords(m.signatureBlock);
+    // Do not pre-filter by required capabilities here: production requires both
+    // author and countersign records. CompatibilityService must see the complete
+    // signature set so it can validate count, distinct signers, and each capability.
+    const signatures = artifactSignatures ?? [];
     try {
       const report = await compatibilityService.check({
         pack: rec.pack,
@@ -66,6 +76,7 @@ async function persistCompatReports(): Promise<void> {
         signatures,
         trust,
         trustStore,
+        manifestBytes: canonicalManifestBytes(m),
       });
       await supabaseAdmin.from("compatibility_reports").insert({
         pack_country: m.country,

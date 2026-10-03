@@ -65,14 +65,28 @@ export function NewPilotForm(props: { onDone: () => void; onCancel: () => void }
             m.mutate();
           }}
         >
-          <div><Label>Contact name</Label><Input required value={f.fullName} onChange={set("fullName")} /></div>
-          <div><Label>Contact e-mail (login)</Label><Input required type="email" value={f.email} onChange={set("email")} /></div>
-          <div><Label>Company</Label><Input required value={f.companyName} onChange={set("companyName")} /></div>
-          <div><Label>Contact role</Label><Input required value={f.role} onChange={set("role")} /></div>
+          <div>
+            <Label>Contact name</Label>
+            <Input required value={f.fullName} onChange={set("fullName")} />
+          </div>
+          <div>
+            <Label>Contact e-mail (login)</Label>
+            <Input required type="email" value={f.email} onChange={set("email")} />
+          </div>
+          <div>
+            <Label>Company</Label>
+            <Input required value={f.companyName} onChange={set("companyName")} />
+          </div>
+          <div>
+            <Label>Contact role</Label>
+            <Input required value={f.role} onChange={set("role")} />
+          </div>
           <div>
             <Label>Employees</Label>
             <select className={sel} value={f.employeeRange} onChange={set("employeeRange")}>
-              {["1-50", "51-200", "201-1000", "1000+"].map((r) => <option key={r}>{r}</option>)}
+              {["1-50", "51-200", "201-1000", "1000+"].map((r) => (
+                <option key={r}>{r}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -83,14 +97,21 @@ export function NewPilotForm(props: { onDone: () => void; onCancel: () => void }
               <option value="BOTH">Both</option>
             </select>
           </div>
-          <div><Label>Pilot expires (optional)</Label><Input type="date" value={f.expires} onChange={set("expires")} /></div>
+          <div>
+            <Label>Pilot expires (optional)</Label>
+            <Input type="date" value={f.expires} onChange={set("expires")} />
+          </div>
           <div className="sm:col-span-2">
             <Label>Reason / commercial basis (required)</Label>
             <Textarea required value={f.reason} onChange={set("reason")} />
           </div>
           <div className="flex gap-2 sm:col-span-2">
-            <Button type="submit" disabled={m.isPending}>{m.isPending ? "Saving…" : "Register & approve"}</Button>
-            <Button type="button" variant="outline" onClick={props.onCancel}>Cancel</Button>
+            <Button type="submit" disabled={m.isPending}>
+              {m.isPending ? "Saving…" : "Register & approve"}
+            </Button>
+            <Button type="button" variant="outline" onClick={props.onCancel}>
+              Cancel
+            </Button>
           </div>
         </form>
       </CardContent>

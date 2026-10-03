@@ -1,0 +1,2 @@
+-- Superseded by 20261002235000_registration_requests_controlled_workflow.sql.
+-- Keep this earlier timestamp as a no-op so clean installs create tenancy dependencies first.

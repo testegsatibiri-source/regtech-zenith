@@ -16,7 +16,8 @@ export const Route = createFileRoute("/ph/patakaran-sa-privacy")({
       },
       {
         property: "og:description",
-        content: "Patakaran sa privacy para sa pilot validation program ng UBoard Asia sa Pilipinas.",
+        content:
+          "Patakaran sa privacy para sa pilot validation program ng UBoard Asia sa Pilipinas.",
       },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "fil_PH" },
@@ -56,9 +57,10 @@ function PhPrivacyPolicy() {
             <section>
               <h2 className="mb-2 text-lg font-medium text-foreground">2. Layunin ng paggamit</h2>
               <p>
-                Ginagamit ang datos upang suriin ang pagiging angkop sa pilot program, makipag-ugnayan
-                sa aplikante, at tuparin ang mga panloob na obligasyon sa audit. Hindi namin
-                ibinebenta o ibinabahagi ang personal na datos sa ikatlong partido para sa marketing.
+                Ginagamit ang datos upang suriin ang pagiging angkop sa pilot program,
+                makipag-ugnayan sa aplikante, at tuparin ang mga panloob na obligasyon sa audit.
+                Hindi namin ibinebenta o ibinabahagi ang personal na datos sa ikatlong partido para
+                sa marketing.
               </p>
             </section>
             <section>
@@ -91,11 +93,13 @@ function PhPrivacyPolicy() {
               </p>
             </section>
             <section>
-              <h2 className="mb-2 text-lg font-medium text-foreground">6. Pagbabago sa patakaran</h2>
+              <h2 className="mb-2 text-lg font-medium text-foreground">
+                6. Pagbabago sa patakaran
+              </h2>
               <p>
                 Ipapaalam sa pamamagitan ng email ang anumang materyal na pagbabago. Ang bersyon ng
-                pahintulot na tinanggap ninyo noong nagpadala kayo ay nananatiling nakatala kasama ng
-                inyong datos.
+                pahintulot na tinanggap ninyo noong nagpadala kayo ay nananatiling nakatala kasama
+                ng inyong datos.
               </p>
             </section>
           </CardContent>

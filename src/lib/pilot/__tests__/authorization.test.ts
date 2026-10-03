@@ -24,14 +24,11 @@ describe("pilot authorization boundary", () => {
     expect(d).toEqual({ allowed: false, reason: "no_request", requestId: null });
   });
 
-  it.each(["new", "qualified", "rejected"] as const)(
-    "denies a request in status %s",
-    (status) => {
-      const d = evaluatePilotAuthorization(rec({ status }), "PH", NOW);
-      expect(d.allowed).toBe(false);
-      expect(d.allowed === false && d.reason).toBe("not_approved");
-    },
-  );
+  it.each(["new", "qualified", "rejected"] as const)("denies a request in status %s", (status) => {
+    const d = evaluatePilotAuthorization(rec({ status }), "PH", NOW);
+    expect(d.allowed).toBe(false);
+    expect(d.allowed === false && d.reason).toBe("not_approved");
+  });
 
   it("allows an approved request for its authorized country", () => {
     const d = evaluatePilotAuthorization(rec(), "PH", NOW);
@@ -69,11 +66,7 @@ describe("pilot authorization boundary", () => {
   });
 
   it("treats the expiry instant itself as expired", () => {
-    const d = evaluatePilotAuthorization(
-      rec({ pilot_expires_at: NOW.toISOString() }),
-      "PH",
-      NOW,
-    );
+    const d = evaluatePilotAuthorization(rec({ pilot_expires_at: NOW.toISOString() }), "PH", NOW);
     expect(d.allowed === false && d.reason).toBe("expired");
   });
 

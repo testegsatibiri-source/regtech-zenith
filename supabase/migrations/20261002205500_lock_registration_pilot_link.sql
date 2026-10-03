@@ -1,0 +1,2 @@
+-- Superseded by 20261002235100_lock_registration_pilot_link.sql.
+-- This lock must run after registration_requests is created.

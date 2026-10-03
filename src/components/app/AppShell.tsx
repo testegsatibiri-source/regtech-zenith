@@ -72,7 +72,9 @@ function ShellInner({ children }: { children: ReactNode }) {
         .eq("user_id", data.user.id);
       setIsStaff(
         (roles ?? []).some((r) =>
-          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(r.role),
+          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(
+            r.role,
+          ),
         ),
       );
     });

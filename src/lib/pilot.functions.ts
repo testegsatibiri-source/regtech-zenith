@@ -12,7 +12,6 @@ const CONSENT_VERSIONS = {
   PH: "ph-pilot-2026-09-23",
 } as const;
 
-
 const LANDING_SOURCES = {
   ID: "/id",
   PH: "/ph",
@@ -44,7 +43,6 @@ const submitSchema = z.object({
   workforceAllNcr: z.boolean().optional(),
   hasOvertime: z.boolean().optional(),
 });
-
 
 function extractIp(request: Request): string {
   const h = request.headers;
@@ -171,9 +169,8 @@ export const listPilotRequests = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => listQuerySchema.parse(d))
   .handler(async ({ data, context }) => {
-    const { userHasAnyRole, PLATFORM_ROLES, logPilotAudit } = await import(
-      "@/lib/pilot/authorization.server"
-    );
+    const { userHasAnyRole, PLATFORM_ROLES, logPilotAudit } =
+      await import("@/lib/pilot/authorization.server");
     if (!(await userHasAnyRole(context.userId, PLATFORM_ROLES))) {
       throw new Error("Forbidden");
     }
@@ -239,9 +236,7 @@ export const getPilotRequest = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 async function requireDecisionRole(userId: string): Promise<void> {
-  const { userHasAnyRole, PILOT_DECISION_ROLES } = await import(
-    "@/lib/pilot/authorization.server"
-  );
+  const { userHasAnyRole, PILOT_DECISION_ROLES } = await import("@/lib/pilot/authorization.server");
   if (!(await userHasAnyRole(userId, PILOT_DECISION_ROLES))) {
     throw new Error("Forbidden");
   }
@@ -526,9 +521,8 @@ export const createPilotManually = createServerFn({ method: "POST" })
 export const listPilotCustomers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { userHasAnyRole, PLATFORM_ROLES, logPilotAudit } = await import(
-      "@/lib/pilot/authorization.server"
-    );
+    const { userHasAnyRole, PLATFORM_ROLES, logPilotAudit } =
+      await import("@/lib/pilot/authorization.server");
     if (!(await userHasAnyRole(context.userId, PLATFORM_ROLES))) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: companies, error }, { data: pilots }] = await Promise.all([

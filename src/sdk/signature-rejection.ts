@@ -6,6 +6,7 @@
 export type SignatureRejectionCode =
   | "signature_missing"
   | "signature_invalid"
+  | "signature_verification_unavailable"
   | "key_unknown"
   | "key_revoked"
   | "capability_missing"
@@ -16,6 +17,7 @@ export type SignatureRejectionCode =
 export const SIGNATURE_REJECTION_LABELS: Record<SignatureRejectionCode, string> = {
   signature_missing: "Assinatura ausente",
   signature_invalid: "Assinatura inválida",
+  signature_verification_unavailable: "Verificação criptográfica indisponível",
   key_unknown: "Chave desconhecida na TrustStore",
   key_revoked: "Chave revogada",
   capability_missing: "Capability de assinatura ausente",

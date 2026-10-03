@@ -30,7 +30,8 @@ function CustomersPage() {
       <header>
         <h1 className="font-display text-3xl font-bold">Customers</h1>
         <p className="text-muted-foreground">
-          Workspaces created by pilot customers, with their authorized jurisdiction and pilot expiry.
+          Workspaces created by pilot customers, with their authorized jurisdiction and pilot
+          expiry.
         </p>
       </header>
       <Card>

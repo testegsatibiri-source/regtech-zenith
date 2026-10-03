@@ -10,7 +10,13 @@ describe("PH assurance evaluation", () => {
   it("produces the expected gate statuses today", () => {
     const ev = evaluatePh(AT);
     const map = Object.fromEntries(ev.gates.map((g) => [g.gate, g.status]));
-    expect(map).toEqual({ H20: "CONDITIONAL", H21: "FAIL", H22: "FAIL", H23: "FAIL", H24: "CONDITIONAL" });
+    expect(map).toEqual({
+      H20: "CONDITIONAL",
+      H21: "FAIL",
+      H22: "FAIL",
+      H23: "FAIL",
+      H24: "CONDITIONAL",
+    });
     expect(ev.commercialReady).toBe(false);
     expect(ev.maturity).toBe("VALIDATED_PILOT");
   });
@@ -24,30 +30,67 @@ describe("PH assurance evaluation", () => {
   });
 
   it("commercialReady only when every gate PASSes", () => {
-    const evidence = PH_EVIDENCE.map((e) => ({ ...e, layer: "PRODUCTION" as const, status: "VERIFIED" as const }));
+    const evidence = PH_EVIDENCE.map((e) => ({
+      ...e,
+      layer: "PRODUCTION" as const,
+      status: "VERIFIED" as const,
+    }));
     const gaps = PH_GAPS.map((g) => ({ ...g, state: "CLOSED" as const }));
-    const all = evaluateAssurance({ country: "PH", registerVersion: "t", evidence, gaps, definitions: PH_GATES, evaluatedAt: AT });
+    const all = evaluateAssurance({
+      country: "PH",
+      registerVersion: "t",
+      evidence,
+      gaps,
+      definitions: PH_GATES,
+      evaluatedAt: AT,
+    });
     expect(all.commercialReady).toBe(true);
-    const oneOpen = evaluateAssurance({ country: "PH", registerVersion: "t", evidence, gaps: gaps.map((g, i) => (i === 5 ? { ...g, state: "OPEN" as const } : g)), definitions: PH_GATES, evaluatedAt: AT });
+    const oneOpen = evaluateAssurance({
+      country: "PH",
+      registerVersion: "t",
+      evidence,
+      gaps: gaps.map((g, i) => (i === 5 ? { ...g, state: "OPEN" as const } : g)),
+      definitions: PH_GATES,
+      evaluatedAt: AT,
+    });
     expect(oneOpen.commercialReady).toBe(false);
   });
 
   it("non-inference: TEST layer never satisfies REGULATORY requirement", () => {
     const gaps = PH_GAPS.map((g) => ({ ...g, state: "CLOSED" as const }));
-    const r = evaluateAssurance({ country: "PH", registerVersion: "t", evidence: PH_EVIDENCE, gaps, definitions: PH_GATES, evaluatedAt: AT });
+    const r = evaluateAssurance({
+      country: "PH",
+      registerVersion: "t",
+      evidence: PH_EVIDENCE,
+      gaps,
+      definitions: PH_GATES,
+      evaluatedAt: AT,
+    });
     expect(r.gates.find((g) => g.gate === "H20")!.status).toBe("CONDITIONAL");
   });
 
   it("expired or FAILED evidence fails the gate", () => {
     const expired = evaluatePh("2028-01-01T00:00:00.000Z");
     expect(expired.gates.every((g) => g.status === "FAIL")).toBe(true);
-    const failed = PH_EVIDENCE.map((e) => (e.evidenceId === "EV-PH-SECURITY-001" ? { ...e, status: "FAILED" as const } : e));
-    const r = evaluateAssurance({ country: "PH", registerVersion: "t", evidence: failed, gaps: PH_GAPS, definitions: PH_GATES, evaluatedAt: AT });
+    const failed = PH_EVIDENCE.map((e) =>
+      e.evidenceId === "EV-PH-SECURITY-001" ? { ...e, status: "FAILED" as const } : e,
+    );
+    const r = evaluateAssurance({
+      country: "PH",
+      registerVersion: "t",
+      evidence: failed,
+      gaps: PH_GAPS,
+      definitions: PH_GATES,
+      evaluatedAt: AT,
+    });
     expect(r.gates.find((g) => g.gate === "H24")!.status).toBe("FAIL");
   });
 
   it("human-readable register lists every EV/GAP id", () => {
-    const doc = readFileSync("docs/governance/evidence-register/PH-evidence-register-v1.0.md", "utf8");
+    const doc = readFileSync(
+      "docs/governance/evidence-register/PH-evidence-register-v1.0.md",
+      "utf8",
+    );
     for (const id of [...PH_EVIDENCE.map((e) => e.evidenceId), ...PH_GAPS.map((g) => g.gapId)]) {
       expect(doc).toContain(id);
     }

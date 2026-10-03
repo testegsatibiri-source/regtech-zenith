@@ -265,7 +265,7 @@ const phHeuristics: AuditHeuristic[] = [
         passed: below.length === 0,
         message:
           below.length === 0
-          ? `All employees are at or above PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-28)`
+            ? `All employees are at or above PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-28)`
             : `${below.length} employee(s) earn below the NCR minimum wage equivalent of PHP ${monthlyFloor.toLocaleString("en-US")}/month (Wage Order NCR-28)`,
         impact: below.length,
       };

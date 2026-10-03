@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useSession } from "@/lib/useSession";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +49,9 @@ function AuthPage() {
       .eq("user_id", user.id)
       .then(({ data }) => {
         const staff = (data ?? []).some((r) =>
-          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(r.role),
+          ["platform_admin", "platform_operator", "platform_auditor", "country_cto"].includes(
+            r.role,
+          ),
         );
         navigate({ to: staff ? "/platform" : "/dashboard" });
       });
@@ -76,12 +77,15 @@ function AuthPage() {
   }
 
   async function google() {
-    const res = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/auth",
+      },
     });
-    if (res.error) return toast.error("Google sign-in failed");
-    if (res.redirected) return;
-    navigate({ to: "/dashboard" });
+    setLoading(false);
+    if (error) return toast.error("Google sign-in failed");
   }
 
   return (
@@ -146,8 +150,8 @@ function AuthPage() {
                 this CTA is the only legitimate entry path for a new company. */}
             <div className="mt-5 rounded-md border border-border bg-muted/40 p-3 text-center">
               <p className="text-xs text-muted-foreground">
-                UBoardAsia operates controlled access during its Homologation Pilot Program.
-                New organizations join by approved application only.
+                UBoardAsia operates controlled access during its Homologation Pilot Program. New
+                organizations join by approved application only.
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
                 <Button asChild size="sm" variant="secondary">

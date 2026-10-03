@@ -42,8 +42,10 @@ export async function summarizePilotCase(caseText: string): Promise<string> {
   const text = await result.text;
   if (!text.trim()) {
     const status = (failure as { statusCode?: number } | undefined)?.statusCode;
-    if (status === 429) throw new Error("Limite de uso da IA atingido. Tente novamente em instantes.");
-    if (status === 402) throw new Error("Créditos de IA esgotados. Adicione créditos em Settings → Plans & credits.");
+    if (status === 429)
+      throw new Error("Limite de uso da IA atingido. Tente novamente em instantes.");
+    if (status === 402)
+      throw new Error("Créditos de IA esgotados. Adicione créditos em Settings → Plans & credits.");
     if (status === 403) throw new Error("Acesso à IA bloqueado para este workspace.");
     throw new Error("A IA não retornou uma análise. Tente novamente.");
   }

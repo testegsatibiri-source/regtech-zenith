@@ -19,7 +19,10 @@ export const Route = createFileRoute("/ph/")({
         content:
           "Philippines Country Pack para sa SSS, PhilHealth, Pag-IBIG, BIR withholding, 13th month pay, leaves at separation pay. Live mula sa runtime ang status at bersyon ng ruleset.",
       },
-      { property: "og:title", content: "Payroll Compliance Engine para sa Pilipinas | UBoard Asia" },
+      {
+        property: "og:title",
+        content: "Payroll Compliance Engine para sa Pilipinas | UBoard Asia",
+      },
       {
         property: "og:description",
         content:

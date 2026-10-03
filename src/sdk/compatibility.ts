@@ -152,17 +152,26 @@ export class CompatibilityService {
     }
 
     if (!store || !bytes) {
-      checks.push(
-        warn("signatures", "trust store or manifest bytes unavailable; treated as advisory"),
-      );
+      const msg = "trust store or canonical manifest bytes unavailable";
+      if (trust.environment === "preview") {
+        checks.push(warn("signatures", `${msg}; verification is advisory in preview`));
+      } else {
+        checks.push(err("signatures", msg, "signature_verification_unavailable"));
+        rejections.push({ code: "signature_verification_unavailable", message: msg });
+      }
       return { checks, rejections };
     }
 
     for (const s of signatures) {
-      // H11.1a — prefer keyId lookup; fall back to (publisher, publicKey).
-      const key =
-        (store.findByKeyId && s.keyId ? await store.findByKeyId(s.keyId) : undefined) ??
-        (await store.find(s.signer, s.publicKey));
+      // H11.1a — keyId is authoritative when supplied. Do not fall back to
+      // publisher/publicKey after a keyId miss: that would let a stale or forged
+      // key ID bypass rotation/revocation lookup. Legacy records without keyId
+      // retain the publisher/publicKey path.
+      const key = s.keyId
+        ? store.findByKeyId
+          ? await store.findByKeyId(s.keyId)
+          : undefined
+        : await store.find(s.signer, s.publicKey);
       if (!key) {
         const msg = `unknown key for ${s.signer} (keyId=${s.keyId})`;
         checks.push(err("signatures", msg, "key_unknown"));
@@ -184,7 +193,17 @@ export class CompatibilityService {
       const res = await verifyEd25519(bytes, s.signature, key.publicKey);
       if (!res.verified) {
         if (res.reason === "crypto-unavailable") {
-          checks.push(warn("signatures", `verification skipped (${res.reason})`));
+          const msg = `verification unavailable for ${s.signer}: ${res.reason}`;
+          if (trust.environment === "preview") {
+            checks.push(warn("signatures", msg));
+          } else {
+            checks.push(err("signatures", msg, "signature_verification_unavailable"));
+            rejections.push({
+              code: "signature_verification_unavailable",
+              message: msg,
+              signer: s.signer,
+            });
+          }
         } else {
           const msg = `verify failed for ${s.signer}: ${res.reason}`;
           checks.push(err("signatures", msg, "signature_invalid"));

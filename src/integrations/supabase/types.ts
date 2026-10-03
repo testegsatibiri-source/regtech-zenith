@@ -1008,6 +1008,253 @@ export type Database = {
           },
         ]
       }
+      equipment: {
+        Row: {
+          asset_tag: string | null
+          company_id: string
+          connectivity_status: string
+          created_at: string
+          equipment_type_id: string | null
+          id: string
+          location: string | null
+          manufacturer: string | null
+          metadata: Json
+          model: string | null
+          name: string
+          serial_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          asset_tag?: string | null
+          company_id: string
+          connectivity_status?: string
+          created_at?: string
+          equipment_type_id?: string | null
+          id?: string
+          location?: string | null
+          manufacturer?: string | null
+          metadata?: Json
+          model?: string | null
+          name: string
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_tag?: string | null
+          company_id?: string
+          connectivity_status?: string
+          created_at?: string
+          equipment_type_id?: string | null
+          id?: string
+          location?: string | null
+          manufacturer?: string | null
+          metadata?: Json
+          model?: string | null
+          name?: string
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_equipment_type_id_fkey"
+            columns: ["equipment_type_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_connections: {
+        Row: {
+          connection_type: string
+          created_at: string
+          equipment_id: string
+          external_device_id: string | null
+          id: string
+          last_seen_at: string | null
+          metadata: Json
+          provider_key: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          connection_type: string
+          created_at?: string
+          equipment_id: string
+          external_device_id?: string | null
+          id?: string
+          last_seen_at?: string | null
+          metadata?: Json
+          provider_key?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          connection_type?: string
+          created_at?: string
+          equipment_id?: string
+          external_device_id?: string | null
+          id?: string
+          last_seen_at?: string | null
+          metadata?: Json
+          provider_key?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_connections_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_credentials: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          equipment_id: string
+          id: string
+          rotated_at: string | null
+          secret_provider: string
+          secret_ref: string
+          status: string
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          equipment_id: string
+          id?: string
+          rotated_at?: string | null
+          secret_provider?: string
+          secret_ref: string
+          status?: string
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          equipment_id?: string
+          id?: string
+          rotated_at?: string | null
+          secret_provider?: string
+          secret_ref?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_credentials_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_credentials_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_types: {
+        Row: {
+          capabilities: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: string
+          type_key: string
+          updated_at: string
+        }
+        Insert: {
+          capabilities?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          type_key: string
+          updated_at?: string
+        }
+        Update: {
+          capabilities?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          type_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      government_integrations: {
+        Row: {
+          agency_key: string
+          capability_key: string
+          country_code: string
+          country_pack_key: string | null
+          created_at: string
+          endpoint_ref: string | null
+          id: string
+          integration_connection_id: string
+          mode: string
+          requirements: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agency_key: string
+          capability_key: string
+          country_code: string
+          country_pack_key?: string | null
+          created_at?: string
+          endpoint_ref?: string | null
+          id?: string
+          integration_connection_id: string
+          mode?: string
+          requirements?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agency_key?: string
+          capability_key?: string
+          country_code?: string
+          country_pack_key?: string | null
+          created_at?: string
+          endpoint_ref?: string | null
+          id?: string
+          integration_connection_id?: string
+          mode?: string
+          requirements?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "government_integrations_integration_connection_id_fkey"
+            columns: ["integration_connection_id"]
+            isOneToOne: true
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidents: {
         Row: {
           country_code: string | null
@@ -1049,6 +1296,66 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      integration_connections: {
+        Row: {
+          company_id: string | null
+          config: Json
+          country_code: string | null
+          created_at: string
+          id: string
+          integration_type: string
+          last_sync_at: string | null
+          organization_id: string
+          provider_key: string
+          secret_ref: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          config?: Json
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          integration_type: string
+          last_sync_at?: string | null
+          organization_id: string
+          provider_key: string
+          secret_ref?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          config?: Json
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          integration_type?: string
+          last_sync_at?: string | null
+          organization_id?: string
+          provider_key?: string
+          secret_ref?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_connections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leave_balances: {
         Row: {
@@ -1233,6 +1540,253 @@ export type Database = {
           rows_exported?: number
           sink?: string
           storage_path?: string
+        }
+        Relationships: []
+      }
+      organization_companies: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          relationship_type: Database["public"]["Enums"]["organization_company_relationship"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          relationship_type: Database["public"]["Enums"]["organization_company_relationship"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          relationship_type?: Database["public"]["Enums"]["organization_company_relationship"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_companies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_companies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_entitlements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entitlement_key: string
+          id: string
+          organization_id: string
+          reason: string | null
+          source_type: string
+          status: string
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entitlement_key: string
+          id?: string
+          organization_id: string
+          reason?: string | null
+          source_type: string
+          status?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entitlement_key?: string
+          id?: string
+          organization_id?: string
+          reason?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_entitlements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_member_role"]
+          status: Database["public"]["Enums"]["organization_member_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_member_role"]
+          status?: Database["public"]["Enums"]["organization_member_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["organization_member_role"]
+          status?: Database["public"]["Enums"]["organization_member_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_subscriptions: {
+        Row: {
+          billing_currency: string | null
+          billing_interval: string
+          cancel_at_period_end: boolean
+          created_at: string
+          created_by: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          external_customer_id: string | null
+          external_provider: string | null
+          external_subscription_id: string | null
+          id: string
+          organization_id: string
+          plan_id: string
+          price_minor: number | null
+          status: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_currency?: string | null
+          billing_interval?: string
+          cancel_at_period_end?: boolean
+          created_at?: string
+          created_by?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_customer_id?: string | null
+          external_provider?: string | null
+          external_subscription_id?: string | null
+          id?: string
+          organization_id: string
+          plan_id: string
+          price_minor?: number | null
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_currency?: string | null
+          billing_interval?: string
+          cancel_at_period_end?: boolean
+          created_at?: string
+          created_by?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_customer_id?: string | null
+          external_provider?: string | null
+          external_subscription_id?: string | null
+          id?: string
+          organization_id?: string
+          plan_id?: string
+          price_minor?: number | null
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          legal_name: string | null
+          name: string
+          organization_type: Database["public"]["Enums"]["organization_type"]
+          status: Database["public"]["Enums"]["organization_status"]
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          legal_name?: string | null
+          name: string
+          organization_type: Database["public"]["Enums"]["organization_type"]
+          status?: Database["public"]["Enums"]["organization_status"]
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          legal_name?: string | null
+          name?: string
+          organization_type?: Database["public"]["Enums"]["organization_type"]
+          status?: Database["public"]["Enums"]["organization_status"]
+          tax_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1494,6 +2048,50 @@ export type Database = {
           revoked_at?: string | null
         }
         Relationships: []
+      }
+      partner_api_connections: {
+        Row: {
+          api_version: string | null
+          created_at: string
+          id: string
+          integration_connection_id: string
+          partner_key: string
+          scopes: Json
+          status: string
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          api_version?: string | null
+          created_at?: string
+          id?: string
+          integration_connection_id: string
+          partner_key: string
+          scopes?: Json
+          status?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          api_version?: string | null
+          created_at?: string
+          id?: string
+          integration_connection_id?: string
+          partner_key?: string
+          scopes?: Json
+          status?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_api_connections_integration_connection_id_fkey"
+            columns: ["integration_connection_id"]
+            isOneToOne: true
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payroll_items: {
         Row: {
@@ -1760,6 +2358,89 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      plan_entitlements: {
+        Row: {
+          created_at: string
+          entitlement_key: string
+          id: string
+          plan_id: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          entitlement_key: string
+          id?: string
+          plan_id: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          entitlement_key?: string
+          id?: string
+          plan_id?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_entitlements_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          audience: string
+          billing_currency: string | null
+          billing_interval: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          plan_family: string
+          plan_key: string
+          price_minor: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          billing_currency?: string | null
+          billing_interval?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          plan_family?: string
+          plan_key: string
+          price_minor?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          billing_currency?: string | null
+          billing_interval?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          plan_family?: string
+          plan_key?: string
+          price_minor?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       platform_audit_log: {
         Row: {
@@ -2034,6 +2715,87 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      registration_requests: {
+        Row: {
+          applicant_user_id: string
+          country_approved: string | null
+          country_requested: string
+          created_at: string
+          decision_reason: string | null
+          expected_companies: number
+          expected_users: number
+          id: string
+          legal_name: string | null
+          organization_id: string | null
+          organization_name: string
+          organization_type: Database["public"]["Enums"]["organization_type"]
+          plan_requested: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_pilot_request_id: string | null
+          status: string
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          applicant_user_id: string
+          country_approved?: string | null
+          country_requested: string
+          created_at?: string
+          decision_reason?: string | null
+          expected_companies?: number
+          expected_users?: number
+          id?: string
+          legal_name?: string | null
+          organization_id?: string | null
+          organization_name: string
+          organization_type: Database["public"]["Enums"]["organization_type"]
+          plan_requested?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_pilot_request_id?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applicant_user_id?: string
+          country_approved?: string | null
+          country_requested?: string
+          created_at?: string
+          decision_reason?: string | null
+          expected_companies?: number
+          expected_users?: number
+          id?: string
+          legal_name?: string | null
+          organization_id?: string | null
+          organization_name?: string
+          organization_type?: Database["public"]["Enums"]["organization_type"]
+          plan_requested?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_pilot_request_id?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_requests_source_pilot_request_id_fkey"
+            columns: ["source_pilot_request_id"]
+            isOneToOne: true
+            referencedRelation: "pilot_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       regulatory_parameters: {
         Row: {
@@ -2957,12 +3719,75 @@ export type Database = {
       }
     }
     Functions: {
+      can_add_company: { Args: { _organization_id: string }; Returns: boolean }
+      can_add_employee: {
+        Args: { _company_id: string; _organization_id: string }
+        Returns: boolean
+      }
+      can_add_equipment: {
+        Args: { _company_id: string; _organization_id: string }
+        Returns: boolean
+      }
+      can_add_member: { Args: { _organization_id: string }; Returns: boolean }
+      can_create_government_integration:
+        | { Args: { _organization_id: string }; Returns: boolean }
+        | {
+            Args: {
+              _capability_key: string
+              _country_code: string
+              _organization_id: string
+            }
+            Returns: boolean
+          }
+      can_create_integration: {
+        Args: { _integration_type: string; _organization_id: string }
+        Returns: boolean
+      }
+      can_create_partner_api:
+        | { Args: { _organization_id: string }; Returns: boolean }
+        | {
+            Args: { _organization_id: string; _provider_key: string }
+            Returns: boolean
+          }
+      can_enable_iot: { Args: { _organization_id: string }; Returns: boolean }
+      can_manage_organization_members: {
+        Args: { _organization_id: string }
+        Returns: boolean
+      }
       check_api_quota: {
         Args: { _key_id: string; _monthly_quota: number }
         Returns: boolean
       }
+      convert_registration_request: {
+        Args: { _actor_user_id: string; _request_id: string }
+        Returns: {
+          organization_id: string
+          organization_subscription_id: string
+          registration_request_id: string
+        }[]
+      }
+      entitlement_limit: {
+        Args: { _key: string; _organization_id: string }
+        Returns: number
+      }
+      get_active_entitlement: {
+        Args: { _key: string; _organization_id: string }
+        Returns: Json
+      }
+      has_active_entitlement: {
+        Args: { _key: string; _organization_id: string }
+        Returns: boolean
+      }
+      has_active_organization_membership: {
+        Args: { _organization_id: string; _user_id?: string }
+        Returns: boolean
+      }
       has_capability: {
         Args: { _capability: string; _country_code?: string; _user_id: string }
+        Returns: boolean
+      }
+      has_published_country_capability: {
+        Args: { _capability_key: string; _country_code: string }
         Returns: boolean
       }
       has_role: {
@@ -2983,6 +3808,10 @@ export type Database = {
       pilot_authorizes_country: {
         Args: { _country: string; _email: string }
         Returns: boolean
+      }
+      provision_approved_registration_request: {
+        Args: { _request_id: string }
+        Returns: string
       }
       uada_start_reindex: {
         Args: {
@@ -3012,6 +3841,21 @@ export type Database = {
         | "platform_operator"
         | "platform_auditor"
       invitation_status: "pending" | "accepted" | "expired" | "revoked"
+      organization_company_relationship:
+        | "OWNER"
+        | "ACCOUNTING_FIRM"
+        | "PAYROLL_PROVIDER"
+        | "ADVISOR"
+      organization_member_role:
+        | "OWNER"
+        | "ADMIN"
+        | "ACCOUNTANT"
+        | "HR"
+        | "PAYROLL_OPERATOR"
+        | "VIEWER"
+      organization_member_status: "INVITED" | "ACTIVE" | "SUSPENDED" | "REMOVED"
+      organization_status: "PENDING" | "ACTIVE" | "SUSPENDED" | "ARCHIVED"
+      organization_type: "ACCOUNTING_FIRM" | "COMPANY"
       pack_flag_environment: "preview" | "production" | "all"
       pack_install_source: "manual" | "pipeline" | "rollback" | "marketplace"
       pack_installation_status:
@@ -3183,6 +4027,23 @@ export const Constants = {
         "platform_auditor",
       ],
       invitation_status: ["pending", "accepted", "expired", "revoked"],
+      organization_company_relationship: [
+        "OWNER",
+        "ACCOUNTING_FIRM",
+        "PAYROLL_PROVIDER",
+        "ADVISOR",
+      ],
+      organization_member_role: [
+        "OWNER",
+        "ADMIN",
+        "ACCOUNTANT",
+        "HR",
+        "PAYROLL_OPERATOR",
+        "VIEWER",
+      ],
+      organization_member_status: ["INVITED", "ACTIVE", "SUSPENDED", "REMOVED"],
+      organization_status: ["PENDING", "ACTIVE", "SUSPENDED", "ARCHIVED"],
+      organization_type: ["ACCOUNTING_FIRM", "COMPANY"],
       pack_flag_environment: ["preview", "production", "all"],
       pack_install_source: ["manual", "pipeline", "rollback", "marketplace"],
       pack_installation_status: [
