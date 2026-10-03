@@ -1,4 +1,4 @@
-// H11.1a — Canonical signable bytes for a pack manifest.
+// H11.1a — Canonical signable bytes for every country pack manifest.\n// The helper is pack-agnostic even though it remains under the historical path.
 // Signing / verification MUST operate on the same subset of fields, so we
 // isolate that projection here. The `signature` block is deliberately excluded.
 import type { CountryManifest } from "@/sdk/manifest";
