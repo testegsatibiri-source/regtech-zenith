@@ -35,11 +35,13 @@ describe("signatureBlockToRecords", () => {
   });
 
   it("maps countersign separately instead of elevating author capability", () => {
-    expect(signatureBlockToRecords(block).map(({ signer, keyId, capability }) => ({
-      signer,
-      keyId,
-      capability,
-    }))).toEqual([
+    expect(
+      signatureBlockToRecords(block).map(({ signer, keyId, capability }) => ({
+        signer,
+        keyId,
+        capability,
+      })),
+    ).toEqual([
       { signer: "publisher-a", keyId: "key-a", capability: "pack.sign" },
       { signer: "publisher-b", keyId: "key-b", capability: "pack.countersign" },
     ]);
