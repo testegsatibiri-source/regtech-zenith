@@ -103,7 +103,11 @@ export const createCompany = createServerFn({ method: "POST" })
       { _organization_id: organizationId },
     );
     if (entitlementError) throw new Error(entitlementError.message);
-    if (!canCreate) throw new Error("The organization's company entitlement does not allow another company.");
+    if (!canCreate) {
+      throw new Error(
+        "The organization's company entitlement does not allow another company.",
+      );
+    }
 
     const { data: row, error } = await context.supabase
       .from("companies")
@@ -119,14 +123,12 @@ export const createCompany = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    const { error: linkError } = await context.supabase
-      .from("organization_companies")
-      .insert({
-        organization_id: organizationId,
-        company_id: row.id,
-        relationship_type: "OWNER",
-        status: "ACTIVE",
-      });
+    const { error: linkError } = await context.supabase.from("organization_companies").insert({
+      organization_id: organizationId,
+      company_id: row.id,
+      relationship_type: "OWNER",
+      status: "ACTIVE",
+    });
     if (linkError) {
       await context.supabase.from("companies").delete().eq("id", row.id);
       throw new Error(linkError.message);
