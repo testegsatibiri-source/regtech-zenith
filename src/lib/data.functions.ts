@@ -22,6 +22,7 @@ const companySchema = z
     name: z.string().trim().min(1).max(120),
     legal_name: z.string().trim().max(160).optional().nullable(),
     country_code: z.string().trim().length(2),
+    organization_id: z.string().uuid().optional(),
     tax_id: z.string().trim().max(64).optional().nullable(),
   })
   .passthrough()
@@ -68,12 +69,60 @@ export const createCompany = createServerFn({ method: "POST" })
     const { assertPackAvailable } = await import("@/lib/packs/loader.server");
     const pack = await assertPackAvailable(data.country_code);
 
+    // Commercial tenancy boundary: company creation must belong to an active
+    // organization membership and respect that organization's company entitlement.
+    const orgQuery = context.supabase
+      .from("organization_members")
+      .select("organization_id, organizations!inner(status)")
+      .eq("user_id", context.userId)
+      .eq("status", "ACTIVE");
+    const { data: memberships, error: membershipError } = await orgQuery;
+    if (membershipError) throw new Error(membershipError.message);
+
+    const requestedOrganizationId = data.organization_id;
+    const eligible = (memberships ?? []).filter(
+      (m) => (m.organizations as { status: string }).status === "ACTIVE",
+    );
+    const organizationId = requestedOrganizationId
+      ? eligible.find((m) => m.organization_id === requestedOrganizationId)?.organization_id
+      : eligible.length === 1
+        ? eligible[0].organization_id
+        : undefined;
+
+    if (!organizationId) {
+      throw new Error(
+        requestedOrganizationId
+          ? "You are not an active member of this organization."
+          : "Select an active organization before creating a company.",
+      );
+    }
+
+    const { data: canCreate, error: entitlementError } = await context.supabase.rpc(
+      "can_add_company",
+      { _organization_id: organizationId },
+    );
+    if (entitlementError) throw new Error(entitlementError.message);
+    if (!canCreate) throw new Error("The organization's company entitlement does not allow another company.");
+
     const { data: row, error } = await context.supabase
       .from("companies")
-      .insert({ ...data, currency: pack.currency, owner_id: context.userId })
+      .insert({ ...data, organization_id: undefined, currency: pack.currency, owner_id: context.userId })
       .select()
       .single();
     if (error) throw new Error(error.message);
+
+    const { error: linkError } = await context.supabase
+      .from("organization_companies")
+      .insert({
+        organization_id: organizationId,
+        company_id: row.id,
+        relationship_type: "OWNER",
+        status: "ACTIVE",
+      });
+    if (linkError) {
+      await context.supabase.from("companies").delete().eq("id", row.id);
+      throw new Error(linkError.message);
+    }
 
     // Idempotent conversion: an approved request becomes `converted` once, and
     // keeps its entitlement (converted still authorizes the same country).
