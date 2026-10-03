@@ -193,7 +193,17 @@ export class CompatibilityService {
       const res = await verifyEd25519(bytes, s.signature, key.publicKey);
       if (!res.verified) {
         if (res.reason === "crypto-unavailable") {
-          checks.push(warn("signatures", `verification skipped (${res.reason})`));
+          const msg = `verification unavailable for ${s.signer}: ${res.reason}`;
+          if (trust.environment === "preview") {
+            checks.push(warn("signatures", msg));
+          } else {
+            checks.push(err("signatures", msg, "signature_verification_unavailable"));
+            rejections.push({
+              code: "signature_verification_unavailable",
+              message: msg,
+              signer: s.signer,
+            });
+          }
         } else {
           const msg = `verify failed for ${s.signer}: ${res.reason}`;
           checks.push(err("signatures", msg, "signature_invalid"));
