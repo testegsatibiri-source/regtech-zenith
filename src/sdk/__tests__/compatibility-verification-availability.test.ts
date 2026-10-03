@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CompatibilityService } from "@/sdk/compatibility";
 import type { CountryPack } from "@/sdk/CountryPack";
 import type { TrustPolicy } from "@/sdk/trust-policy";
+import type { TrustStore } from "@/sdk/trust-store";
 
 const pack: CountryPack = {
   manifest: {
@@ -51,6 +52,43 @@ describe("CompatibilityService verification availability", () => {
     expect(report.rejections).toContainEqual(
       expect.objectContaining({ code: "signature_verification_unavailable" }),
     );
+  });
+
+  it("fails closed outside preview when the Ed25519 runtime is unavailable", async () => {
+    const key = {
+      keyId: "key-a",
+      publisher: "publisher-a",
+      publicKey: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      algo: "ed25519",
+      capabilities: ["pack.sign"] as ("pack.sign" | "pack.countersign")[],
+      provider: "db" as const,
+      active: true,
+    };
+    const trustStore: TrustStore = {
+      name: "test",
+      listActive: async () => [key],
+      find: async () => key,
+      findByKeyId: async () => key,
+    };
+
+    vi.stubGlobal("crypto", undefined);
+    try {
+      const report = await new CompatibilityService().check({
+        pack,
+        installed: [],
+        signatures: [signature],
+        trust: staging,
+        trustStore,
+        manifestBytes: new Uint8Array([1, 2, 3]),
+      });
+
+      expect(report.ok).toBe(false);
+      expect(report.rejections).toContainEqual(
+        expect.objectContaining({ code: "signature_verification_unavailable" }),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("keeps unavailable verification advisory only in preview", async () => {
