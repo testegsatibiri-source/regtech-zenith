@@ -290,8 +290,11 @@ export const convertApprovedRegistrationRequest = createServerFn({ method: "POST
       .eq("id", data.id)
       .single();
     if (readError) throw new Error(readError.message);
-    if (request.status !== "APPROVED" || request.organization_id) {
-      throw new Error("Only an approved, unconverted request can be converted.");
+    if (request.status !== "APPROVED" && request.status !== "CONVERTED") {
+      throw new Error("Only an approved request can be converted.");
+    }
+    if (request.status === "CONVERTED" && !request.organization_id) {
+      throw new Error("Converted request is missing its organization link; manual reconciliation required.");
     }
     if (!request.country_approved) {
       throw new Error("An approved country is required before conversion.");
@@ -300,7 +303,9 @@ export const convertApprovedRegistrationRequest = createServerFn({ method: "POST
     const { assertPackAvailable } = await import("@/lib/packs/loader.server");
     await assertPackAvailable(request.country_approved);
 
-    const rpc = supabaseAdmin as unknown as RegistrationConversionRpc;
+    // Call through the authenticated user's JWT so auth.uid() is available
+    // and the database independently verifies the platform role.
+    const rpc = context.supabase as unknown as RegistrationConversionRpc;
     const { data: converted, error: conversionError } = await rpc.rpc(
       "convert_registration_request",
       { _request_id: request.id, _actor_user_id: context.userId },
