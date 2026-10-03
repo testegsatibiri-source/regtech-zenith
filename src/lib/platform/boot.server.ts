@@ -13,6 +13,8 @@ import { COMPATIBILITY_MATRIX_V1 } from "@/sdk/compatibility-matrix";
 import { currentEnv } from "@/sdk/feature-gates";
 import { currentTrustPolicy } from "@/sdk/trust-policy";
 import { trustStore } from "@/lib/platform/service/signing";
+import { canonicalManifestBytes } from "@/packs/indonesia/params/canonical-manifest";
+import { signatureBlockToRecords } from "@/sdk/signature-adapter";
 
 async function loadGates() {
   const { data, error } = await supabaseAdmin
@@ -43,22 +45,24 @@ async function persistCompatReports(): Promise<void> {
   const installed = CountryRuntime.list();
   const packsInRegistry = await supabaseAdmin
     .from("pack_registry")
-    .select("id, country_code, pack_version, signatures")
+    .select("id, country_code, pack_version")
     .eq("state", "published");
-  const registryById = new Map<string, { id: string; sigs: unknown[] }>();
+  const registryById = new Map<string, { id: string }>();
   for (const r of packsInRegistry.data ?? []) {
     registryById.set(`${r.country_code}@${r.pack_version}`, {
       id: r.id,
-      sigs: (r.signatures as unknown[]) ?? [],
     });
   }
 
   for (const rec of installed) {
     const m = rec.pack.manifest;
     const regEntry = registryById.get(`${m.country}@${m.version}`);
-    const signatures = (regEntry?.sigs ?? []) as Parameters<
-      typeof compatibilityService.check
-    >[0]["signatures"];
+    // Verify the signature block shipped with the actual runtime artifact. Registry
+    // publication is tracked separately by the boot gate; an absent registry row must
+    // not erase the artifact signatures, nor make the pack appear published.
+    const signatures = signatureBlockToRecords(m.signatureBlock).filter((signature) =>
+      trust.requiredCapabilities.includes(signature.capability),
+    );
     try {
       const report = await compatibilityService.check({
         pack: rec.pack,
@@ -66,6 +70,7 @@ async function persistCompatReports(): Promise<void> {
         signatures,
         trust,
         trustStore,
+        manifestBytes: canonicalManifestBytes(m),
       });
       await supabaseAdmin.from("compatibility_reports").insert({
         pack_country: m.country,
