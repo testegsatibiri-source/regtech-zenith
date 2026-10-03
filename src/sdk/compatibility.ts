@@ -152,9 +152,13 @@ export class CompatibilityService {
     }
 
     if (!store || !bytes) {
-      checks.push(
-        warn("signatures", "trust store or manifest bytes unavailable; treated as advisory"),
-      );
+      const msg = "trust store or canonical manifest bytes unavailable";
+      if (trust.environment === "preview") {
+        checks.push(warn("signatures", `${msg}; verification is advisory in preview`));
+      } else {
+        checks.push(err("signatures", msg, "signature_verification_unavailable"));
+        rejections.push({ code: "signature_verification_unavailable", message: msg });
+      }
       return { checks, rejections };
     }
 
