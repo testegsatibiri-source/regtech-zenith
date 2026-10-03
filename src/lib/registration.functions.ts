@@ -249,3 +249,74 @@ export const decideRegistrationRequest = createServerFn({ method: "POST" })
     });
     return row;
   });
+
+
+const convertRegistrationSchema = z.object({ id: z.string().uuid() }).strict();
+
+type ConversionRpcResult = {
+  data:
+    | {
+        registration_request_id: string;
+        organization_id: string;
+        organization_subscription_id: string;
+      }[]
+    | null;
+  error: { message: string } | null;
+};
+
+type RegistrationConversionRpc = {
+  rpc(
+    functionName: "convert_registration_request",
+    args: { _request_id: string; _actor_user_id: string },
+  ): Promise<ConversionRpcResult>;
+};
+
+export const convertApprovedRegistrationRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => convertRegistrationSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { userHasAnyRole, PILOT_DECISION_ROLES, logPilotAudit } =
+      await import("@/lib/pilot/authorization.server");
+    if (!(await userHasAnyRole(context.userId, PILOT_DECISION_ROLES))) {
+      throw new Error("Forbidden");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: request, error: readError } = await supabaseAdmin
+      .from("registration_requests")
+      .select(
+        "id, status, country_requested, country_approved, plan_requested, organization_id, applicant_user_id",
+      )
+      .eq("id", data.id)
+      .single();
+    if (readError) throw new Error(readError.message);
+    if (request.status !== "APPROVED" || request.organization_id) {
+      throw new Error("Only an approved, unconverted request can be converted.");
+    }
+    if (!request.country_approved) {
+      throw new Error("An approved country is required before conversion.");
+    }
+
+    const { assertPackAvailable } = await import("@/lib/packs/loader.server");
+    await assertPackAvailable(request.country_approved);
+
+    const rpc = supabaseAdmin as unknown as RegistrationConversionRpc;
+    const { data: converted, error: conversionError } = await rpc.rpc(
+      "convert_registration_request",
+      { _request_id: request.id, _actor_user_id: context.userId },
+    );
+    if (conversionError) throw new Error(conversionError.message);
+    const result = converted?.[0];
+    if (!result) throw new Error("Registration conversion returned no result.");
+
+    await logPilotAudit({
+      actor: context.userId,
+      action: "registration_request.convert",
+      target: request.id,
+      country: request.country_approved,
+      oldValue: request,
+      newValue: result,
+    });
+
+    return result;
+  });
