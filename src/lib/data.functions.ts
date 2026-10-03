@@ -104,9 +104,7 @@ export const createCompany = createServerFn({ method: "POST" })
     );
     if (entitlementError) throw new Error(entitlementError.message);
     if (!canCreate) {
-      throw new Error(
-        "The organization's company entitlement does not allow another company.",
-      );
+      throw new Error("The organization's company entitlement does not allow another company.");
     }
 
     const { data: row, error } = await context.supabase
