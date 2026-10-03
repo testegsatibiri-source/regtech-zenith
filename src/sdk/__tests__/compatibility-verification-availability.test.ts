@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { CompatibilityService } from "@/sdk/compatibility";
 import type { CountryPack } from "@/sdk/CountryPack";
 import type { TrustPolicy } from "@/sdk/trust-policy";
@@ -71,7 +71,8 @@ describe("CompatibilityService verification availability", () => {
       findByKeyId: async () => key,
     };
 
-    vi.stubGlobal("crypto", undefined);
+    const originalCrypto = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: undefined });
     try {
       const report = await new CompatibilityService().check({
         pack,
@@ -87,7 +88,8 @@ describe("CompatibilityService verification availability", () => {
         expect.objectContaining({ code: "signature_verification_unavailable" }),
       );
     } finally {
-      vi.unstubAllGlobals();
+      if (originalCrypto) Object.defineProperty(globalThis, "crypto", originalCrypto);
+      else Reflect.deleteProperty(globalThis, "crypto");
     }
   });
 
