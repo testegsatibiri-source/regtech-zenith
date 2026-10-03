@@ -26,10 +26,11 @@ const companySchema = z
     tax_id: z.string().trim().max(64).optional().nullable(),
   })
   .passthrough()
-  .transform(({ name, legal_name, country_code, tax_id }) => ({
+  .transform(({ name, legal_name, country_code, organization_id, tax_id }) => ({
     name,
     legal_name: legal_name ?? null,
     country_code: country_code.toUpperCase(),
+    organization_id,
     tax_id: tax_id ?? null,
   }));
 
@@ -106,7 +107,14 @@ export const createCompany = createServerFn({ method: "POST" })
 
     const { data: row, error } = await context.supabase
       .from("companies")
-      .insert({ ...data, organization_id: undefined, currency: pack.currency, owner_id: context.userId })
+      .insert({
+        name: data.name,
+        legal_name: data.legal_name,
+        country_code: data.country_code,
+        tax_id: data.tax_id,
+        currency: pack.currency,
+        owner_id: context.userId,
+      })
       .select()
       .single();
     if (error) throw new Error(error.message);
