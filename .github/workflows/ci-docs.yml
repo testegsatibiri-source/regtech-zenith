@@ -77,7 +77,5 @@ jobs:
               missing=1
             fi
           done < <(grep -rhoE '\(docs/(governance|architecture)/[^)]+\.md\)' docs .github 2>/dev/null \
-                   | tr -d '()' | grep -vE '/(xxx|example|placeholder)\.md
-          exit $missing
- | sort -u)
+                   | tr -d '()' | grep -vE '/(xxx|example|placeholder)\.md' | sort -u)
           exit $missing
