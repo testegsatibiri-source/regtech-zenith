@@ -11,16 +11,15 @@ on:
       - "src/packs/**"
       - "src/sdk/testkit/**"
 
-concurrency:
-  group: ci-packs-${{ github.ref }}-${{ matrix.pack }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
 jobs:
   pack:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ci-packs-${{ github.ref }}-${{ matrix.pack }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
