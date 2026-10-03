@@ -45,12 +45,13 @@ async function persistCompatReports(): Promise<void> {
   const installed = CountryRuntime.list();
   const packsInRegistry = await supabaseAdmin
     .from("pack_registry")
-    .select("id, country_code, pack_version")
+    .select("id, country_code, pack_version, signatures")
     .eq("state", "published");
-  const registryById = new Map<string, { id: string }>();
+  const registryById = new Map<string, { id: string; sigs: unknown[] }>();
   for (const r of packsInRegistry.data ?? []) {
     registryById.set(`${r.country_code}@${r.pack_version}`, {
       id: r.id,
+      sigs: (r.signatures as unknown[]) ?? [],
     });
   }
 
@@ -60,7 +61,11 @@ async function persistCompatReports(): Promise<void> {
     // Verify the signature block shipped with the actual runtime artifact. Registry
     // publication is tracked separately by the boot gate; an absent registry row must
     // not erase the artifact signatures, nor make the pack appear published.
-    const signatures = signatureBlockToRecords(m.signatureBlock).filter((signature) =>
+    const registrySignatures = regEntry?.sigs ?? [];
+    const artifactSignatures = registrySignatures.length
+      ? (registrySignatures as Parameters<typeof compatibilityService.check>[0]["signatures"])
+      : signatureBlockToRecords(m.signatureBlock);
+    const signatures = (artifactSignatures ?? []).filter((signature) =>
       trust.requiredCapabilities.includes(signature.capability),
     );
     try {
