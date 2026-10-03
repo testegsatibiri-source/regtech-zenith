@@ -159,10 +159,15 @@ export class CompatibilityService {
     }
 
     for (const s of signatures) {
-      // H11.1a — prefer keyId lookup; fall back to (publisher, publicKey).
-      const key =
-        (store.findByKeyId && s.keyId ? await store.findByKeyId(s.keyId) : undefined) ??
-        (await store.find(s.signer, s.publicKey));
+      // H11.1a — keyId is authoritative when supplied. Do not fall back to
+      // publisher/publicKey after a keyId miss: that would let a stale or forged
+      // key ID bypass rotation/revocation lookup. Legacy records without keyId
+      // retain the publisher/publicKey path.
+      const key = s.keyId
+        ? store.findByKeyId
+          ? await store.findByKeyId(s.keyId)
+          : undefined
+        : await store.find(s.signer, s.publicKey);
       if (!key) {
         const msg = `unknown key for ${s.signer} (keyId=${s.keyId})`;
         checks.push(err("signatures", msg, "key_unknown"));
