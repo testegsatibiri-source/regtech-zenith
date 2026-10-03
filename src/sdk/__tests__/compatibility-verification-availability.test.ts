@@ -28,20 +28,22 @@ const staging: TrustPolicy = {
   allowExperimental: false,
 };
 
+const signature = {
+  signer: "publisher-a",
+  keyId: "key-a",
+  publicKey: "",
+  algo: "ed25519" as const,
+  signature: "signature",
+  capability: "pack.sign" as const,
+  ts: "2026-01-01T00:00:00Z",
+};
+
 describe("CompatibilityService verification availability", () => {
   it("fails closed in staging when the trust store or canonical bytes are missing", async () => {
     const report = await new CompatibilityService().check({
       pack,
       installed: [],
-      signatures: [{
-        signer: "publisher-a",
-        keyId: "key-a",
-        publicKey: "",
-        algo: "ed25519",
-        signature: "signature",
-        capability: "pack.sign",
-        ts: "2026-01-01T00:00:00Z",
-      }],
+      signatures: [signature],
       trust: staging,
     });
 
@@ -55,15 +57,7 @@ describe("CompatibilityService verification availability", () => {
     const report = await new CompatibilityService().check({
       pack,
       installed: [],
-      signatures: [{
-        signer: "publisher-a",
-        keyId: "key-a",
-        publicKey: "",
-        algo: "ed25519",
-        signature: "signature",
-        capability: "pack.sign",
-        ts: "2026-01-01T00:00:00Z",
-      }],
+      signatures: [signature],
       trust: { ...staging, environment: "preview", allowExperimental: true },
     });
 
