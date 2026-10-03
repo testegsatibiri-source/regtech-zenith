@@ -1,4 +1,4 @@
-# UBoard Asia 
+# UBoard Asia
 
 projetar uma infraestrutura de RegTech (Regulatory Technology) altamente
 escalável. Ao desacoplar o núcleo de negócios (Core ERP) das especificidades
