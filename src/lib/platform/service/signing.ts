@@ -58,7 +58,13 @@ function rowToKey(r: KeyRow): TrustedKey {
     publisher: r.publisher,
     publicKey: r.public_key,
     algo: r.algo,
-    capabilities: (r.capabilities ?? []) as SigningCapability[],
+    capabilities: (r.capabilities ?? []).flatMap((capability): SigningCapability[] => {
+      // Database records use short labels; the SDK policy uses namespaced capabilities.
+      if (capability === "sign") return ["pack.sign"];
+      if (capability === "countersign") return ["pack.countersign"];
+      if (capability === "pack.sign" || capability === "pack.countersign") return [capability];
+      return [];
+    }),
     provider: (r.provider as TrustedKey["provider"]) ?? "db",
     active: r.active,
     revokedAt: r.revoked_at,
