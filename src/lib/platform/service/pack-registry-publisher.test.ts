@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { CountryPack } from "@/sdk/CountryPack";
 import { CountryRuntime } from "@/sdk";
+import { MemoryTrustStore } from "@/sdk/trust-store";
 import { packRegistryPublisher } from "./pack-registry-publisher";
 
 const basePack = (overrides: Partial<CountryPack["manifest"]> = {}): CountryPack => ({
@@ -41,13 +42,14 @@ describe("packRegistryPublisher.dryRun", () => {
     CountryRuntime.tryInstall(basePack());
 
     const before = CountryRuntime.list().length;
-    const result = await packRegistryPublisher.dryRun("ZZ");
+    const trust = new MemoryTrustStore([]);
+    const result = await packRegistryPublisher.dryRun("ZZ", { trustStore: trust });
     const after = CountryRuntime.list().length;
 
     expect(result.writeAttempted).toBe(false);
     expect(result.publishable).toBe(false);
     expect(result.artifact).toBeNull();
-    expect(result.gates).toContain("key_unknown");
+    expect(result.gates).toContain("signature_verification_unavailable");
     expect(after).toBe(before);
   });
 
