@@ -8,6 +8,7 @@ import type { CountryPack } from "@/sdk/CountryPack";
 import type { InstalledPack } from "@/sdk/runtime";
 import type { CompatibilityReport } from "@/sdk/compatibility";
 import type { TrustStore } from "@/sdk/trust-store";
+import type { TrustPolicy } from "@/sdk/trust-policy";
 import { CountryRuntime } from "@/sdk";
 import { compatibilityService } from "@/sdk/compatibility";
 import { currentTrustPolicy } from "@/sdk/trust-policy";
@@ -123,7 +124,7 @@ export const packRegistryPublisher = {
       gates.push("health_failed");
     }
 
-    const trust = currentTrustPolicy();
+    const trust = options.trustPolicy ?? currentTrustPolicy();
     const signatures = signatureBlockToRecords(rec.pack.manifest.signatureBlock);
     const manifestBytes = canonicalManifestBytes(rec.pack.manifest);
     let compatibilityReport: CompatibilityReport;
