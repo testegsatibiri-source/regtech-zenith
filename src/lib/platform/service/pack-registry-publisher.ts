@@ -92,7 +92,10 @@ function signatureArtifacts(pack: CountryPack): PackRegistrySignatureArtifact[] 
 }
 
 export const packRegistryPublisher = {
-  async dryRun(country: string, options: { trustStore?: TrustStore } = {}): Promise<PackRegistryDryRunResult> {
+  async dryRun(
+    country: string,
+    options: { trustStore?: TrustStore } = {},
+  ): Promise<PackRegistryDryRunResult> {
     const rec: InstalledPack | null = CountryRuntime.record(country);
     const generatedAt = new Date().toISOString();
 
