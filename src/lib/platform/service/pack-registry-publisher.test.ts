@@ -13,7 +13,7 @@ const basePack = (overrides: Partial<CountryPack["manifest"]> = {}): CountryPack
     engines: [],
     provides: [],
     supportedLanguages: ["en"],
-    requiresCore: "*",
+    requiresCore: ">=2.2.0",
     interfaceVersion: "1.0",
     signatureBlock: {
       author: {
