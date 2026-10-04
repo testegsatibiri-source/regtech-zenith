@@ -49,7 +49,7 @@ describe("packRegistryPublisher.dryRun", () => {
     expect(result.writeAttempted).toBe(false);
     expect(result.publishable).toBe(false);
     expect(result.artifact).toBeNull();
-    expect(result.gates).toContain("signature_verification_unavailable");
+    expect(result.gates).toContain("key_unknown");
     expect(after).toBe(before);
   });
 
