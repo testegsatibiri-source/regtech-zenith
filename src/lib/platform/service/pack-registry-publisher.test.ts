@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { CountryPack } from "@/sdk/CountryPack";
 import { CountryRuntime } from "@/sdk";
 import { packRegistryPublisher } from "./pack-registry-publisher";
@@ -32,8 +32,12 @@ const basePack = (overrides: Partial<CountryPack["manifest"]> = {}): CountryPack
 });
 
 describe("packRegistryPublisher.dryRun", () => {
-  it("never writes and blocks an artifact when trust credentials fail", async () => {
+  afterEach(() => {
     CountryRuntime.uninstall("ZZ");
+    CountryRuntime.uninstall("XX");
+  });
+
+  it("never writes and blocks an artifact when trust credentials fail", async () => {
     CountryRuntime.tryInstall(basePack());
 
     const before = CountryRuntime.list().length;
@@ -48,7 +52,6 @@ describe("packRegistryPublisher.dryRun", () => {
   });
 
   it("returns blocked when the pack is not installed", async () => {
-    CountryRuntime.uninstall("XX");
     const result = await packRegistryPublisher.dryRun("XX");
 
     expect(result.writeAttempted).toBe(false);
