@@ -7,6 +7,7 @@
 import type { CountryPack } from "@/sdk/CountryPack";
 import type { InstalledPack } from "@/sdk/runtime";
 import type { CompatibilityReport } from "@/sdk/compatibility";
+import type { TrustStore } from "@/sdk/trust-store";
 import { CountryRuntime } from "@/sdk";
 import { compatibilityService } from "@/sdk/compatibility";
 import { currentTrustPolicy } from "@/sdk/trust-policy";
@@ -91,7 +92,7 @@ function signatureArtifacts(pack: CountryPack): PackRegistrySignatureArtifact[] 
 }
 
 export const packRegistryPublisher = {
-  async dryRun(country: string): Promise<PackRegistryDryRunResult> {
+  async dryRun(country: string, options: { trustStore?: TrustStore } = {}): Promise<PackRegistryDryRunResult> {
     const rec: InstalledPack | null = CountryRuntime.record(country);
     const generatedAt = new Date().toISOString();
 
@@ -129,7 +130,7 @@ export const packRegistryPublisher = {
         installed: CountryRuntime.list(),
         signatures,
         trust,
-        trustStore,
+        trustStore: options.trustStore ?? trustStore,
         manifestBytes,
       });
       if (!compatibilityReport.ok) {
